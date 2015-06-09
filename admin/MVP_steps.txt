@@ -1,0 +1,13 @@
+S1) hello word GAE python -> DONE
+S2) liste de liens statiques
+S3) liste de liens depuis une base de données (input en dur)
+S4) generer la liste des liens hckrnews avec scrapy
+S5) pousher la liste vers la BDD à intervals réguliers depuis PC
+
+=> clone de hckrnews done
+
+S6) Creer la notion de user dans la base
+S7) ajouter notions de mots clés par user dans la base (en dur)
+S8) récupérer uniquement les articles dont le titre contient un des mots clés à la connexion
+
+

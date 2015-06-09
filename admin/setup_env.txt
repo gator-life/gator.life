@@ -1,0 +1,39 @@
+
+-mettre a jour apt-get
+sudo apt-get update
+
+-install google app engine
+cf. https://cloud.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python
+
+-si pas installé: install python 3, git
+
+-install pip3
+sudo apt-get install python3-pip
+
+-selenium
+sudo pip3 install --upgrade selenium
+
+-utiliser python3 dans pycharm
+file->settings->project interpreter
+
+
+
+------------------------------------------------------------------
+
+-demarrer le serveur GAE local
+dev_appserver.py server/
+(<path-to-Python-SDK>/dev_appserver.py <path-to-gae-application>/)
+
+
+-pusher sur GAE : depuis gator/src/ :
+appcfg.py --oauth2 -A gator-01 update server/
+
+
+-acceder au site
+http://gator-01.appspot.com/
+
+-installer docker
+https://docs.docker.com/installation/ubuntulinux/
+sudo usermod -aG docker nico
+sudo start docker
+sudo docker run hello-world
