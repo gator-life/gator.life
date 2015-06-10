@@ -4,6 +4,10 @@ sudo apt-get update
 
 -install google app engine
 cf. https://cloud.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python
+pour simplifier : ajouter appengine au path:
+PYTHON_APP_ENGINE_SDK=~/dev/python_appengine/google_appengine
+export PATH=$PATH:$PYTHON_APP_ENGINE_SDK
+dans le ".profile" à la racine du repertoire d'un utilisateur
 
 -si pas installé: install python 3, git
 
@@ -12,6 +16,8 @@ sudo apt-get install python3-pip
 
 -selenium
 sudo pip3 install --upgrade selenium
+python 2 : sudo pip install --upgrade selenium
+
 
 -utiliser python3 dans pycharm
 file->settings->project interpreter
