@@ -1,5 +1,14 @@
 S1) hello word GAE python -> DONE
 s1.1) setup usine
+TODO :
+-scrip pour demarrer l'env de dev (smartgit, server, pycharm)
+-checker le titre dans selenium et coder
+-faire un test "unitaire"
+-executer ça sur travis
+-relier l'url au site
+-faire que travis fasse le deploiment on build success apres commit
+-ajouter un linter en local et sur travis
+
 S2) liste de liens statiques
 S3) liste de liens depuis une base de données (input en dur)
 S4) generer la liste des liens hckrnews avec scrapy
