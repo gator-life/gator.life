@@ -23,8 +23,13 @@ python 2 : sudo pip install --upgrade selenium
 file->settings->project interpreter
 
 
+-phantomJS
+suivre instruction ici : http://phantomjs.org/download.html
+actuellement, il faut builder depuis les sources
+ensuite il faut ajouter le binaire buildé dans bin au PATH
 
-------------------------------------------------------------------
+
+
 
 -demarrer le serveur GAE local
 dev_appserver.py server/
