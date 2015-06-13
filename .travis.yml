@@ -1,15 +1,15 @@
 language: python
+
 python:
   - "2.7"
 
- install:
 # command to install dependencies
+install:
   - "pip install -r requirements.txt --use-mirrors"
   - "pip install -r test_requirements.txt --use-mirrors"
 
-
-before_script:
 #download and unzip GAE SDK in directory google_appengine
+before_script:
   - wget http://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.22.zip -nv
   - unzip -q google_appengine_1.9.22.zip
 
