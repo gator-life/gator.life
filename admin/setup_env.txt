@@ -40,6 +40,9 @@ dev_appserver.py server/
 appcfg.py --oauth2 -A gator-01 update server/
 
 
+-runner tests en ligne de commande
+python -m unittest discover
+
 -acceder au site
 http://gator-01.appspot.com/
 
