@@ -1,6 +1,7 @@
 S1) hello word GAE python -> DONE
 s1.1) setup usine
 TODO :
+-runner les tests avec py.test et utiliser ça sur travis, checker la structure de dossiers
 -scrip pour demarrer l'env de dev (smartgit, server, pycharm)
 -checker le titre dans selenium et coder
 -faire un test "unitaire"

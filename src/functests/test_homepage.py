@@ -2,17 +2,16 @@ from selenium import webdriver
 import unittest
 
 
-class NewVisitorTest(unittest.TestCase):
+class NewVisitorTests(unittest.TestCase):
 
     def setUp(self):
         self.browser = webdriver.PhantomJS()
         self.browser.implicitly_wait(10)
 
-
     def tearDown(self):
         self.browser.quit()
 
-    def test_see_default_links_and_updates(self):
+    def test_see_default_links(self):
 
         #Kevin connects to the site
         self.browser.get('http://localhost:8080')
@@ -29,8 +28,6 @@ class NewVisitorTest(unittest.TestCase):
         #he refreshes the page
 
         #he sees the page updated with the new links of hckrnews
-
-
 
 if __name__ == '__main__':
     unittest.main()
