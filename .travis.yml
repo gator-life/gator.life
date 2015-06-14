@@ -15,4 +15,4 @@ before_script:
 
 
 # command to run tests
-script: python -m unittest discover
+script: py.test

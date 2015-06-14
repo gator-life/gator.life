@@ -29,7 +29,8 @@ actuellement, il faut builder depuis les sources
 ensuite il faut ajouter le binaire buildé dans bin au PATH
 
 
-
+-pour installer py.test
+pip install -U pytest, cf. http://pytest.org/latest/getting-started.html
 
 -demarrer le serveur GAE local
 dev_appserver.py server/
