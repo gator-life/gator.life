@@ -15,4 +15,4 @@ before_script:
 
 
 # command to run tests
-script: py.test
+script: py.test src
