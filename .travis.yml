@@ -7,6 +7,7 @@ python:
 install:
   - "pip install -r requirements.txt"
   - "pip install -r test_requirements.txt"
+  - "pip install coveralls"
 
 #download and unzip GAE SDK in directory google_appengine
 before_script:
