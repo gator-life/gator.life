@@ -20,7 +20,7 @@ before_script:
 # command to run tests
 script:
   - py.test src
-  - coverage run --source=src --omit=*tests* -m py.test
+  - coverage run --source=src --omit=*tests* -m py.test src
 
 after_success:
   - coveralls
