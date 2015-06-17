@@ -21,6 +21,7 @@ before_script:
 script:
   - py.test src
   - coverage run --source=src --omit=*tests* -m py.test src
+  - pylint src/server/server
 
 after_success:
   - coveralls
