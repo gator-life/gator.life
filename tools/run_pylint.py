@@ -5,7 +5,7 @@ import sys
 import subprocess
 import re
 
-PYLINT = '/usr/bin/pylint'
+PYLINT = 'pylint'
 BASE_PATH = sys.argv[1]
 OUTPUT_FILE = None
 EXTRA_LIBS = [
@@ -55,6 +55,7 @@ def construct_command():
 def run_pylint():
     os.chdir(BASE_PATH)
     command = construct_command()
+    print(command)
     try:
         output = subprocess.check_output(command, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
