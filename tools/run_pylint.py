@@ -42,13 +42,15 @@ def reset_paths(old_path, old_pythonpath=None):
 
 
 def construct_command():
+    '''
     command = [PYLINT, BASE_PATH, '-f', 'parseable']
     if DISABLED_SETTINGS:
         command.append('--disable=%s' % ','.join(DISABLED_SETTINGS))
     if IGNORE_PATTERNS:
         command.append('--ignore=%s' % ','.join(IGNORE_PATTERNS))
     if ADDITIONAL_PARAMETERS:
-        command.extend(ADDITIONAL_PARAMETERS)
+        command.extend(ADDITIONAL_PARAMETERS)'''
+    command = ['pylint', 'src/server/server', 'src/server/tests', 'src/functests', '-f', 'parseable']
     return command
 
 
