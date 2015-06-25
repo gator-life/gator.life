@@ -1,8 +1,8 @@
 # [START imports]
 import os
 
-import jinja2
 import webapp2
+import jinja2
 
 
 JINJA_ENVIRONMENT = jinja2.Environment(

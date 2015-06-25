@@ -56,6 +56,12 @@ sudo docker run hello-world
 -pour runner pylint dans pycharm
 http://blog.saturnlaboratories.co.za/archive/2012/09/10/running-pylint-pycharm
 
+-pour lever un warning pycharm de perf:
+https://confluence.jetbrains.com/display/IDEADEV/Inotify+Watches+Limit
 
+-pour que pycharm trouve les libs gae :
+ http://stackoverflow.com/questions/24197970/pycharm-import-external-library
 
+-pour que pycharm resolve les import entre test et prod:
+http://stackoverflow.com/questions/17969025/unresolved-reference-when-importing-from-sibling-sub-package-with
 
