@@ -23,7 +23,7 @@ class MainPage(webapp2.RequestHandler):
 
 
 
-
-APP = webapp2.WSGIApplication([
+# 'app' name is mandatory for webbapp
+app = webapp2.WSGIApplication([ #pylint: disable=invalid-name
     ('/', MainPage),
 ], debug=True)
