@@ -1,6 +1,7 @@
-class DummyForTest:
+class DummyForTest(object):
     def __init__(self):
         pass
 
-    def hello_world(self):
+    @classmethod
+    def hello_world(cls):
         return 'hello world'
