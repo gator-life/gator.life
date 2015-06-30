@@ -65,3 +65,15 @@ https://confluence.jetbrains.com/display/IDEADEV/Inotify+Watches+Limit
 -pour que pycharm resolve les import entre test et prod:
 http://stackoverflow.com/questions/17969025/unresolved-reference-when-importing-from-sibling-sub-package-with
 
+-pour generer et utiliser une variable d'env encrypté dans travis:
+http://docs.travis-ci.com/user/environment-variables/#Encrypted-Variables
+Dedans ils parlent d'installer travis (ruby), pour ça il faut au préalable avoir rubly:
+sudo apt-get install ruby-dev
+cf. erreur détaillée ici :
+http://stackoverflow.com/questions/13767725/unable-to-install-gem-failed-to-build-gem-native-extension-cannot-load-such
+
+
+
+
+
+
