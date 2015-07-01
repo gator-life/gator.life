@@ -9,7 +9,7 @@ install:
   - "pip install -r test_requirements.txt"
   - "pip install coveralls"
 
-#download and unzip GAE SDK in directory google_appengine
+#download and unzip GAE SDK in directory lib/google_appengine
 before_script:
   - mkdir lib
   - wget http://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.22.zip -nv
@@ -26,3 +26,4 @@ script:
 
 after_success:
   - coveralls
+  - ./scripts/deploy_to_gae.sh
