@@ -18,4 +18,4 @@ script:
 - pylint src/server/server src/server/tests src/functests
 after_success:
 - coveralls
-- echo $GAE_PASSWORD | lib/google_appengine/appcfg.py --no_oauth2 -A gator-01 update src/server/server --email=$GAE_EMAIL --passin
+- lib/google_appengine/appcfg.py -A gator-01 --skip_sdk_update_check --oauth2_access_token=$GAE_TOKEN update src/server/server 
