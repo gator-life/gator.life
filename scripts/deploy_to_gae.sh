@@ -1,1 +1,1 @@
-echo $GAE_PASSWORD | lib/google_appengine/appcfg.py -A gator-01 update src/server/server --email=$GAE_EMAIL --passin
+echo $GAE_PASSWORD | lib/google_appengine/appcfg.py --no_oauth2 -A gator-01 update src/server/server --email=$GAE_EMAIL --passin
