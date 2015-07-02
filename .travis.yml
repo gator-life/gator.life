@@ -1,29 +1,25 @@
 language: python
-
 python:
-  - "2.7"
-
-# command to install dependencies
+- '2.7'
 install:
-  - "pip install -r requirements.txt"
-  - "pip install -r test_requirements.txt"
-  - "pip install coveralls"
-
-#download and unzip GAE SDK in directory lib/google_appengine
+- pip install -r requirements.txt
+- pip install -r test_requirements.txt
+- pip install coveralls
 before_script:
-  - mkdir lib
-  - wget http://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.22.zip -nv
-  - unzip -q google_appengine_1.9.22.zip -d lib
-  - ./lib/google_appengine/dev_appserver.py ./src/server/server/ --skip_sdk_update_check &
-  - sleep 3 # give server some time to start
-
-
-# command to run tests
+- mkdir lib
+- wget http://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.23.zip
+  -nv
+- unzip -q google_appengine_1.9.23.zip -d lib
+- ./lib/google_appengine/dev_appserver.py ./src/server/server/ --skip_sdk_update_check
+- sleep 3
 script:
-  - py.test src
-  - coverage run --source=src --omit=*tests* -m py.test src
-  - pylint src/server/server src/server/tests src/functests
-
+- py.test src
+- coverage run --source=src --omit=*tests* -m py.test src
+- pylint src/server/server src/server/tests src/functests
 after_success:
-  - coveralls
-  - ./scripts/deploy_to_gae.sh
+- coveralls
+- ./scripts/deploy_to_gae.sh
+env:
+  global:
+  - secure: G6J5XZ0LraCLyt730O9fLt818RVsL+g8hA2LMRHsA+hNe4X/Vg9kDm6XVHAokkEr5ZTZ/mQJ4fG+SFYK1pQqYUoOUpYa+VrBudApfUTDF7q3kly9zbmAk10iCL6RgvdptZ3TMP6O1yf+YkwsaoadrT/zZotBDT2/xBXGUD7UECbwXcy7pDK6ntFEwZExYXS/+ES+NF8vYo11beZdAmfyl/+y7gTZqKn5XEEQ7Whhd9JGZAEhBBtwH7Fo5rQeemVMD+XL8p47nDw8Pf5N3ZeKNM2anXmi9/weVzedh+ikICc5Uc1kzCP2jUPWFlu6zPB8Du2w0H7tpJaQq3xRMBcQs/oo2rtl70Ijin1nrxUQxtyEbygGG0hJZguG1xb7EqMbus5ZEvLPqpcEeFibRLzZ/6UWHswEAANnlaSHpjS4umdpjISF91nW8W2uKjhcsG+zjns/NBQbQTvGyO2UgbFBjHrCdddxx+8gv/FRUFBLGA2oUA1Vctn8eeE8pqYoA9njXzSX5pCykKgiCkQVnl6PyayS8IxErbE6QNbBaG980WNiLQFJxMCOhaoYH0nDXrW2Mb8JkZzikoDgK4+19/FNFcW3qGOJiiwEdp0Mh2w5JjIOKQ9SP/4fnDLYo1ldS0aY0IY4nkyOQN6DXjdOwt2va1BNtuPEO9scgP+EOmyG9XI=
+  - secure: o9bC9h9P9gCewaKWc/Z1De5SBmF7qvPhKzDIFdhR3tqdRS0e1ezuboh/3yNQYjXIHzLP8qTwm8pUx7MGuYnlESlQ5/LshxtaN3nD8YhAOuDFbPcSB3/bCTobhecyfAtZRPz9G6Ptx4rAax9tsulOmk+3VijFCgKoghZmXfxvyqhp04vvLGtU69+dPfzu/LA+TKQD4lDHq5O78KyEOwAIRVOyOV2t+F42yChjTVdKD4SGh7sNOcvbNz91n4nPROvsZ+dSOf0P+94N9w1CukIIwJpTmToWgQvazDwJ9ZTsMDwb8Lu3ud0DMJHBD5Lx6oacA53CwLqcNNb3+OcxQE9buJXo0d0W9ogrSwiWBHcK0LyEsLFhhhrQ8YIjNMJ0nv3OSx9LClde8S3SfKzBBn3nuiyvLmB9Q9mP3OicfTKRWWPVHAfHdLeW8tLvJupRQ17x7Xok3YPYu+suoaEztrTxkXBO1qDb+SWXZMcaoZhnA0MUwWgw3qkUX9aUbe09TKyd0VIln6RTlP/3gfzjqnrkzpcAW9lHuo0BTNSG7IdAMKtOuj63tagv/5dzkzorZrSeUf1YiM3cLm5xCy++4hPfSvbKJN+sxqIfWinpSIBYVBuslezlmbAPKx+qznVyt9kE01aymGNIac3w9ZtKIFEXoxn3z9cWXza3chqTqe85oro=
