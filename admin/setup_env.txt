@@ -72,7 +72,9 @@ sudo apt-get install ruby-dev
 cf. erreur détaillée ici :
 http://stackoverflow.com/questions/13767725/unable-to-install-gem-failed-to-build-gem-native-extension-cannot-load-such
 
-
+-pour pouvoir me connecter via email/pass a GAE depuis travis, j'ai du faire la manip ici:
+http://stackoverflow.com/questions/25387063/google-app-engine-deploy-failing-with-error-1-unauthorised
+(activate lesssecureapp)
 
 
 
