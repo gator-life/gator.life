@@ -18,7 +18,7 @@ class NewVisitorTests(unittest.TestCase):
 
         #He notices the title and the tab is called "gator"
         self.assertEquals('Gator', self.browser.title)
-        self.assertEquals('gator.life !', self.browser.find_element_by_name('title').text)
+        self.assertEquals('gator.life 2.0 !', self.browser.find_element_by_name('title').text)
         #self.fail('TODO')
 
         #He sees a list a list of link : the ones of the site hckrnews
