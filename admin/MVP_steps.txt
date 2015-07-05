@@ -1,24 +1,53 @@
-S1) hello word GAE python -> DONE
-s1.1) setup usine
-TODO :
--runner les tests avec py.test et utiliser ça sur travis, checker la structure de dossiers
--scrip pour demarrer l'env de dev (smartgit, server, pycharm)
--checker le titre dans selenium et coder
--faire un test "unitaire"
--executer ça sur travis
--relier l'url au site
--faire que travis fasse le deploiment on build success apres commit
--ajouter un linter en local et sur travis
 
-S2) liste de liens statiques
-S3) liste de liens depuis une base de données (input en dur)
-S4) generer la liste des liens hckrnews avec scrapy
-S5) pousher la liste vers la BDD à intervals réguliers depuis PC
+----------------------------------------SETUP ENV------------------------------------
+DONE
 
-=> clone de hckrnews done
+-hello word GAE python
+-sample functional test selenium / phantomJS
+-sample unit test with pytest
+-link coverage on travis
+-run pytest (pycharm + command line/travis)
+-run pylint (pycharm + commannd line/travis)
+-Deploy to GAE on sucess
+-create domain + link it to the site
 
-S6) Creer la notion de user dans la base
-S7) ajouter notions de mots clés par user dans la base (en dur)
-S8) récupérer uniquement les articles dont le titre contient un des mots clés à la connexion
+TODO
+
+-scrip to start dev env (console, smartgit, server, pycharm)
 
 
+
+
+----------------------------------------MVP STEP 1------------------------------------
+
+
+TODO
+
+SERVER
+
+-static link list with global archi for server ( Routing/Handlers/templates/model)
+-links from a database + archi to acces database
+
+SCRAPER
+
+-extract links from hckrnews with scrapy 
+-setup managed VM to run scrapy and push links to database
+
+----------------------------------------MVP STEP 2------------------------------------
+
+TODO
+
+SERVER
+
+-introduce the notion of user + suscribing to keywords
+
+SCRAPER & FEATURER
+
+-scrap more sites : google.news, reddit, push brut data to database (or stream directly to featurer ?)
+
+LEARNER
+
+-Just select articles whose title match the keywords of the user
+
+
+----------------------------------------MVP STEP 3------------------------------------
