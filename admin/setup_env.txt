@@ -9,18 +9,9 @@ PYTHON_APP_ENGINE_SDK=~/dev/python_appengine/google_appengine
 export PATH=$PATH:$PYTHON_APP_ENGINE_SDK
 dans le ".profile" à la racine du repertoire d'un utilisateur
 
--si pas installé: install python 3, git
-
--install pip3
-sudo apt-get install python3-pip
 
 -selenium
-sudo pip3 install --upgrade selenium
 python 2 : sudo pip install --upgrade selenium
-
-
--utiliser python3 dans pycharm
-file->settings->project interpreter
 
 
 -phantomJS
@@ -41,17 +32,8 @@ dev_appserver.py server/
 appcfg.py --oauth2 -A gator-01 update server/
 
 
--runner tests en ligne de commande
-python -m unittest discover
-
 -acceder au site
 http://gator-01.appspot.com/
-
--installer docker
-https://docs.docker.com/installation/ubuntulinux/
-sudo usermod -aG docker nico
-sudo start docker
-sudo docker run hello-world
 
 -pour runner pylint dans pycharm
 http://blog.saturnlaboratories.co.za/archive/2012/09/10/running-pylint-pycharm
@@ -71,11 +53,17 @@ Dedans ils parlent d'installer travis (ruby), pour ça il faut au préalable avo
 sudo apt-get install ruby-dev
 cf. erreur détaillée ici :
 http://stackoverflow.com/questions/13767725/unable-to-install-gem-failed-to-build-gem-native-extension-cannot-load-such
+ALTERNATIVE : creer la variable directement depuis la GUI travis (ce que j'ai fait au final: + safe)
 
--pour pouvoir me connecter via email/pass a GAE depuis travis, j'ai du faire la manip ici:
-http://stackoverflow.com/questions/25387063/google-app-engine-deploy-failing-with-error-1-unauthorised
-(activate lesssecureapp)
+-pour que travis puisse deployer gae:
+http://docsv2.readthedocs.org/en/latest/config.html
+	Alternatively, you can use OAuth2 protocol to authenticate against the GAE API. To set it up, first run this command in the repository root on your local workstation:
 
+	$PATH_TO_GAE_SDK/appcfg.py --oauth2 list_versions .
+	It will open a page in your browser where you can authorize the GAE to access your Google account. As the result, .appcfg_oauth2_tokens file will be created in your home directory, containing the access token. You can then encrypt it as Shippable secure variable and use in your after_success step as follows:
+
+	after_success:
+	  - $GAE_DIR/google_appengine/appcfg.py --oauth2_access_token=$GAE_TOKEN update .
 
 
 
