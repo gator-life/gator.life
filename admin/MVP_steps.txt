@@ -14,8 +14,7 @@ DONE
 TODO
 
 -scrip to start dev env (console, smartgit, server, pycharm)
-
-
+-send email from travis on fail
 
 
 ----------------------------------------MVP STEP 1------------------------------------

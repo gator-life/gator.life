@@ -3,12 +3,15 @@
 <html>
 <head>
   <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
-  <title>Gator</title>
+  <title>Gator Life !</title>
 </head>
   <body>
     <h1 name="title">
-   gator.life 2.0 !
+Gator.Life, the best of the web just for you !
     </h1>
+    {% for elt in links %}
+        <a name="link" href="{{ elt.link }}">{{ elt.text }}</a>
+    {% endfor %}
   </body>
 </html>
 {% endautoescape %}
