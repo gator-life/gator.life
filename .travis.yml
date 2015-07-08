@@ -18,4 +18,4 @@ script:
 - pylint src/server/server src/server/tests src/functests
 after_success:
 - coveralls
-- lib/google_appengine/appcfg.py -A gator-01 --skip_sdk_update_check --oauth2_access_token=$GAE_TOKEN update src/server/server 
+- lib/google_appengine/appcfg.py -A gator-01 --skip_sdk_update_check --oauth2_access_token=$GAE_TOKEN --oauth2_refresh_token=$GAE_REFRESH_TOKEN update src/server/server 
