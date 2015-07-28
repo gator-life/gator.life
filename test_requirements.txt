@@ -1,5 +1,5 @@
 selenium
 pytest
 pylint
-mock>=1.0.1
 vcrpy
+mock>=1.0.1
