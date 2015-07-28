@@ -3,3 +3,15 @@ fuser -k 8080/tcp
 
 pour voir les fichiers cachés
 Ctrl+H 
+
+
+En runnant PRAW, j'avais l'erreur InsecurePlatformWarning
+j'ai résolu en installant pyOpenSsl: manip ici:
+https://urllib3.readthedocs.org/en/latest/security.html#pyopenssl
+
+A un moment, PIP ne fonctionnait plus, j'ai réinstallé avec:
+http://stackoverflow.com/questions/28917534/pip-broken-on-ubuntu-14-4-after-package-upgrade
+
+sudo apt-get remove python-pip
+wget https://bootstrap.pypa.io/get-pip.py
+sudo python get-pip.py  

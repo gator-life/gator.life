@@ -240,7 +240,8 @@ generated-members=REQUEST,acl_users,aq_parent
 [FORMAT]
 
 # Maximum number of characters on a single line.
-max-line-length=100
+max-line-length=125
+# 125 is the max you can see in a github diff...
 
 # Regexp for a line that is allowed to be longer than the limit.
 ignore-long-lines=^\s*(# )?<?https?://\S+>?$
@@ -352,7 +353,7 @@ exclude-protected=_asdict,_fields,_replace,_source,_make
 [DESIGN]
 
 # Maximum number of arguments for function / method
-max-args=5
+max-args=7
 
 # Argument names that match this expression will be ignored. Default to name
 # with leading underscore

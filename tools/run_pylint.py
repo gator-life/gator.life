@@ -50,7 +50,9 @@ def construct_command():
         command.append('--ignore=%s' % ','.join(IGNORE_PATTERNS))
     if ADDITIONAL_PARAMETERS:
         command.extend(ADDITIONAL_PARAMETERS)'''
-    command = ['pylint', 'src/server/server', 'src/server/tests', 'src/functests', '-f', 'parseable']
+    command = ['pylint',
+    'src/server/server', 'src/scraper/scraper', 'src/common/common',
+     '-f', 'parseable']
     return command
 
 
