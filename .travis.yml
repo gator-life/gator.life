@@ -4,18 +4,18 @@ python:
 install:
 - pip install -r requirements.txt
 - pip install -r test_requirements.txt
+- pip install -e src/scraper src/server src/common
 - pip install coveralls
 before_script:
 - mkdir lib
-- wget http://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.23.zip
-  -nv
+- wget http://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.23.zip -nv
 - unzip -q google_appengine_1.9.23.zip -d lib
 - ./lib/google_appengine/dev_appserver.py ./src/server/server/ --skip_sdk_update_check &
 - sleep 3
 script:
 - py.test src
 - coverage run --source=src --omit=*tests* -m py.test src
-- pylint src/server/server src/server/tests src/functests
+- pylint src/server/server src/scraper/scraper/ src/common/common
 after_success:
 - coveralls
 - lib/google_appengine/appcfg.py -A gator-01 --skip_sdk_update_check --oauth2_access_token=$GAE_TOKEN --oauth2_refresh_token=$GAE_REFRESH_TOKEN update src/server/server 

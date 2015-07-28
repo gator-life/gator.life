@@ -1,3 +1,5 @@
 selenium
 pytest
 pylint
+mock
+vcrpy
