@@ -21,6 +21,6 @@ after_success:
 - coveralls
 deploy:
   provider: script
-  script: scripts/deploy_to_gae.sh
+  script: deploy_to_gae.sh
   on:
     branch: master
