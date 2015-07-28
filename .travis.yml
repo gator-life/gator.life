@@ -16,6 +16,7 @@ script:
 - py.test src
 - coverage run --source=src --omit=*tests* -m py.test src
 - pylint src/server/server src/scraper/scraper/ src/common/common
+- pylint --rcfile=pylintrc_tests src/server/tests src/scraper/tests/ src/common/tests src/functests
 after_success:
 - coveralls
 deploy:
