@@ -18,4 +18,8 @@ script:
 - pylint src/server/server src/scraper/scraper/ src/common/common
 after_success:
 - coveralls
-- lib/google_appengine/appcfg.py -A gator-01 --skip_sdk_update_check --oauth2_access_token=$GAE_TOKEN --oauth2_refresh_token=$GAE_REFRESH_TOKEN update src/server/server 
+deploy:
+  provider: script
+  script: scripts/deploy_to_gae.sh
+  on:
+  	branch: master
