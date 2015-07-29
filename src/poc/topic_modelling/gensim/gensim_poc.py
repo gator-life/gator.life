@@ -1,8 +1,12 @@
+#from common import scraperstructs
 from gensim import corpora, models, similarities
 from itertools import imap
 import logging
 import nltk
 import os
+
+#document = scraperstructs.Document
+#print document
 
 # Initialize logger to see logging events of gensim
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
