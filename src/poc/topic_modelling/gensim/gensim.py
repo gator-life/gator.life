@@ -7,7 +7,7 @@ import os
 # Initialize logger to see logging events of gensim
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-folder = './training_documents/'
+folder = './documents/'
 
 dictionary_file = './dictionary.dic'
 corpus_file = './corpus.mm'
