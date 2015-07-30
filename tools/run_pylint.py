@@ -55,10 +55,19 @@ def construct_command():
      '-f', 'parseable']
     return command
 
+def construct_command_test():
+    command = ['pylint','--rcfile=pylintrc_tests',
+    'src/server/tests', 'src/scraper/tests', 'src/common/tests', 'src/functests',
+     '-f', 'parseable']
+    return command
 
-def run_pylint():
+
+def run_pylint(test):
     os.chdir(BASE_PATH)
-    command = construct_command()
+    if test:
+        command = construct_command_test()
+    else:
+        command = construct_command()
     print(command)
     try:
         output = subprocess.check_output(command, stderr=subprocess.STDOUT)
@@ -88,11 +97,17 @@ def add_file_paths(input):
 
 def main():
     old_path, old_pythonpath = setup_paths()
-    exitcode, output = run_pylint()
+
+    exitcode, output = run_pylint(test=False)
     output = add_file_paths(output)
-    reset_paths(old_path, old_pythonpath)
     print output
-    sys.exit(exitcode)
+
+    exitcode_test, output_test = run_pylint(test=True)
+    output_test = add_file_paths(output_test)
+    print output_test
+
+    reset_paths(old_path, old_pythonpath)
+    sys.exit(min(1,exitcode + exitcode_test))
 
 
 if __name__ == '__main__':

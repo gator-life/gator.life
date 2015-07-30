@@ -16,10 +16,7 @@ script:
 - py.test src
 - coverage run --source=src --omit=*tests* -m py.test src
 - pylint src/server/server src/scraper/scraper/ src/common/common
+- pylint --rcfile=pylintrc_tests src/server/tests src/scraper/tests/ src/common/tests src/functests
 after_success:
 - coveralls
-deploy:
-  provider: script
-  script: scripts/deploy_to_gae.sh
-  on:
-    branch: master
+- if [[ ("${TRAVIS_BRANCH}" = "master") &&  ("${TRAVIS_PULL_REQUEST}" = "false") ]]; then ./lib/google_appengine/appcfg.py -A gator-01 --skip_sdk_update_check --oauth2_access_token=$GAE_TOKEN --oauth2_refresh_token=$GAE_REFRESH_TOKEN update ./src/server/server; fi
