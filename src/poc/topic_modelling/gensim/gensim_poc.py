@@ -22,6 +22,28 @@ lda_model_file = './data/model.lda'
 topics = 40
 
 
+# A repeatable iterator over documents (we need to iterate multiple time through documents).
+class RepeatableIterableDocuments(object):
+    def __init__(self, folder):
+        self.folder = folder
+        self.files = os.listdir(folder)
+
+    def __iter__(self):
+        for file_name in self.files:
+            yield _word_tokenize(_clean(_readable_document(_decode(_read(self.folder, file_name)))))
+
+
+# A repeatable iterator over corpus (gensim LdaModel need a repeatable stream of corpus).
+class RepeatableIterableCorpus(object):
+    def __init__(self, dictionary, documents):
+        self.dictionary = dictionary
+        self.documents = documents
+
+    def __iter__(self):
+        for document in self.documents:
+            yield self.dictionary.doc2bow(document)
+
+
 # Flatten a list
 def _flatten_list(l):
     return [j for i in l for j in i]
@@ -52,12 +74,9 @@ def _word_tokenize(content):
     return _flatten_list([nltk.word_tokenize(sentence) for sentence in nltk.sent_tokenize(content)])
 
 
-def _documents():
-    return imap(lambda file_name: _word_tokenize(_clean(_readable_document(_decode(_read(documents_folder, file_name))))), os.listdir(documents_folder))
-
-
 def update_model():
-    documents = _documents()
+    documents = RepeatableIterableDocuments(documents_folder)
+
     if os.path.isfile(dictionary_file):
         # Load the dictionary
         dictionary = corpora.Dictionary.load(dictionary_file)
@@ -68,10 +87,8 @@ def update_model():
     # Persist the dictionary
     dictionary.save(dictionary_file)
 
-    # Iterator over documents need to be reinitialized
-    documents = _documents()
     # Construct the Corpus : Transform each document to a vector [(word_id, word_count) | word_count > 0]
-    corpus = imap(lambda document: dictionary.doc2bow(document), documents)
+    corpus = RepeatableIterableCorpus(dictionary, documents)
     if os.path.isfile(corpus_file):
         # Load the corpus & update it with the new corpus
         updated_corpus = chain(corpora.MmCorpus(corpus_file), corpus)
@@ -80,12 +97,6 @@ def update_model():
     # Persist the updated corpus
     corpora.MmCorpus.serialize(corpus_file, updated_corpus)
 
-    # Iterator over documents and corpus need to be reinitialized
-    documents = _documents()
-    # Using map instead of imap because the API seems to need to iterate multiple
-    # times over the corpus. The corpus is iterable only once ... Wee need to find
-    # a solution. See. https://groups.google.com/forum/#!topic/gensim/CJe0IU3AC0A
-    corpus = map(lambda document: dictionary.doc2bow(document), documents)
     if os.path.isfile(lda_model_file):
         lda = models.LdaModel.load(lda_model_file)
         lda.update(corpus)
@@ -109,10 +120,11 @@ def classify_document(document):
         classification_dictionary = corpora.Dictionary.load(dictionary_file)
         classification_lda = models.LdaModel.load(lda_model_file)
 
-    return classification_lda[classification_dictionary.doc2bow(_word_tokenize(_clean(_readable_document(_decode(document)))))]
+    return classification_lda[classification_dictionary.doc2bow(_word_tokenize(_clean(_readable_document(
+        _decode(document)))))]
 
 
-# update_model()
+update_model()
 for file_name in os.listdir(documents_folder):
     content = _read(documents_folder, file_name)
     scraper_document = jsonpickle.decode(content)
