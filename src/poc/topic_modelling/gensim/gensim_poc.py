@@ -22,26 +22,17 @@ lda_model_file = './data/model.lda'
 topics = 40
 
 
-# A repeatable iterator over documents (we need to iterate multiple time through documents).
-class RepeatableIterableDocuments(object):
-    def __init__(self, folder):
-        self.folder = folder
-        self.files = os.listdir(folder)
+# A repeatable imap class :
+# - We need to iterate multiple time through documents.
+# - Gensim LdaModel need a repeatable stream of corpus
+class RepeatableImap(object):
+    def __init__(self, function, iterable):
+        self.function = function
+        self.iterable = iterable
 
     def __iter__(self):
-        for file_name in self.files:
-            yield _word_tokenize(_clean(_readable_document(_decode(_read(self.folder, file_name)))))
-
-
-# A repeatable iterator over corpus (gensim LdaModel need a repeatable stream of corpus).
-class RepeatableIterableCorpus(object):
-    def __init__(self, dictionary, documents):
-        self.dictionary = dictionary
-        self.documents = documents
-
-    def __iter__(self):
-        for document in self.documents:
-            yield self.dictionary.doc2bow(document)
+        for it in self.iterable:
+            yield self.function(it)
 
 
 # Flatten a list
@@ -75,7 +66,8 @@ def _word_tokenize(content):
 
 
 def update_model():
-    documents = RepeatableIterableDocuments(documents_folder)
+    documents = RepeatableImap(lambda file_name: _word_tokenize(_clean(_readable_document(_decode(
+        _read(documents_folder, file_name))))), os.listdir(documents_folder))
 
     if os.path.isfile(dictionary_file):
         # Load the dictionary
@@ -88,7 +80,7 @@ def update_model():
     dictionary.save(dictionary_file)
 
     # Construct the Corpus : Transform each document to a vector [(word_id, word_count) | word_count > 0]
-    corpus = RepeatableIterableCorpus(dictionary, documents)
+    corpus = RepeatableImap(lambda document: dictionary.doc2bow(document), documents)
     if os.path.isfile(corpus_file):
         # Load the corpus & update it with the new corpus
         updated_corpus = chain(corpora.MmCorpus(corpus_file), corpus)
@@ -125,9 +117,9 @@ def classify_document(document):
 
 
 update_model()
-for file_name in os.listdir(documents_folder):
-    content = _read(documents_folder, file_name)
-    scraper_document = jsonpickle.decode(content)
-    print file_name
-    print "\tTitle: " + scraper_document.link_element.origin_info.title
-    print "\tTopic(s): " + str(classify_document(content)) + "\n"
+# for file_name in os.listdir(documents_folder):
+#     content = _read(documents_folder, file_name)
+#     scraper_document = jsonpickle.decode(content)
+#     print file_name
+#     print "\tTitle: " + scraper_document.link_element.origin_info.title
+#     print "\tTopic(s): " + str(classify_document(content)) + "\n"
