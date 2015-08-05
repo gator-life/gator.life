@@ -1,12 +1,10 @@
 import praw
 import urllib3.contrib.pyopenssl
-from itertools import ifilter, imap
 from common.scraperstructs import LinkElement, OriginInfo
 
 def reddit_link_elements_generator(disconnected):
     submissions = _make_submissions_generator(disconnected)
-    filtered_submissions = ifilter(_is_valid_submission, submissions)
-    link_elts = imap(_make_link_element, filtered_submissions)
+    link_elts = (_make_link_element(s) for s in submissions if _is_valid_submission(s))
     return link_elts
 
 def _make_submissions_generator(disconnected):

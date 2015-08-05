@@ -1,4 +1,5 @@
 # coding=utf-8
+import logging
 import os
 
 import re
@@ -37,7 +38,8 @@ class ScraperTests(unittest.TestCase):
 
 
     def test_get_json_doc_generator(self):
-        jsonpickle.set_encoder_options('simplejson', sort_keys=True, indent=4, ensure_ascii=False)
+
+        logging.disable('WARNING')  # this test raise logged exceptions, we disable it to not pollute console output
 
         chinese = 'http://www.sina.com.cn/'
         jpg = 'https://scontent-dfw1-1.xx.fbcdn.net/hphotos-xat1/v/t1.0-9/11826008_10153591159909124_7497239512955988899_n.jpg?oh=026fe9cdf68e281f693c56f68f02a88b&oe=565454EE'  # pylint: disable=line-too-long
@@ -48,6 +50,8 @@ class ScraperTests(unittest.TestCase):
         fail_decode = 'http://www.washingtonpost.com/news/worldviews/wp/2015/08/01/say-goodbye-to-the-weirdest-border-dispute-in-the-world/'  # pylint: disable=line-too-long
         fail_decode2 = 'http://nydn.us/1OFxpaN'
         fail_decode3 = 'http://happynicetimepeople.com/from-bloodsucking-cars-to-lava-spewing-spiders-syfy-makes-your-tv-dreams-come-true/'  # pylint: disable=line-too-long
+        unicode_decode_error_exception = 'http://www.dezeen.com/2015/08/05/charles-holland-lost-relics-postmodernism-architecture-design/'  # pylint: disable=line-too-long
+
 
         urls = [
             french,  # ok
@@ -59,6 +63,7 @@ class ScraperTests(unittest.TestCase):
             fail_decode,  # ok
             fail_decode2,  # ok
             fail_decode3,  # ok
+            unicode_decode_error_exception,  # filtered
         ]
 
         links = [LinkElement(url, None, None, None) for url in urls]

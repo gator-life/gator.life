@@ -1,12 +1,11 @@
 import codecs
-from functools import partial
-from itertools import ifilter, imap, starmap
 import datetime
 import re
 import os
 import socket
 import ssl
 import logging
+import cchardet
 import requests
 import urlparse
 import jsonpickle
@@ -28,20 +27,23 @@ def _is_valid_link(link_element, invalid_paths_regex, invalid_extensions):
 
 def _try_get_html(url):
     try:
-        data = requests.get(url, timeout=1)
+        data = requests.get(url, timeout=2)
+
         header_encoding = data.encoding
         if not header_encoding:
             return None
-        data.content.decode(header_encoding.lower())  # check we can get unicode object from raw data (could raise exception)
-        guessed_encoding = data.apparent_encoding  # important to cache data.apparent_encoding only once (costly)
-        if guessed_encoding is None or header_encoding.lower() != guessed_encoding.lower():
+        # cchardet way faster than data.apparent_encoding
+        # https://github.com/kennethreitz/requests/issues/2359
+        guessed_encoding = cchardet.detect(data.content)['encoding'].lower()
+        if guessed_encoding is None or header_encoding.lower() != guessed_encoding:
             return None
-        return data.text.encode('utf-8').decode('utf-8')  # get unicode object in utf-8 format
+        data.content.decode(guessed_encoding)  # check we can get unicode object from raw data (could raise exception)
+        return data.text
     except (ssl.SSLError, socket.timeout, UnicodeDecodeError, requests.exceptions.RequestException) as expected_exception:
         logging.warning('managed exception, url: ' + url)
         logging.exception(expected_exception)
         return None
-     #  to not crash the whole process...
+    #  to not crash the whole process...
     except Exception as unexpected_exception:  # pylint: disable=broad-except
         logging.error('unexpected exception, url: ' + url)
         logging.exception(unexpected_exception)
@@ -77,9 +79,8 @@ def scrap(disconnected=False):
     """
     invalid_paths_regex = _get_invalid_regex()
     invalid_extensions = ['.jpg', '.gif', '.png', '.webm']
-    filter_func = partial(_is_valid_link, invalid_paths_regex=invalid_paths_regex, invalid_extensions=invalid_extensions)
     links_elts = reddit_link_elements_generator(disconnected)
-    filtered_links = ifilter(filter_func, links_elts)
+    filtered_links = (link for link in links_elts if _is_valid_link(link, invalid_paths_regex, invalid_extensions))
     docs_as_jsons = _get_json_doc_generator(filtered_links)
     return docs_as_jsons
 
@@ -87,17 +88,16 @@ def scrap(disconnected=False):
 def _get_json_doc_generator(link_elts):
     jsonpickle.set_encoder_options('simplejson', indent=4, ensure_ascii=False)  # set unicode and pretty-print
 
-    links_and_htmls = imap(lambda link: (link, _try_get_html(link.url)), link_elts)  # take successfully loaded html
-    filtered_links_html = ifilter(lambda (link, html): html is not None, links_and_htmls)
-    documents = starmap(Document, filtered_links_html)
-    docs_as_jsons = imap(jsonpickle.encode, documents)
+    links_and_htmls = ((link, _try_get_html(link.url)) for link in link_elts)
+    documents = (Document(link, html) for link, html in links_and_htmls if html is not None)
+    docs_as_jsons = (jsonpickle.encode(d) for d in documents)
     return docs_as_jsons
 
 
 def scrap_and_dump(destination_folder):
     """
     scrap and dump one document by file
-    :param destination_folde_convert_to_utf8r: folder must already exist
+    :param destination_folder: string of the folder path, folder must already exist
     """
     docs_as_jsons = scrap()
     _dump_json_docs(docs_as_jsons, destination_folder)
