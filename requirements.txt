@@ -6,3 +6,4 @@ pyasn1
 urllib3
 simplejson
 requests
+cchardet
