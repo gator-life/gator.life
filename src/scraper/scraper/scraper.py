@@ -1,5 +1,6 @@
 import codecs
 import datetime
+from time import sleep
 import re
 import os
 import socket
@@ -63,15 +64,6 @@ def _get_invalid_regex():
     invalid_paths_regex = re.compile('(' + '|'.join(invalid_paths) + ')')
     return invalid_paths_regex
 
-def _dump_json_docs(docs_as_json, destination_folder):
-    current_date = datetime.datetime.utcnow()
-    current_index = 0
-    for json_doc in docs_as_json:
-        filename = destination_folder + '/' + str(current_date) + '_' + str(current_index) + '.json'
-        with codecs.open(filename=filename, mode='w', encoding='utf-8') as dest_file:
-            dest_file.write(json_doc)
-        current_index += 1
-
 
 def scrap(disconnected=False):
     """
@@ -93,17 +85,29 @@ def _get_json_doc_generator(link_elts):
     docs_as_jsons = (jsonpickle.encode(d) for d in documents)
     return docs_as_jsons
 
+def _dump_json_docs(docs_as_json, destination_folder):
+    current_date = datetime.datetime.utcnow()
+    current_index = 0
+    for json_doc in docs_as_json:
+        filename = destination_folder + '/' + str(current_date) + '_' + str(current_index) + '.json'
+        with codecs.open(filename=filename, mode='w', encoding='utf-8') as dest_file:
+            dest_file.write(json_doc)
+        current_index += 1
 
 def scrap_and_dump(destination_folder):
     """
     scrap and dump one document by file
     :param destination_folder: string of the folder path, folder must already exist
     """
-    docs_as_jsons = scrap()
-    _dump_json_docs(docs_as_jsons, destination_folder)
-
-
-
-
-
-
+    # we need this high level loop to prevent crash because exceptions are thrown by internal reddit generator
+    # a generator cannot be continued after it raises an exception, so we have to make another generator and restart
+    # The observed exception was due to a deficient connection. We sleep to not flood logs (it won't come back immediately)
+    while True:
+        try:
+            docs_as_jsons = scrap()
+            _dump_json_docs(docs_as_jsons, destination_folder)
+        except Exception as exception:  # pylint: disable=broad-except
+            logging.error("The scraper crashed! starting it over...")
+            logging.exception(exception)
+            sleep(30)
+            
