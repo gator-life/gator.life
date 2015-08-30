@@ -5,82 +5,29 @@ import sys
 import subprocess
 import re
 
-PYLINT = 'pylint'
 BASE_PATH = sys.argv[1]
-OUTPUT_FILE = None
-EXTRA_LIBS = [
-]
-DISABLED_SETTINGS = [
-]
-IGNORE_PATTERNS = [
-]
-ADDITIONAL_PARAMETERS = [
-]
-CODE_RATING = re.compile(r'Your code has been rated at ([-0-9.]*)/10 \(previous run: ([-0-9.]*)/10\)')
+
 FILE_NAME = re.compile(r'[-a-zA-Z0-9_/]*\.py')
+CODE_RATING = re.compile('Your code has been rated at 10')
 
-def setup_paths():
-    old_pythonpath = None
-    old_path = os.environ['PATH']
-    for path in EXTRA_LIBS:
-        os.environ["PATH"] += os.pathsep + path
-    if not os.environ.get("PYTHONPATH"):
-        os.environ["PYTHONPATH"] = ''
-    else:
-        old_pythonpath = os.environ["PYTHONPATH"]
-    for path in EXTRA_LIBS:
-        os.environ["PYTHONPATH"] += os.pathsep + path
-    return old_path, old_pythonpath
+#NB: If you change it, you must also change it in .travis.yml
+COMMAND = 'pylint src/server/server src/scraper/scraper src/common/common -f parseable'
+TEST_COMMAND = 'pylint --rcfile=pylintrc_tests src/server/tests/*.py src/scraper/tests/*.py src/common/tests/*.py src/functests/*.py -f parseable'
 
 
-def reset_paths(old_path, old_pythonpath=None):
-    os.environ['PATH'] = old_path
-    if old_pythonpath:
-        os.environ['PYTHONPATH'] = old_pythonpath
-    else:
-        del os.environ['PYTHONPATH']
-
-
-def construct_command():
-    '''
-    command = [PYLINT, BASE_PATH, '-f', 'parseable']
-    if DISABLED_SETTINGS:
-        command.append('--disable=%s' % ','.join(DISABLED_SETTINGS))
-    if IGNORE_PATTERNS:
-        command.append('--ignore=%s' % ','.join(IGNORE_PATTERNS))
-    if ADDITIONAL_PARAMETERS:
-        command.extend(ADDITIONAL_PARAMETERS)'''
-    command = ['pylint',
-    'src/server/server', 'src/scraper/scraper', 'src/common/common',
-     '-f', 'parseable']
-    return command
-
-def construct_command_test():
-    command = ['pylint','--rcfile=pylintrc_tests',
-    'src/server/tests', 'src/scraper/tests', 'src/common/tests', 'src/functests',
-     '-f', 'parseable']
-    return command
-
-
-def run_pylint(test):
+def run_pylint(command):
     os.chdir(BASE_PATH)
-    if test:
-        command = construct_command_test()
-    else:
-        command = construct_command()
     print(command)
     try:
-        output = subprocess.check_output(command, stderr=subprocess.STDOUT)
+        output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         output = e.output
+        return 1, output
     match = CODE_RATING.search(output)
-    if not match or float(match.group(1)) < float(match.group(2)):
+    if not match:
         exitcode = 1
     else:
         exitcode = 0
-    if OUTPUT_FILE:
-        with open(OUTPUT_FILE, 'w') as fd:
-            fd.write(output)
     return exitcode, output
 
 
@@ -96,19 +43,28 @@ def add_file_paths(input):
 
 
 def main():
-    old_path, old_pythonpath = setup_paths()
 
-    exitcode, output = run_pylint(test=False)
+    exitcode, output = run_pylint(COMMAND)
     output = add_file_paths(output)
     print output
 
-    exitcode_test, output_test = run_pylint(test=True)
+    if exitcode != 0:
+        print 'FAIL...Try, try again'
+        sys.exit(1)
+
+    exitcode_test, output_test = run_pylint(TEST_COMMAND)
     output_test = add_file_paths(output_test)
     print output_test
 
-    reset_paths(old_path, old_pythonpath)
-    sys.exit(min(1,exitcode + exitcode_test))
+    if exitcode_test == 0:
+        print 'You nailed it boy !'
+        sys.exit(1)
+
+    print 'Fail (just the tests)'
+    sys.exit(1)
+
 
 
 if __name__ == '__main__':
     main()
+
