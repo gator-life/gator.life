@@ -15,3 +15,6 @@ http://stackoverflow.com/questions/28917534/pip-broken-on-ubuntu-14-4-after-pack
 sudo apt-get remove python-pip
 wget https://bootstrap.pypa.io/get-pip.py
 sudo python get-pip.py  
+
+problem with testbed
+http://stackoverflow.com/questions/27114470/gae-sdk-1-9-5-and-an-invalidcertificateexception

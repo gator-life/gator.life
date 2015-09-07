@@ -52,7 +52,6 @@ class ScraperTests(unittest.TestCase):
         fail_decode3 = 'http://happynicetimepeople.com/from-bloodsucking-cars-to-lava-spewing-spiders-syfy-makes-your-tv-dreams-come-true/'  # pylint: disable=line-too-long
         unicode_decode_error_exception = 'http://www.dezeen.com/2015/08/05/charles-holland-lost-relics-postmodernism-architecture-design/'  # pylint: disable=line-too-long
 
-
         urls = [
             french,  # ok
             russian,  # ok
