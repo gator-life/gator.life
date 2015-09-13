@@ -3,7 +3,8 @@ python:
 - '2.7'
 before_install:
 # SciPy stack dependencies
-- apt-get install python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose
+- sudo apt-get update -qq
+- sudo apt-get install -qq python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose
 install:
 - pip install -r requirements.txt
 - pip install -r test_requirements.txt
