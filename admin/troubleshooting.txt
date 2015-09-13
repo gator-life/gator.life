@@ -18,3 +18,7 @@ sudo python get-pip.py
 
 problem with testbed
 http://stackoverflow.com/questions/27114470/gae-sdk-1-9-5-and-an-invalidcertificateexception
+
+
+problem with gcloud local server with java 8 => choose java7
+http://askubuntu.com/questions/272187/setting-jdk-7-as-default
