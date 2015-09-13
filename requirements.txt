@@ -7,3 +7,4 @@ urllib3
 simplejson
 requests
 cchardet
+#gcloud
