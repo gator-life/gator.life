@@ -8,7 +8,7 @@ before_install:
 - export PATH=/home/travis/miniconda/bin:$PATH
 - conda update --yes conda
 install:
-- conda --name environment install --yes python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels
+- conda install --name environment --yes python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels
 - source activate environment
 - pip install -r requirements.txt
 - pip install -r test_requirements.txt
