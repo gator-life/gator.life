@@ -51,7 +51,6 @@ class TopicModeller(object):
 
         self.topics = topics
 
-        self.corpus = None
         self.lda = None
 
         if os.path.isfile(self.dictionary_file):
@@ -73,7 +72,6 @@ class TopicModeller(object):
 
         self.dictionary_words = set(self.dictionary.values())
 
-        self.corpus = None
         self.lda = None
 
     def feed(self, batched_documents):
