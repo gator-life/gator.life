@@ -11,7 +11,7 @@ FILE_NAME = re.compile(r'[-a-zA-Z0-9_/]*\.py')
 CODE_RATING = re.compile('Your code has been rated at 10')
 
 #NB: If you change it, you must also change it in .travis.yml
-COMMAND = 'pylint src/server/server src/scraper/scraper src/common/common src/topicmodeller/classify.py src/topicmodeller/initialize_model.py src/topicmodeller/topicmodeller -f parseable'
+COMMAND = 'pylint src/server/server src/scraper/scraper src/common/common src/topicmodeller/topicmodeller -f parseable'
 TEST_COMMAND = 'pylint --rcfile=pylintrc_tests src/server/tests/*.py src/scraper/tests/*.py src/common/tests/*.py src/functests/*.py src/topicmodeller/tests/*.py -f parseable'
 
 
