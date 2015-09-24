@@ -5,6 +5,8 @@ from boilerpipe.extract import Extractor
 from gensim import corpora, models
 from nltk.corpus import stopwords
 
+import codecs
+import datetime
 import jsonpickle
 import nltk
 import os
@@ -122,3 +124,32 @@ def _remove_stop_words(words):
 
 def _filter_latin_words(words):
     return [word for word in words if re.search(r'^[a-zA-Z\-\']*$', word) is not None]
+
+
+def initialize_model(documents_folder, tm_data_folder):
+    documents = RepeatableBatchedDocuments(documents_folder, 2000)
+
+    topicmodeller = TopicModeller(tm_data_folder, 128)
+
+    topicmodeller.initialize_dictionary(documents)
+    topicmodeller.feed(documents)
+
+
+def classify_and_dump_json(documents_folder, tm_data_folder, output_folder):
+    topicmodeller = TopicModeller(tm_data_folder, 128)
+
+    jsonpickle.set_encoder_options('simplejson', indent=4, ensure_ascii=False)
+
+    documents = RepeatableBatchedDocuments(documents_folder, 2000)
+
+    tm_documents = (TopicModellerDocument(scraper_document.link_element.url, topicmodeller.classify(document))
+                    for (batched_scraper_documents, batched_documents) in documents
+                    for (scraper_document, document) in zip(batched_scraper_documents, batched_documents))
+
+    date = datetime.datetime.utcnow()
+
+    for (i, tm_document) in enumerate(tm_documents):
+        json = jsonpickle.encode(tm_document)
+        filename = os.path.join(output_folder, str(date) + '_' + str(i) + '.json')
+        with codecs.open(filename=filename, mode='w', encoding='utf-8') as file_desc:
+            file_desc.write(json)
