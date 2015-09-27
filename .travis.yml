@@ -2,10 +2,11 @@ language: python
 python:
 - '2.7'
 before_install:
+- mkdir lib
 - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
 - chmod +x miniconda.sh
-- ./miniconda.sh -b
-- export PATH=/home/travis/miniconda/bin:$PATH
+- ./miniconda.sh -b -p ./lib/miniconda
+- export PATH=$(pwd)/lib/miniconda/bin:$PATH
 - conda update --yes conda
 install:
 - conda create -n environment --yes python=$TRAVIS_PYTHON_VERSION
@@ -16,7 +17,6 @@ install:
 - pip install -e src/scraper src/server src/common src/topicmodeller
 - pip install coveralls
 before_script:
-- mkdir lib
 - wget http://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.23.zip -nv
 - unzip -q google_appengine_1.9.23.zip -d lib
 - ./lib/google_appengine/dev_appserver.py ./src/server/server/ --skip_sdk_update_check &
