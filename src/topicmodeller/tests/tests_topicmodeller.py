@@ -9,14 +9,6 @@ import unittest
 
 
 class TopicModellerTests(unittest.TestCase):
-    tm_documents = [([], [[u'BattleBots', u'producers', u'definitely', u'looking', u'forward', u'feeling', u'confident',
-                           u'ABC', u'renew', u'series', u'second', u'season', u'seventh', u'count', u'five', u'seasons',
-                           u'ran', u'Comedy', u'Central', u'And', u'\'ve', u'definitely', u'given', u'thought', u'like',
-                           u'similarly', u'like', u'change'],
-                          [u'In', u'many', u'ways', u'an', u'open', u'ournament', u'helps', u'here', u'But', u'the',
-                           u'producers', u'encourage', u'competitors', u'to', u'find', u'loopholes', u'in', u'the',
-                           u'rules']])]
-
     def setUp(self):
         for tm_file in os.listdir('tm_data'):
             os.remove(os.path.join('tm_data', tm_file))
@@ -63,10 +55,18 @@ class TopicModellerTests(unittest.TestCase):
         self.assertTrue(not _filter_latin_words([u'1000']))
 
     def test_initialize_tm_dictionary(self):
-        topicmodeller = TopicModeller('tm_data', 2)
-        topicmodeller.initialize_dictionary(self.tm_documents)
+        tm_documents = [[[u'BattleBots', u'producers', u'definitely', u'looking', u'forward', u'feeling', u'confident',
+                          u'ABC', u'renew', u'series', u'second', u'season', u'seventh', u'count', u'five', u'seasons',
+                          u'ran', u'Comedy', u'Central', u'And', u'\'ve', u'definitely', u'given', u'thought', u'like',
+                          u'similarly', u'like', u'change'],
+                         [u'In', u'many', u'ways', u'an', u'open', u'ournament', u'helps', u'here', u'But', u'the',
+                          u'producers', u'encourage', u'competitors', u'to', u'find', u'loopholes', u'in', u'the',
+                          u'rules']]]
 
-        all_words = (word for (_, batched_document) in self.tm_documents
+        topicmodeller = TopicModeller()
+        topicmodeller.initialize(tm_documents, num_topics=2)
+
+        all_words = (word for batched_document in tm_documents
                      for document in batched_document
                      for word in document)
 
