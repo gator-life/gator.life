@@ -8,3 +8,6 @@ simplejson
 requests
 cchardet
 #gcloud
+gensim
+nltk
+boilerpipe
