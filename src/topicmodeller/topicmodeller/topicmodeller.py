@@ -52,15 +52,21 @@ class TopicModeller(object):
         return self.lda[self.dictionary.doc2bow(document)]
 
     def load(self, model_data_folder):
-        if os.path.isfile(self._dictionary_file_path(model_data_folder)):
-            self.dictionary = corpora.Dictionary.load(self._dictionary_file_path(model_data_folder))
+        dictionary_file_path = self._dictionary_file_path(model_data_folder)
+        if os.path.isfile(dictionary_file_path):
+            self.dictionary = corpora.Dictionary.load(dictionary_file_path)
             # dictionary.values() is a list, looking into a list is an O(n) operation.
             # To avoid poor performances on _filter_document method, dictionary words
             # are "cached" on a set (O(1)).
             self.dictionary_words = set(self.dictionary.values())
+        else:
+            raise IOError(u'Dictionary file does not exists : ' + dictionary_file_path)
 
-        if os.path.isfile(self._lda_file_path(model_data_folder)):
-            self.lda = models.LdaModel.load(self._lda_file_path(model_data_folder))
+        lda_file_path = self._lda_file_path(model_data_folder)
+        if os.path.isfile(lda_file_path):
+            self.lda = models.LdaModel.load(lda_file_path)
+        else:
+            raise IOError(u'Lda model file does not exists : ' + lda_file_path)
 
     def save(self, model_data_folder):
         self.dictionary.save(self._dictionary_file_path(model_data_folder))
