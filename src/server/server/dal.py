@@ -2,7 +2,7 @@
 DAL (Data Access Layer) module
 abstract database scheme and ndb API to communicate with the rest of the package through pure (not ndb) Python objects
 """
-from appengine.ext import ndb
+from google.appengine.ext import ndb
 import dbentities as db  # pylint: disable=relative-import
 # problem (to solve) with app engine: server is not seen as a package by GAE
 # so you can't do proper relative import (from . import dbentities) as expected by pylint / pep8

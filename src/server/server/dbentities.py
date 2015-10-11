@@ -2,8 +2,7 @@
 NDB datastore entities (DB scheme)
 this module should not be included except from dal.py
 """
-from appengine.ext import ndb
-
+from google.appengine.ext import ndb
 
 class Document(ndb.Model):
     url = ndb.StringProperty(indexed=False, required=True)  # NB: url cannot be the key because it's 500 bytes max
