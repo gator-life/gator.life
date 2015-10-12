@@ -133,7 +133,7 @@ def _remove_stop_words(words):
 
 
 def _filter_latin_words(words):
-    return [word for word in words if re.search(r'^[a-zA-Z\-\']*$', word) is not None]
+    return [word for word in words if re.search(r'^[a-zA-Z]*$', word) is not None]
 
 
 def _json_sd_file_to_sd_and_tmd(file_path):
@@ -142,7 +142,10 @@ def _json_sd_file_to_sd_and_tmd(file_path):
 
     scraper_document = _decode(file_content)
 
-    document = _clean(_word_tokenize(_readable_document(scraper_document.html_content)))
+    word_tokenized_document = _word_tokenize(_readable_document(scraper_document.html_content))
+    lowercase_document = [word.lower() for word in word_tokenized_document]
+
+    document = _clean(lowercase_document)
 
     return (scraper_document, document)
 
