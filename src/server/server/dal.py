@@ -101,6 +101,7 @@ def init_user_dummy(user_id):
 
     new_user.put()
 
+
 # should be deleted, just to mock input from scraper/learner
 def init_features_dummy(feature_set_id):
     feature_names = ['sport', 'trading', 'bmw', 'c++']

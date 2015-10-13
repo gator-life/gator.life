@@ -4,6 +4,7 @@ this module should not be included except from dal.py
 """
 from google.appengine.ext import ndb
 
+
 class Document(ndb.Model):
     url = ndb.StringProperty(indexed=False, required=True)  # NB: url cannot be the key because it's 500 bytes max
     title = ndb.StringProperty(indexed=False, required=True)
@@ -23,12 +24,14 @@ class UserDocument(ndb.Model):
     def make(document_key, grade):
         return UserDocument(document_key=document_key, grade=grade)
 
+
 class FeatureDescription(ndb.Model):
     name = ndb.StringProperty(indexed=False, required=True)
 
     @staticmethod
     def make(name):
         return FeatureDescription(name=name)
+
 
 class FeatureSet(ndb.Model):
     features = ndb.StructuredProperty(FeatureDescription, indexed=False, repeated=True)
@@ -50,6 +53,7 @@ class FeatureVector(ndb.Model):
     def make(feature_set_id, vector):
         return FeatureVector(feature_set_key=ndb.Key(FeatureSet, feature_set_id), vector=vector)
 
+
 class User(ndb.Model):
     google_user_id = ndb.StringProperty(indexed=True, required=False)
     user_documents = ndb.StructuredProperty(UserDocument, repeated=True)
@@ -62,6 +66,3 @@ class User(ndb.Model):
     @staticmethod
     def get(user_id):
         return User.get_by_id(user_id)
-
-
-

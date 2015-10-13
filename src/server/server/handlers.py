@@ -1,12 +1,14 @@
 import webapp2
 
-import dal # pylint: disable=relative-import
+import dal  # pylint: disable=relative-import
 import jinjaenvironment # pylint: disable=relative-import
+
 
 class Link(object):
     def __init__(self, link, text):
         self.link = link
         self.text = text
+
 
 class Feature(object):
     def __init__(self, label, value):
@@ -14,12 +16,10 @@ class Feature(object):
         self.value = value
 
 
-
 class LoginPageHandler(webapp2.RequestHandler):
     def get(self):
         response = jinjaenvironment.render_template(html_file='login.html', attributes_dict={})
         self.response.write(response)
-
 
 
 class HomePageHandler(webapp2.RequestHandler):
@@ -31,7 +31,6 @@ class HomePageHandler(webapp2.RequestHandler):
             dal.init_user_dummy(email)
             user = dal.get_user(email)
         return user
-
 
     def _get_or_create_features(self, user):
         source = self.request.get('source')
@@ -51,8 +50,6 @@ class HomePageHandler(webapp2.RequestHandler):
 
         return feature_vector
 
-
-
     def post(self):
         user = self._get_or_create_user()
         feature_vector = self._get_or_create_features(user)
@@ -69,5 +66,3 @@ class HomePageHandler(webapp2.RequestHandler):
         response = jinjaenvironment.render_template(html_file='index.html', attributes_dict=template_values)
 
         self.response.write(response)
-
-

@@ -6,6 +6,7 @@ from google.appengine.ext import testbed
 import server.dal as dal
 import server.dbentities as db
 
+
 class DalTests(unittest.TestCase):
     def setUp(self):
         # standard set of calls to initialize unit test ndb environment
@@ -14,7 +15,6 @@ class DalTests(unittest.TestCase):
         self.testbed.init_datastore_v3_stub()
         self.testbed.init_memcache_stub()
         ndb.get_context().clear_cache()
-
 
     def tearDown(self):
         self.testbed.deactivate()
@@ -27,10 +27,8 @@ class DalTests(unittest.TestCase):
         self.assertEquals('desc1', feature_set[0])
         self.assertEquals('desc2', feature_set[1])
 
-
     def test_get_user_with_unknown_user_should_return_none(self):
         self.assertIsNone(dal.get_user('missing_user'))
-
 
     def test_save_then_get_user_should_be_equals(self):
         # ------ init database -----------
@@ -57,16 +55,15 @@ class DalTests(unittest.TestCase):
         # --------------assert equality ------------------
         self.assertEquals(expected_user.email, result_user.email)
 
-        expected_feature_vector = expected_user.feature_vector
-        result_feature_vector = result_user.feature_vector
-        self.assertEquals(expected_feature_vector.feature_set_id, result_feature_vector.feature_set_id)
-        self.assertEquals(expected_feature_vector.vector, result_feature_vector.vector)
-        self.assertEquals(expected_feature_vector.labels, result_feature_vector.labels)
+        expected_feat_vec = expected_user.feature_vector
+        result_feat_vec = result_user.feature_vector
+        self.assertEquals(expected_feat_vec.feature_set_id, result_feat_vec.feature_set_id)
+        self.assertEquals(expected_feat_vec.vector, result_feat_vec.vector)
+        self.assertEquals(expected_feat_vec.labels, result_feat_vec.labels)
 
         for (expected, result) in itertools.izip_longest(expected_user.user_docs, result_user.user_docs):
             self.assertEquals(expected.grade, result.grade)
             self.assertEquals(expected.document.title, result.document.title)
-
 
 
 if __name__ == '__main__':

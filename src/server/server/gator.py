@@ -8,28 +8,20 @@ import dal  # pylint: disable=relative-import
 
 CGI_VARIABLE_SERVER_SOFTWARE = 'SERVER_SOFTWARE'
 
+
 def is_dev_env_server():
     return os.environ.get(CGI_VARIABLE_SERVER_SOFTWARE, '').startswith('Dev')
 
 DEBUG_MODE = is_dev_env_server()
-
-
 
 ROUTING = [
     ('/', handlers.LoginPageHandler),
     ('/home', handlers.HomePageHandler)
 ]
 
-
 dal.init_user_dummy(dal.NEW_USER_ID)
 dal.init_features_dummy(dal.REF_FEATURE_SET)
 
 # 'app' name is the convention for webapp. It must match the suffix of the 'script' directive in app.yaml file
 # cf. https://cloud.google.com/appengine/docs/python/config/appconfig
-app = webapp2.WSGIApplication(ROUTING, debug=DEBUG_MODE) #pylint: disable=invalid-name
-
-
-
-
-
-
+app = webapp2.WSGIApplication(ROUTING, debug=DEBUG_MODE)  # pylint: disable=invalid-name

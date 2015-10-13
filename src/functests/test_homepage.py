@@ -21,11 +21,10 @@ class NewVisitorTests(unittest.TestCase):
         self.assertEqual('google.com', links[0].text)
         self.assertEqual('gator.life', links[1].text)
 
-        # kevin clicks on google.com and wait to go there
+        # kevin clicks on google.com and wait to go there, if it worked, 'google' is the tab title
         google_link = links[0]
         google_link.click()
         self.assertEqual("Google", self.browser.title)
-
 
     def test_save_features(self):
 
@@ -41,7 +40,6 @@ class NewVisitorTests(unittest.TestCase):
         trading_input_elt_after_save = self.browser.find_element_by_name('trading')
         result_trading_feature_value = trading_input_elt_after_save.get_attribute('value')
         self.assertEquals('0.99', result_trading_feature_value)
-
 
     def test_login_kevin_should_go_to_homepage(self):
         # Kevin connects to the site
