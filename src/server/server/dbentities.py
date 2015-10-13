@@ -21,20 +21,48 @@ class UserDocument(ndb.Model):
     grade = ndb.FloatProperty(indexed=False, required=True)
 
     @staticmethod
-    def make(document, grade):
-        return UserDocument(document_key=document.key, grade=grade)
+    def make(document_key, grade):
+        return UserDocument(document_key=document_key, grade=grade)
+
+
+class FeatureDescription(ndb.Model):
+    name = ndb.StringProperty(indexed=False, required=True)
+
+    @staticmethod
+    def make(name):
+        return FeatureDescription(name=name)
+
+
+class FeatureSet(ndb.Model):
+    features = ndb.StructuredProperty(FeatureDescription, indexed=False, repeated=True)
+
+    @staticmethod
+    def make(feature_set_id, feature_descriptions):
+        return FeatureSet(id=feature_set_id, features=feature_descriptions)
+
+    @staticmethod
+    def get(feature_set_id):
+        return FeatureSet.get_by_id(feature_set_id)
+
+
+class FeatureVector(ndb.Model):
+    vector = ndb.FloatProperty(indexed=False, repeated=True)
+    feature_set_key = ndb.KeyProperty(kind=FeatureSet, indexed=False, required=True)
+
+    @staticmethod
+    def make(feature_set_id, vector):
+        return FeatureVector(feature_set_key=ndb.Key(FeatureSet, feature_set_id), vector=vector)
 
 
 class User(ndb.Model):
     google_user_id = ndb.StringProperty(indexed=True, required=False)
     user_documents = ndb.StructuredProperty(UserDocument, repeated=True)
+    feature_vector = ndb.StructuredProperty(FeatureVector, repeated=False, required=False)
 
     @staticmethod
-    def make(user_id, google_user_id, user_documents):
-        return User(id=user_id, google_user_id=google_user_id, user_documents=user_documents)
+    def make(user_id, google_user_id, user_documents, feature_vector):
+        return User(id=user_id, google_user_id=google_user_id, user_documents=user_documents, feature_vector=feature_vector)
 
     @staticmethod
     def get(user_id):
         return User.get_by_id(user_id)
-
-

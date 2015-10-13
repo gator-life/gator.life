@@ -17,7 +17,7 @@ install:
 before_script:
 - wget http://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.23.zip -nv
 - unzip -q google_appengine_1.9.23.zip -d lib
-- ./lib/google_appengine/dev_appserver.py ./src/server/server/ --skip_sdk_update_check &
+- ./lib/google_appengine/dev_appserver.py ./src/server/server/ --skip_sdk_update_check --clear_datastore yes &
 - sleep 3
 script:
 - py.test src

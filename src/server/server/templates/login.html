@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+<head>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+    <title>Gator Life !</title>
+</head>
+<div>
+    <form action="/home" method="post">
+        <h1>Login</h1>
+        <input type="text" name="email" value="" placeholder="Email"/>
+        <input type="hidden" name="source" value="login" />
+        <button name="login_button" type="submit">login</button>
+    </form>
+</div>
+</html>
+{% endautoescape %}

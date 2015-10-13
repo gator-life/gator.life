@@ -2,16 +2,29 @@
 {% autoescape true %}
 <html>
 <head>
-  <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
-  <title>Gator Life !</title>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+    <title>Gator Life !</title>
 </head>
-  <body>
-    <h1 name="title">
-Gator.Life, the best of the web just for you !
-    </h1>
+<body>
+<h1 name="title">
+    Gator.Life, the best of the web just for you {{email}}!
+</h1>
+<P>
     {% for elt in links %}
-        <a name="link" href="{{ elt.link }}">{{ elt.text }}</a>
+    <a name="link" href="{{ elt.link }}">{{ elt.text }}</a><br/>
     {% endfor %}
-  </body>
+</P>
+<p>
+<form method="post">
+    {% for elt in features %}
+    <br>{{ elt.label }}: <input type="number" value="{{ elt.value }}" name="{{ elt.label }}" step="0.01" min="0" max="1" /></br>
+    {% endfor %}
+    <input type="hidden" name="source" value="save_features" />
+    <input type="hidden" name="email" value="{{email}}" />
+    <input type="hidden" name="feature_set_id" value="{{feature_set_id}}"/>
+    <button type="submit" name="save_features_button">save features</button>
+</form>
+</p>
+</body>
 </html>
 {% endautoescape %}
