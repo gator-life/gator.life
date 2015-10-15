@@ -7,7 +7,7 @@ urllib3
 simplejson
 requests
 cchardet
-#gcloud
 gensim
 nltk
 boilerpipe
+gcloud
