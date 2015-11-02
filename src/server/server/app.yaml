@@ -10,6 +10,10 @@ handlers:
 - url: /.*
   script: gator.app
 
+
+builtins:
+- remote_api: on
+
 libraries:
 - name: webapp2
   version: latest
