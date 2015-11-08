@@ -9,12 +9,6 @@ import unittest
 
 
 class TopicModellerTests(unittest.TestCase):
-    def setUp(self):
-        if not os.path.isdir('tm_data'):
-            os.makedirs('tm_data')
-        for tm_file in os.listdir('tm_data'):
-            os.remove(os.path.join('tm_data', tm_file))
-
     def test_readable_document(self):
         directory = os.path.dirname(os.path.abspath(__file__))
         html_content = _decode(open(os.path.join(directory, 'scraper_documents/2015-08-01 18:00:22.926317_8.json'))
