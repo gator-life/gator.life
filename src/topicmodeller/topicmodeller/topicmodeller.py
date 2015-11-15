@@ -169,9 +169,9 @@ def classify_and_dump_json(documents_folder, tm_data_folder, output_folder):
     for (i, file_name) in enumerate(os.listdir(documents_folder)):
         (scraper_document, document) = _json_sd_file_to_sd_and_tmd(os.path.join(documents_folder, file_name))
 
-        # #pylint: disable=E1101
+        # pylint: disable=E1101
         json = jsonpickle.encode(TopicModellerDocument(scraper_document.link_element.url, topicmodeller.classify(document)))
-        # #pylint: enable=E1101
+        # pylint: enable=E1101
         filename = os.path.join(output_folder, str(date) + '_' + str(i) + '.json')
         with codecs.open(filename=filename, mode='w', encoding='utf-8') as file_desc:
             file_desc.write(json)

@@ -10,19 +10,21 @@ import unittest
 
 class TopicModellerTests(unittest.TestCase):
     def setUp(self):
-        self.directory = os.path.dirname(os.path.abspath(__file__))
-        self.tmp_directory = os.path.join(self.directory, 'tmp')
-
-        for tm_file in os.listdir(self.tmp_directory):
-            os.remove(os.path.join(self.tmp_directory, tm_file))
+        if not os.path.isdir('tm_data'):
+            os.makedirs('tm_data')
+        for tm_file in os.listdir('tm_data'):
+            os.remove(os.path.join('tm_data', tm_file))
 
     def test_readable_document(self):
-        doc_file_path = os.path.join(self.directory, 'scraper_documents/2015-08-01 18:00:22.926317_8.json')
-        html_content = _decode(open(doc_file_path).read()).html_content
+        directory = os.path.dirname(os.path.abspath(__file__))
+        html_content = _decode(open(os.path.join(directory, 'scraper_documents/2015-08-01 18:00:22.926317_8.json'))
+                               .read()).html_content
         readable_document = _readable_document(html_content)
 
-        self.assertTrue(u'just aired its thrilling, flame thrower-filled, metal shrapnel-rich' in readable_document)
-        self.assertTrue(u'1.) Continue to emphasize the competition as a sport.' in readable_document)
+        self.assertTrue(u'just aired its thrilling, flame thrower-filled, metal shrapnel-rich'
+                        in readable_document)
+        self.assertTrue(u'1.) Continue to emphasize the competition as a sport.'
+                        in readable_document)
 
     def test_word_tokenize(self):
         document = u"\"BattleBots\" producers are definitely looking forward and feeling confident that ABC will renew " \
@@ -63,14 +65,14 @@ class TopicModellerTests(unittest.TestCase):
                           u'producers', u'encourage', u'competitors', u'to', u'find', u'loopholes', u'in', u'the',
                           u'rules']]]
 
-        topic_modeller = TopicModeller()
-        topic_modeller.initialize(tm_documents, num_topics=2)
+        topicmodeller = TopicModeller()
+        topicmodeller.initialize(tm_documents, num_topics=2)
 
         all_words = (word for batched_document in tm_documents
                      for document in batched_document
                      for word in document)
 
-        self.assertTrue(all(word in topic_modeller.dictionary.values() for word in all_words))
+        self.assertTrue(all(word in topicmodeller.dictionary.values() for word in all_words))
 
 
 if __name__ == '__main__':

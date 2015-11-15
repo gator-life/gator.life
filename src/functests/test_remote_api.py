@@ -16,7 +16,6 @@ class RemoteAPiTests(unittest.TestCase):
             credential_file=None,
             credentials=None)
 
-        #TODO we should read 33001 from a environment variable or as input, matches travis.yml
         remote_api_stub.ConfigureRemoteApiForOAuth(
             'localhost:33001', '/_ah/remote_api', oauth2_parameters=auth2, secure=False)
 
