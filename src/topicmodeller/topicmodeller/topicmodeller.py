@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from boilerpipe.extract import Extractor
+from common.topicmodellerstructs import TopicModellerDocument
 from gensim import corpora, models
 from nltk.corpus import stopwords
 
@@ -11,12 +12,6 @@ import jsonpickle
 import nltk
 import os
 import re
-
-
-class TopicModellerDocument(object):
-    def __init__(self, url, topics):
-        self.url = url
-        self.topics = topics
 
 
 class RepeatableBatchedDocuments(object):
@@ -44,12 +39,28 @@ class TopicModeller(object):
 
         self.lda = None
 
+        self.topics = None
+
     def initialize(self, batched_documents, num_topics):
         self._initialize_dictionary(batched_documents)
+        self._cache_dictionary_words()
+
         self._feed(batched_documents, num_topics)
+        self._cache_topics()
 
     def classify(self, document):
-        return self.lda[self.dictionary.doc2bow(document)]
+        classification = dict(
+            # weight.item() : from numpy float64 object to python native float.
+            ((topic_id, weight.item()) for (topic_id, weight) in self.lda[self.dictionary.doc2bow(document)])
+        )
+
+        # Generate a vector of [(topic_id, weight) | for each topic_id in topics]
+        vector = []
+        for (topic_id, _) in self.topics:
+            weight = classification.get(topic_id, 0)
+            vector.append((topic_id, weight))
+
+        return vector
 
     def load(self, model_data_folder):
         dictionary_file_path = self._dictionary_file_path(model_data_folder)
@@ -67,6 +78,9 @@ class TopicModeller(object):
             self.lda = models.LdaModel.load(lda_file_path)
         else:
             raise IOError(u'Lda model file does not exists : ' + lda_file_path)
+
+        self._cache_dictionary_words()
+        self._cache_topics()
 
     def save(self, model_data_folder):
         self.dictionary.save(self._dictionary_file_path(model_data_folder))
@@ -86,8 +100,6 @@ class TopicModeller(object):
         for documents in batched_documents:
             corpora.Dictionary.add_documents(self.dictionary, documents)
 
-        self.dictionary_words = set(self.dictionary.values())
-
     def _feed(self, batched_documents, num_topics):
         self.lda = None
 
@@ -105,6 +117,13 @@ class TopicModeller(object):
     def _filter_document(self, document):
         # We want to keep only known words (those on our dictionary)
         return [word for word in document if word in self.dictionary_words]
+
+    def _cache_dictionary_words(self):
+        self.dictionary_words = set(self.dictionary.values())
+
+    def _cache_topics(self):
+        self.topics = [(i, [word for (_, word) in self.lda.show_topic(topicid=i, topn=1)])
+                       for i in range(self.lda.num_topics)]
 
 
 # From JSON to scraper.Document object
@@ -169,9 +188,11 @@ def classify_and_dump_json(documents_folder, tm_data_folder, output_folder):
     for (i, file_name) in enumerate(os.listdir(documents_folder)):
         (scraper_document, document) = _json_sd_file_to_sd_and_tmd(os.path.join(documents_folder, file_name))
 
-        # pylint: disable=E1101
-        json = jsonpickle.encode(TopicModellerDocument(scraper_document.link_element.url, topicmodeller.classify(document)))
-        # pylint: enable=E1101
+        # pylint: disable=no-member
+        json = jsonpickle.encode(TopicModellerDocument(scraper_document.link_element.origin_info.title,
+                                                       scraper_document.link_element.url,
+                                                       topicmodeller.classify(document)))
+        # pylint: enable=no-member
         filename = os.path.join(output_folder, str(date) + '_' + str(i) + '.json')
         with codecs.open(filename=filename, mode='w', encoding='utf-8') as file_desc:
             file_desc.write(json)
