@@ -8,7 +8,7 @@ import os
 
 
 def learn(documents_folder, min_grade):
-    users = get_users()
+    users = _get_users()
 
     for file_name in os.listdir(documents_folder):
         file_path = os.path.join(documents_folder, file_name)
@@ -16,14 +16,14 @@ def learn(documents_folder, min_grade):
 
         topicmodeller_document = jsonpickle.decode(file_content)
 
-        document = Document(topicmodeller_document.url, topicmodeller_document.title, None)
+        document = Document(topicmodeller_document.url, topicmodeller_document.title, db_key=None)
 
-        save_document(document)
+        _save_document(document)
 
-        learn_for_users(users, min_grade, document, topicmodeller_document.topics)
+        _learn_for_users(users, min_grade, document, topicmodeller_document.topics)
 
 
-def learn_for_users(users, min_grade, document, topics):
+def _learn_for_users(users, min_grade, document, topics):
     weights = [weight for (_, weight) in topics]
     for user in users:
         grade = sum(a * b for (a, b) in
@@ -33,17 +33,17 @@ def learn_for_users(users, min_grade, document, topics):
 
 
 # Data Access Layer : Will be deleted
-Documents = [] # pylint: disable=C0103
-Users = [] # pylint: disable=C0103
+Documents = [] # pylint: disable=invalid-name
+Users = [] # pylint: disable=invalid-name
 
 
-def save_user(user):
+def _save_user(user):
     Users.append(user)
 
 
-def get_users():
+def _get_users():
     return Users
 
 
-def save_document(document):
+def _save_document(document):
     Documents.append(document)
