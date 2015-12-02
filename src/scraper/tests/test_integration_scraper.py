@@ -1,9 +1,10 @@
 # coding=utf-8
 
 import unittest
-import vcr
-from scraper.scraper import scrap
 import os
+import vcr
+
+from scraper.scraper import scrap
 
 class ScraperIntegrationTests(unittest.TestCase):
 
