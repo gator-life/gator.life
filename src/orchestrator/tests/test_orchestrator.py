@@ -6,8 +6,8 @@ import unittest
 import vcr
 import jsonpickle
 
-from common.scraperstructs import Document, LinkElement
 from orchestrator.orchestrator import _to_json
+from common.scraperstructs import Document, LinkElement
 from scraper.scraper import _get_doc_generator
 
 class OrchestratorTests(unittest.TestCase):
