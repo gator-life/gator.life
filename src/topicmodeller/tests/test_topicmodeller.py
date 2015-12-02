@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from topicmodeller.topicmodeller import TopicModeller, _filter_latin_words, _readable_document, \
-    _remove_stop_words, _word_tokenize
-
-import jsonpickle
 import os
 import unittest
+import jsonpickle
+
+from topicmodeller.topicmodeller import TopicModeller, _filter_latin_words, _readable_document, \
+    _remove_stop_words, _word_tokenize
 
 
 class TopicModellerTests(unittest.TestCase):

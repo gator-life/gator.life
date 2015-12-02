@@ -3,11 +3,11 @@
 
 import codecs
 import datetime
-import jsonpickle
 import logging
+from time import sleep
+import jsonpickle
 
 from learner.learner import learn_for_users
-from time import sleep
 from scraper.scraper import scrap
 from server.frontendstructs import Document
 from topicmodeller.topicmodeller import TopicModeller, classify

@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import unittest
+
 from learner.learner import learn_for_users
 from server.frontendstructs import Document, FeatureVector, User
 
-import unittest
 
 class LearnerTests(unittest.TestCase):
     @classmethod

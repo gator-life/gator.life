@@ -1,10 +1,10 @@
 # coding=utf-8
 
-import jsonpickle
 import logging
 import os
 import unittest
 import vcr
+import jsonpickle
 
 from common.scraperstructs import Document, LinkElement
 from orchestrator.orchestrator import _to_json

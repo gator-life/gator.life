@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from boilerpipe.extract import Extractor
-from common.topicmodellerstructs import TopicModellerDocument
-from gensim import corpora, models
-from nltk.corpus import stopwords
-
-import nltk
 import os
 import re
+import nltk
+from nltk.corpus import stopwords
+
+from boilerpipe.extract import Extractor
+from gensim import corpora, models
+from common.topicmodellerstructs import TopicModellerDocument
 
 
 class TopicModellableDocuments(object):

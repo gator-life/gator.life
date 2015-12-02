@@ -3,9 +3,9 @@ import os
 import socket
 import ssl
 import logging
+import urlparse
 import cchardet
 import requests
-import urlparse
 
 from .reddit import reddit_link_elements_generator
 from common.scraperstructs import Document
