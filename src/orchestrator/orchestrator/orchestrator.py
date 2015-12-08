@@ -3,6 +3,7 @@
 
 import codecs
 import datetime
+import logging
 from time import sleep
 import jsonpickle
 
