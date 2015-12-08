@@ -3,7 +3,6 @@
 
 import codecs
 import datetime
-import logging
 from time import sleep
 import jsonpickle
 
@@ -13,16 +12,15 @@ from server.frontendstructs import Document
 from topicmodeller.topicmodeller import TopicModeller, classify
 
 
-logging.basicConfig(format=u'%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO, ilename='orchestrator.log')
-
-
-def _to_json(document):
+def _setup_env():
     # set unicode and pretty-print
     jsonpickle.set_encoder_options('simplejson', indent=4, ensure_ascii=False)
+
+def _to_json(document):
     return jsonpickle.encode(document)
 
 
-def _dump_json_document(document, folder):
+def _dump_as_json_document(document, folder):
     json = _to_json(document)
     filename = folder + '/' + str(datetime.datetime.utcnow()) + '.json'
     with codecs.open(filename=filename, mode='w', encoding='utf-8') as file_desc:
@@ -30,6 +28,8 @@ def _dump_json_document(document, folder):
 
 
 def orchestrate(scraper_output_folder, tm_data_folder, tm_output_folder):
+    _setup_env()
+
     topicmodeller = TopicModeller()
     topicmodeller.load(tm_data_folder)
 
@@ -45,12 +45,12 @@ def orchestrate(scraper_output_folder, tm_data_folder, tm_output_folder):
         try:
             for scraper_document in scrap():
                 # Dump scraper document
-                _dump_json_document(scraper_document, folder=scraper_output_folder)
+                _dump_as_json_document(scraper_document, folder=scraper_output_folder)
 
                 # Classify the document
                 topicmodeller_document = classify(topicmodeller, scraper_document)
                 # Dump topic modeller document
-                _dump_json_document(topicmodeller_document, folder=tm_output_folder)
+                _dump_as_json_document(topicmodeller_document, folder=tm_output_folder)
 
                 document = Document(topicmodeller_document.url, topicmodeller_document.title, db_key=None)
                 # TODO Save document in DB pylint: disable=fixme

@@ -6,13 +6,14 @@ import unittest
 import vcr
 import jsonpickle
 
-from orchestrator.orchestrator import _to_json
+from orchestrator.orchestrator import _to_json, _setup_env
 from common.scraperstructs import Document, LinkElement
 from scraper.scraper import _get_doc_generator
 
 class OrchestratorTests(unittest.TestCase):
 
     def test_get_json_doc_generator(self):
+        _setup_env()
 
         logging.disable('WARNING')  # this test raise logged exceptions, we disable it to not pollute console output
 
