@@ -16,7 +16,7 @@ class LearnerTests(unittest.TestCase):
 
     @classmethod
     def create_document(cls):
-        return Document(url=u'', title=u'', db_key=0)
+        return Document.make_from_scratch(url=u'', title=u'', summary=None)
 
     def create_users_documents_and_learn(self, users_feature_vector, min_grade, documents_topics):
         users = [self.create_user(feature_vector) for feature_vector in users_feature_vector]

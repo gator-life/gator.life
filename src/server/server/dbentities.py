@@ -25,6 +25,17 @@ class UserDocument(ndb.Model):
         return UserDocument(document_key=document_key, grade=grade)
 
 
+class UserDocumentSet(ndb.Model):
+    user_documents = ndb.StructuredProperty(UserDocument, indexed=False, repeated=True)
+
+    @staticmethod
+    def make():
+        return UserDocumentSet(user_documents=[])
+
+    def set_user_documents(self, user_documents):
+        self.user_documents = user_documents
+
+
 class FeatureDescription(ndb.Model):
     name = ndb.StringProperty(indexed=False, required=True)
 
@@ -56,12 +67,16 @@ class FeatureVector(ndb.Model):
 
 class User(ndb.Model):
     google_user_id = ndb.StringProperty(indexed=True, required=False)
-    user_documents = ndb.StructuredProperty(UserDocument, repeated=True)
-    feature_vector = ndb.StructuredProperty(FeatureVector, repeated=False, required=False)
+    user_document_set_key = ndb.KeyProperty(UserDocumentSet, indexed=False, required=True)
+    feature_vector_key = ndb.KeyProperty(FeatureVector, repeated=False, required=True)
 
     @staticmethod
-    def make(user_id, google_user_id, user_documents, feature_vector):
-        return User(id=user_id, google_user_id=google_user_id, user_documents=user_documents, feature_vector=feature_vector)
+    def make(user_id, google_user_id, user_document_set_key, feature_vector_key):
+        return User(
+            id=user_id,
+            google_user_id=google_user_id,
+            user_document_set_key=user_document_set_key,
+            feature_vector_key=feature_vector_key)
 
     @staticmethod
     def get(user_id):
