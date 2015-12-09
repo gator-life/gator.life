@@ -7,7 +7,7 @@ import logging
 from time import sleep
 import jsonpickle
 
-from learner.learner import learn_for_users
+from learner.learner import compute_user_doc_matching
 from scraper.scraper import scrap
 from server.frontendstructs import Document
 from topicmodeller.topicmodeller import TopicModeller, classify
@@ -16,6 +16,7 @@ from topicmodeller.topicmodeller import TopicModeller, classify
 def _setup_env():
     # set unicode and pretty-print
     jsonpickle.set_encoder_options('simplejson', indent=4, ensure_ascii=False)
+
 
 def _to_json(document):
     return jsonpickle.encode(document)
@@ -31,11 +32,11 @@ def _dump_as_json_document(document, folder):
 def orchestrate(scraper_output_folder, tm_data_folder, tm_output_folder):
     _setup_env()
 
-    topicmodeller = TopicModeller()
-    topicmodeller.load(tm_data_folder)
+    topic_modeller = TopicModeller()
+    topic_modeller.load(tm_data_folder)
 
     # TODO Get users pylint: disable=fixme
-    users = []
+    user_feature_vectors = []
 
     # We need this high level loop to prevent crashes for whatever reason.
     #
@@ -49,15 +50,18 @@ def orchestrate(scraper_output_folder, tm_data_folder, tm_output_folder):
                 _dump_as_json_document(scraper_document, folder=scraper_output_folder)
 
                 # Classify the document
-                topicmodeller_document = classify(topicmodeller, scraper_document)
+                topic_modeller_document = classify(topic_modeller, scraper_document)
                 # Dump topic modeller document
-                _dump_as_json_document(topicmodeller_document, folder=tm_output_folder)
+                _dump_as_json_document(topic_modeller_document, folder=tm_output_folder)
 
-                document = Document(topicmodeller_document.url, topicmodeller_document.title, db_key=None)
+                doc = Document.make_from_scratch( # pylint: disable=unused-variable
+                    topic_modeller_document.url, topic_modeller_document.title, summary=None)
                 # TODO Save document in DB pylint: disable=fixme
 
-                # Learn for users
-                learn_for_users(users, document, topicmodeller_document.topics, min_grade=0.5)
+                user_doc_matching_by_user = compute_user_doc_matching(  # pylint: disable=unused-variable
+                    user_feature_vectors=user_feature_vectors,
+                    document_feature_vector=[topic_value for (_, topic_value) in topic_modeller_document.topics],
+                    min_grade=0.5)
 
                 # TODO Save the updated user in DB (return only updated users ?) pylint: disable=fixme
 

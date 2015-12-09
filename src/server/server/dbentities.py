@@ -5,6 +5,9 @@ this module should not be included except from dal.py
 from google.appengine.ext import ndb
 
 
+
+# ----------- entities modified by backend -----------
+
 class Document(ndb.Model):
     url = ndb.StringProperty(indexed=False, required=True)  # NB: url cannot be the key because it's 500 bytes max
     title = ndb.StringProperty(indexed=False, required=True)
@@ -64,6 +67,8 @@ class FeatureVector(ndb.Model):
     def make(feature_set_id, vector):
         return FeatureVector(feature_set_key=ndb.Key(FeatureSet, feature_set_id), vector=vector)
 
+
+# ----------- entities modified by frontend -----------
 
 class User(ndb.Model):
     google_user_id = ndb.StringProperty(indexed=True, required=False)
