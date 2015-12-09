@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from learner.learner import _learn_for_users
+import unittest
+
+from learner.learner import learn_for_users
 from server.frontendstructs import Document, FeatureVector, User
 
-import unittest
 
 class LearnerTests(unittest.TestCase):
     @classmethod
@@ -23,7 +24,7 @@ class LearnerTests(unittest.TestCase):
         document_and_topics = [(self.create_document(), topics) for topics in documents_topics]
 
         for (document, topics) in document_and_topics:
-            _learn_for_users(users=users, min_grade=min_grade, document=document, topics=topics)
+            learn_for_users(users=users, document=document, topics=topics, min_grade=min_grade)
 
         return (users, [document for (document, topics) in document_and_topics])
 
