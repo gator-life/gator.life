@@ -31,10 +31,10 @@ def save_user(user):
     """
     save a user into the database, if it's newly created, db_keys will be initialized
     """
-    if user.user_doc_set_db_key is None:
-        user.user_doc_set_db_key = db.UserDocumentSet.make().put()
-    if user.feature_vector_db_key is None:
-        user.feature_vector_db_key = db.FeatureVector.make(NULL_FEATURE_SET, []).put()
+    if user._user_doc_set_db_key is None:  # pylint: disable=protected-access
+        user._user_doc_set_db_key = db.UserDocumentSet.make().put()  # pylint: disable=protected-access
+    if user._feature_vector_db_key is None:  # pylint: disable=protected-access
+        user._feature_vector_db_key = db.FeatureVector.make(NULL_FEATURE_SET, []).put()  # pylint: disable=protected-access
 
     db_user = _to_db_user(user)
     db_user.put()
@@ -43,8 +43,8 @@ def save_user(user):
 def _to_db_user(user):
     db_user = db.User.make(user_id=user.email,
                            google_user_id=None,
-                           user_document_set_key=user.user_doc_set_db_key,
-                           feature_vector_key=user.feature_vector_db_key)
+                           user_document_set_key=user._user_doc_set_db_key,  # pylint: disable=protected-access
+                           feature_vector_key=user._feature_vector_db_key)  # pylint: disable=protected-access
     return db_user
 
 
@@ -55,12 +55,12 @@ def get_features(feature_set_id):
 
 def save_user_feature_vector(user, feature_vector):
     db_feature_vector = _to_db_feature_vector(feature_vector)
-    db_feature_vector.key = user.feature_vector_db_key
+    db_feature_vector.key = user._feature_vector_db_key  # pylint: disable=protected-access
     db_feature_vector.put()
 
 
 def get_user_feature_vector(user):
-    return _to_feature_vector(user.feature_vector_db_key.get())
+    return _to_feature_vector(user._feature_vector_db_key.get())  # pylint: disable=protected-access
 
 
 def _to_feature_vector(db_feature_vector):
@@ -88,14 +88,17 @@ def _to_user_docs(db_user_docs):
 
 def save_user_docs(user, user_docs):
     db_user_docs = [
-        db.UserDocument.make(document_key=user_doc.document.db_key, grade=user_doc.grade) for user_doc in user_docs]
-    user_doc_set = user.user_doc_set_db_key.get()
+        db.UserDocument.make(
+            document_key=user_doc.document._db_key,  # pylint: disable=protected-access
+            grade=user_doc.grade
+        ) for user_doc in user_docs]
+    user_doc_set = user._user_doc_set_db_key.get()  # pylint: disable=protected-access
     user_doc_set.user_documents = db_user_docs
     user_doc_set.put()
 
 
 def get_user_docs(user):
-    user_doc_set = user.user_doc_set_db_key.get()
+    user_doc_set = user._user_doc_set_db_key.get()  # pylint: disable=protected-access
     return _to_user_docs(user_doc_set.user_documents)
 
 
@@ -104,7 +107,7 @@ def save_documents(documents):
     db_docs = [db.Document.make(url=doc.url, title=doc.title, summary=doc.summary) for doc in docs_with_order]
     db_doc_keys = ndb.put_multi(db_docs)
     for (doc, key) in zip(documents, db_doc_keys):
-        doc.db_key = key
+        doc._db_key = key  # pylint: disable=protected-access
 
 
 # should be deleted, just to mock input from scraper/learner

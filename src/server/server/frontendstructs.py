@@ -15,7 +15,7 @@ class Document(object):
     def __init__(self, url, title, summary, date, db_key):
         self.url = url
         self.title = title
-        self.db_key = db_key
+        self._db_key = db_key
         self.summary = summary
         self.date = date
 
@@ -43,8 +43,8 @@ class User(object):
 
     def __init__(self, email, user_doc_set_db_key, feature_vector_db_key):
         self.email = email
-        self.user_doc_set_db_key = user_doc_set_db_key
-        self.feature_vector_db_key = feature_vector_db_key
+        self._user_doc_set_db_key = user_doc_set_db_key
+        self._feature_vector_db_key = feature_vector_db_key
 
 
 class FeatureVector(object):

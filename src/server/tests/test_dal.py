@@ -37,18 +37,18 @@ class DalTests(unittest.TestCase):
         expected_user = struct.User.make_from_scratch(email=user_email)
 
         # ------------- check save_user --------------
-        self.assertIsNone(expected_user.feature_vector_db_key)
-        self.assertIsNone(expected_user.user_doc_set_db_key)
+        self.assertIsNone(expected_user._feature_vector_db_key)
+        self.assertIsNone(expected_user._user_doc_set_db_key)
         dal.save_user(expected_user)
         # save should init db keys
-        self.assertIsNotNone(expected_user.user_doc_set_db_key)
-        self.assertIsNotNone(expected_user.feature_vector_db_key)
+        self.assertIsNotNone(expected_user._user_doc_set_db_key)
+        self.assertIsNotNone(expected_user._feature_vector_db_key)
 
         # ------------- check get_user --------------
         result_user = dal.get_user('email')
         self.assertEquals(expected_user.email, result_user.email)
-        self.assertEquals(expected_user.user_doc_set_db_key, result_user.user_doc_set_db_key)
-        self.assertEquals(expected_user.feature_vector_db_key, result_user.feature_vector_db_key)
+        self.assertEquals(expected_user._user_doc_set_db_key, result_user._user_doc_set_db_key)
+        self.assertEquals(expected_user._feature_vector_db_key, result_user._feature_vector_db_key)
 
     def test_get_all_users(self):
         users_email = ['user1', 'user2', 'user3']
@@ -98,7 +98,7 @@ class DalTests(unittest.TestCase):
         dal.save_documents(expected_docs)
 
         for expected_doc in expected_docs:
-            result_doc = expected_doc.db_key.get()
+            result_doc = expected_doc._db_key.get()
             self.assertEquals(expected_doc.url, result_doc.url)
             self.assertEquals(expected_doc.title, result_doc.title)
             self.assertEquals(expected_doc.summary, result_doc.summary)
