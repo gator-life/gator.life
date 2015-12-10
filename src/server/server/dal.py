@@ -68,7 +68,7 @@ def _to_feature_vector(db_feature_vector):
     feature_set_db_key = db_feature_vector.feature_set_key
     feature_set = feature_set_db_key.get()
     labels = [feature.name for feature in feature_set.features]
-    return struct.FeatureVector(vector=vector, labels=labels, feature_set_id=feature_set_db_key.id())
+    return struct.FeatureVector.make_from_scratch(vector=vector, labels=labels, feature_set_id=feature_set_db_key.id())
 
 
 def _to_db_feature_vector(feature_vector):
@@ -81,7 +81,8 @@ def _to_user_docs(db_user_docs):
     docs = (struct.Document.make_from_db(
         url=db_doc.url, title=db_doc.title, summary=db_doc.summary, date=db_doc.date, db_key=db_doc.key)
             for db_doc in db_docs)
-    user_docs = [struct.UserDocument(document=doc, grade=user_doc.grade) for doc, user_doc in zip(docs, db_user_docs)]
+    user_docs = [struct.UserDocument.make_from_scratch(
+        document=doc, grade=user_doc.grade) for doc, user_doc in zip(docs, db_user_docs)]
     return user_docs
 
 
@@ -116,8 +117,8 @@ def init_user_dummy(user_id):
 
     new_user = struct.User.make_from_scratch(email=user_id)
     save_user(new_user)
-    user_doc1 = struct.UserDocument(document=dummy_doc1, grade=1.0)
-    user_doc2 = struct.UserDocument(document=dummy_doc2, grade=0.5)
+    user_doc1 = struct.UserDocument.make_from_scratch(document=dummy_doc1, grade=1.0)
+    user_doc2 = struct.UserDocument.make_from_scratch(document=dummy_doc2, grade=0.5)
     save_user_docs(new_user, [user_doc1, user_doc2])
     return new_user
 

@@ -40,7 +40,7 @@ class DalTests(unittest.TestCase):
         self.assertIsNone(expected_user.feature_vector_db_key)
         self.assertIsNone(expected_user.user_doc_set_db_key)
         dal.save_user(expected_user)
-        #save should init db keys
+        # save should init db keys
         self.assertIsNotNone(expected_user.user_doc_set_db_key)
         self.assertIsNotNone(expected_user.feature_vector_db_key)
 
@@ -57,8 +57,10 @@ class DalTests(unittest.TestCase):
 
         all_users = dal.get_all_users()
         self.assertEquals(3, len(all_users))
-        for email in users_email:
-            self.assertTrue(next(user for user in all_users if user.email == email), None)  # check email is in list
+
+        result_user_emails = sorted([user.email for user in all_users])
+        for (expected, result) in zip(users_email, result_user_emails):
+            self.assertEquals(expected, result)
 
     def test_save_then_get_user_docs_should_be_equals(self):
         # setup : init docs in database
@@ -71,7 +73,9 @@ class DalTests(unittest.TestCase):
         doc2 = struct.Document.make_from_db(
             url=db_doc2.url, title=db_doc2.title, summary=None, date=None, db_key=db_doc2.key)
 
-        expected_user_docs = [struct.UserDocument(doc1, 0.1), struct.UserDocument(doc2, 0.2)]
+        expected_user_docs = [
+            struct.UserDocument.make_from_scratch(doc1, 0.1),
+            struct.UserDocument.make_from_scratch(doc2, 0.2)]
 
         # create user and save it to init user_document_set_key field
         user = struct.User.make_from_scratch("test_save_then_get_user_docs_should_be_equals")
@@ -92,6 +96,7 @@ class DalTests(unittest.TestCase):
             url='url2_test_save_documents', title='title1_test_save_documents', summary='summary2')
         expected_docs = [expected_doc1, expected_doc2]
         dal.save_documents(expected_docs)
+
         for expected_doc in expected_docs:
             result_doc = expected_doc.db_key.get()
             self.assertEquals(expected_doc.url, result_doc.url)
@@ -103,7 +108,7 @@ class DalTests(unittest.TestCase):
         feature1 = db.FeatureDescription.make('desc1')
         feature_set = db.FeatureSet.make(feature_set_id='set', feature_descriptions=[feature1, feature2])
         feature_set.put()
-        expected_feat_vec = struct.FeatureVector(
+        expected_feat_vec = struct.FeatureVector.make_from_scratch(
             vector=[0.5, 0.6], labels=['desc1', 'desc2'], feature_set_id=feature_set.key.id())
 
         user = struct.User.make_from_scratch('test_save_then_get_user_feature_vector_should_be_equals')

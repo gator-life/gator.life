@@ -38,7 +38,8 @@ class HomePageHandler(webapp2.RequestHandler):
             feature_set_id = self.request.get('feature_set_id')
             labels = dal.get_features(feature_set_id)
             vector = [float(self.request.get(label)) for label in labels]
-            feature_vector = struct.FeatureVector(vector=vector, labels=labels, feature_set_id=feature_set_id)
+            feature_vector = struct.FeatureVector.make_from_scratch(
+                vector=vector, labels=labels, feature_set_id=feature_set_id)
             dal.save_user_feature_vector(user, feature_vector)
 
         feature_vector = dal.get_user_feature_vector(user)
@@ -46,7 +47,8 @@ class HomePageHandler(webapp2.RequestHandler):
             feature_set_id = dal.REF_FEATURE_SET
             labels = dal.get_features(dal.REF_FEATURE_SET)
             vector = [x * 0.1 for x in range(len(labels))]
-            feature_vector = struct.FeatureVector(labels=labels, vector=vector, feature_set_id=feature_set_id)
+            feature_vector = struct.FeatureVector.make_from_scratch(
+                labels=labels, vector=vector, feature_set_id=feature_set_id)
 
         return feature_vector
 

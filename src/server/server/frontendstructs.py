@@ -21,6 +21,11 @@ class Document(object):
 
 
 class UserDocument(object):
+
+    @staticmethod
+    def make_from_scratch(document, grade):
+        return UserDocument(document, grade)
+
     def __init__(self, document, grade):
         self.document = document
         self.grade = grade
@@ -43,6 +48,11 @@ class User(object):
 
 
 class FeatureVector(object):
+
+    @staticmethod
+    def make_from_scratch(vector, labels, feature_set_id):
+        return FeatureVector(vector, labels, feature_set_id)
+
     def __init__(self, vector, labels, feature_set_id):
         self.vector = vector
         self.labels = labels
