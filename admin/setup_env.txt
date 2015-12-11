@@ -22,6 +22,7 @@ ensuite il faut ajouter le binaire buildé dans bin au PATH
 -install java7
 http://wiki.opencog.org/wikihome/index.php/Installing_Sun_Java_7
 
+-pycharm
 
 -pour installer py.test
 pip install -U pytest, cf. http://pytest.org/latest/getting-started.html
