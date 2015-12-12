@@ -9,6 +9,11 @@ PYTHON_APP_ENGINE_SDK=~/dev/python_appengine/google_appengine
 export PATH=$PATH:$PYTHON_APP_ENGINE_SDK
 dans le ".profile" à la racine du repertoire d'un utilisateur
 
+-python
+sudo apt-get install python2.7-dev
+
+-pip
+sudo apt-get install python-pip
 
 -selenium
 python 2 : sudo pip install --upgrade selenium
@@ -30,6 +35,9 @@ pip install -U pytest, cf. http://pytest.org/latest/getting-started.html
 -demarrer le serveur GAE local
 dev_appserver.py server/
 (<path-to-Python-SDK>/dev_appserver.py <path-to-gae-application>/)
+config du server GAE sur pycharm: as travis:
+--skip_sdk_update_check --clear_datastore=yes --api_port=33001
+il faut mettre '=' entre clé et valeur sinon ça plante dans pycharm
 
 
 -pusher sur GAE : depuis gator/src/ :
@@ -45,8 +53,7 @@ http://blog.saturnlaboratories.co.za/archive/2012/09/10/running-pylint-pycharm
 -pour lever un warning pycharm de perf:
 https://confluence.jetbrains.com/display/IDEADEV/Inotify+Watches+Limit
 
--pour que pycharm trouve les libs gae :
- http://stackoverflow.com/questions/24197970/pycharm-import-external-library
+
 
 -pour que pycharm resolve les import entre test et prod:
 http://stackoverflow.com/questions/17969025/unresolved-reference-when-importing-from-sibling-sub-package-with
@@ -72,4 +79,18 @@ http://docsv2.readthedocs.org/en/latest/config.html
 
 -Debug App engine
 run->edit configuration
+
+-avant d'installer numpy/gensim : installer un blas/lapack optimisé
+apt-get install libopenblas-dev
+
+-pour installer scipy il faut le compilateur fortran
+sudo apt-get install fortran
+
+-pour que pycharm trouve les libs gae :
+http://stackoverflow.com/questions/24197970/pycharm-import-external-library
+il faut ajout au path de libs appengine pas dans le dossier google (et donc pas de lien symbolique vers pip dir)
+Il faut ajouter das pycharm les mêmes paths que ce que l'on a besoin dans pytest.ini
+cad à spot : lib/google_appengine lib/google_appengine/lib/fancy_urllib
+
+
 
