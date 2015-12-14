@@ -104,12 +104,9 @@ class DalTests(unittest.TestCase):
             self.assertEquals(expected_doc.summary, result_doc.summary)
 
     def test_save_then_get_user_feature_vector_should_be_equals(self):
-        feature2 = db.FeatureDescription.make('desc2')
-        feature1 = db.FeatureDescription.make('desc1')
-        feature_set = db.FeatureSet.make(feature_set_id='set', feature_descriptions=[feature1, feature2])
-        feature_set.put()
+        feature_set = self.build_dummy_feature_set()
         expected_feat_vec = struct.FeatureVector.make_from_scratch(
-            vector=[0.5, 0.6], labels=['desc1', 'desc2'], feature_set_id=feature_set.key.id())
+            vector=[0.5, 0.6], feature_set_id=feature_set.key.id())
 
         user = struct.User.make_from_scratch('test_save_then_get_user_feature_vector_should_be_equals')
         dal.save_user(user)
@@ -118,10 +115,32 @@ class DalTests(unittest.TestCase):
         result_feat_vec = dal.get_user_feature_vector(
             dal.get_user('test_save_then_get_user_feature_vector_should_be_equals')
         )
-
         self.assertEquals(expected_feat_vec.feature_set_id, result_feat_vec.feature_set_id)
         self.assertEquals(expected_feat_vec.vector, result_feat_vec.vector)
-        self.assertEquals(expected_feat_vec.labels, result_feat_vec.labels)
+
+    def test_get_users_feature_vectors(self):
+        user1 = struct.User.make_from_scratch('test_get_users_feature_vectors1')
+        user2 = struct.User.make_from_scratch('test_get_users_feature_vectors2')
+        dal.save_user(user1)
+        dal.save_user(user2)
+        feature_set = self.build_dummy_feature_set()
+        feat_vec_1 = struct.FeatureVector.make_from_scratch(
+            vector=[0.2], feature_set_id=feature_set.key.id())
+        feat_vec_2 = struct.FeatureVector.make_from_scratch(
+            vector=[0.1], feature_set_id=feature_set.key.id())
+        dal.save_user_feature_vector(user1, feat_vec_1)
+        dal.save_user_feature_vector(user2, feat_vec_2)
+        result_vectors = dal.get_users_feature_vectors([user2, user1])
+        self.assertEqual(0.1, result_vectors[0].vector[0])
+        self.assertEqual(0.2, result_vectors[1].vector[0])
+
+    def build_dummy_feature_set(self):
+        feature2 = db.FeatureDescription.make('desc2')
+        feature1 = db.FeatureDescription.make('desc1')
+        feature_set = db.FeatureSet.make(feature_set_id='set', feature_descriptions=[feature1, feature2])
+        feature_set.put()
+        return feature_set
+
 
 if __name__ == '__main__':
     unittest.main()

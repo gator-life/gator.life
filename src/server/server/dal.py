@@ -63,12 +63,15 @@ def get_user_feature_vector(user):
     return _to_feature_vector(user._feature_vector_db_key.get())  # pylint: disable=protected-access
 
 
+def get_users_feature_vectors(users):
+    db_feature_vectors = ndb.get_multi(user._feature_vector_db_key for user in users)  # pylint: disable=protected-access
+    return [_to_feature_vector(db_vec) for db_vec in db_feature_vectors]
+
+
 def _to_feature_vector(db_feature_vector):
     vector = db_feature_vector.vector
-    feature_set_db_key = db_feature_vector.feature_set_key
-    feature_set = feature_set_db_key.get()
-    labels = [feature.name for feature in feature_set.features]
-    return struct.FeatureVector.make_from_scratch(vector=vector, labels=labels, feature_set_id=feature_set_db_key.id())
+    feature_set_id = db_feature_vector.feature_set_key.id()
+    return struct.FeatureVector.make_from_scratch(vector=vector, feature_set_id=feature_set_id)
 
 
 def _to_db_feature_vector(feature_vector):

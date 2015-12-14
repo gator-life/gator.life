@@ -50,10 +50,9 @@ class User(object):
 class FeatureVector(object):
 
     @staticmethod
-    def make_from_scratch(vector, labels, feature_set_id):
-        return FeatureVector(vector, labels, feature_set_id)
+    def make_from_scratch(vector, feature_set_id):
+        return FeatureVector(vector, feature_set_id)
 
-    def __init__(self, vector, labels, feature_set_id):
+    def __init__(self, vector, feature_set_id):
         self.vector = vector
-        self.labels = labels
         self.feature_set_id = feature_set_id
