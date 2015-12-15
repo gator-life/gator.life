@@ -134,7 +134,8 @@ class DalTests(unittest.TestCase):
         self.assertEqual(0.1, result_vectors[0].vector[0])
         self.assertEqual(0.2, result_vectors[1].vector[0])
 
-    def build_dummy_feature_set(self):
+    @staticmethod
+    def build_dummy_feature_set():
         feature2 = db.FeatureDescription.make('desc2')
         feature1 = db.FeatureDescription.make('desc1')
         feature_set = db.FeatureSet.make(feature_set_id='set', feature_descriptions=[feature1, feature2])
