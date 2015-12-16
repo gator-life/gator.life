@@ -21,6 +21,7 @@ ROUTING = [
 
 dal.init_user_dummy(dal.NEW_USER_ID)
 dal.init_features_dummy(dal.REF_FEATURE_SET)
+dal.init_null_feature_set()
 
 # 'app' name is the convention for webapp. It must match the suffix of the 'script' directive in app.yaml file
 # cf. https://cloud.google.com/appengine/docs/python/config/appconfig

@@ -10,6 +10,7 @@ from orchestrator.orchestrator import _to_json, _setup_env
 from common.scraperstructs import Document, LinkElement
 from scraper.scraper import _get_doc_generator
 
+
 class OrchestratorTests(unittest.TestCase):
 
     def test_get_json_doc_generator(self):
