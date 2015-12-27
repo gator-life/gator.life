@@ -134,6 +134,42 @@ class DalTests(unittest.TestCase):
         self.assertEqual(0.1, result_vectors[0].vector[0])
         self.assertEqual(0.2, result_vectors[1].vector[0])
 
+    def test_get_users_docs(self):
+        # setup : init docs in database
+        db_doc1 = db.Document.make(url='url1', title='title1', summary='')
+        db_doc2 = db.Document.make(url='url2', title='title2', summary='')
+        ndb.put_multi([db_doc1, db_doc2])
+
+        doc1 = struct.Document.make_from_db(url=db_doc1.url, title=db_doc1.title, summary='', date=None, db_key=db_doc1.key)
+        doc2 = struct.Document.make_from_db(url=db_doc2.url, title=db_doc2.title, summary='', date=None, db_key=db_doc2.key)
+
+        # create user and save it to init user_document_set_key field
+        user1 = struct.User.make_from_scratch("test_get_users_docs1")
+        user2 = struct.User.make_from_scratch("test_get_users_docs2")
+        dal.save_user(user1)
+        dal.save_user(user2)
+
+        expected_user1_docs = [
+            struct.UserDocument.make_from_scratch(doc1, 0.1),
+            struct.UserDocument.make_from_scratch(doc2, 0.2)]
+        expected_user2_docs = [
+            struct.UserDocument.make_from_scratch(doc1, 0.3)]
+
+        dal.save_user_docs(user1, expected_user1_docs)
+        dal.save_user_docs(user2, expected_user2_docs)
+        user_docs_by_user = dal.get_users_docs((user2, user1))
+
+        self.assertEqual(2, len(user_docs_by_user))
+        result_user2 = user_docs_by_user[0]
+        result_user1 = user_docs_by_user[1]
+        self.assertEqual(1, len(result_user2))
+        self.assertEqual(2, len(result_user1))
+        self.assertEqual(0.3, result_user2[0].grade)
+        self.assertEqual(0.1, result_user1[0].grade)
+        self.assertEqual(0.2, result_user1[1].grade)
+        self.assertEqual(result_user1[0].document, result_user2[0].document)  # check that we use the same reference
+        self.assertEqual('title2', result_user1[1].document.title)
+
     @staticmethod
     def build_dummy_feature_set():
         feature2 = db.FeatureDescription.make('desc2')

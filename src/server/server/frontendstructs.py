@@ -26,6 +26,10 @@ class UserDocument(object):
     def make_from_scratch(document, grade):
         return UserDocument(document, grade)
 
+    @staticmethod
+    def make_from_db(document, grade):
+        return UserDocument(document, grade)
+
     def __init__(self, document, grade):
         self.document = document
         self.grade = grade
