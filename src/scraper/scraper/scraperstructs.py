@@ -1,10 +1,4 @@
 
-"""
-structures serialized by scraper module
-can be deserialized with jsonpickle
-"""
-
-
 class Document(object):
     def __init__(self, link_element, html_content):
         """
@@ -13,6 +7,7 @@ class Document(object):
         """
         self.link_element = link_element
         self.html_content = html_content
+
 
 class OriginInfo(object):
     """
@@ -32,6 +27,7 @@ class OriginInfo(object):
         self.url = url
         self.unique_id = unique_id
         self.category_id = category_id
+
 
 class LinkElement(object):
     def __init__(self, url, origin, origin_info, date_utc_timestamp):

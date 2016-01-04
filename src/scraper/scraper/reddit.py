@@ -1,6 +1,6 @@
 import praw
 import urllib3.contrib.pyopenssl
-from common.scraperstructs import LinkElement, OriginInfo
+from .scraperstructs import LinkElement, OriginInfo
 
 def reddit_link_elements_generator(disconnected):
     submissions = _make_submissions_generator(disconnected)
