@@ -11,7 +11,7 @@ from learner.learner import compute_user_doc_matching
 from scraper.scraper import scrap
 from server.frontendstructs import Document
 import server.dal as dal
-from topicmodeller.topicmodeller import TopicModeller, classify
+from topicmodeller.topicmodeller import TopicModeller
 
 
 def _setup_env():
@@ -30,16 +30,15 @@ def _dump_as_json_document(document, folder):
         file_desc.write(json)
 
 
-def orchestrate(scraper_output_folder, tm_data_folder, tm_output_folder):
+def orchestrate(scraper_output_folder, tm_data_folder):
     _setup_env()
 
-    topic_modeller = TopicModeller()
+    topic_modeller = TopicModeller.make()
     topic_modeller.load(tm_data_folder)
 
-    # TODO Get users pylint: disable=fixme
     users = dal.get_all_users()
-    users_feature_vectors = dal.get_users_feature_vectors(users)  # pylint: disable=unused-variable
-    users_docs = dal.get_user_docs(users)  # pylint: disable=unused-variable
+    users_feature_vectors = dal.get_users_feature_vectors(users)
+    users_docs = dal.get_users_docs(users) # pylint: disable=unused-variable
 
     # We need this high level loop to prevent crashes for whatever reason.
     #
@@ -52,18 +51,19 @@ def orchestrate(scraper_output_folder, tm_data_folder, tm_output_folder):
                 # Dump scraper document
                 _dump_as_json_document(scraper_document, folder=scraper_output_folder)
 
-                # Classify the document
-                topic_modeller_document = classify(topic_modeller, scraper_document)
-                # Dump topic modeller document
-                _dump_as_json_document(topic_modeller_document, folder=tm_output_folder)
-
                 doc = Document.make_from_scratch( # pylint: disable=unused-variable
-                    topic_modeller_document.url, topic_modeller_document.title, summary=None)
+                    scraper_document.url, scraper_document.title, summary=None)
+
+                # Classify the document
+                topic_feature_vector = topic_modeller.classify( # pylint: disable=unused-variable
+                    scraper_document.html_content)
+
+
                 # TODO Save document in DB pylint: disable=fixme
 
                 user_doc_matching_by_user = compute_user_doc_matching(  # pylint: disable=unused-variable
-                    user_feature_vectors=user_feature_vectors,
-                    document_feature_vector=[topic_value for (_, topic_value) in topic_modeller_document.topics],
+                    user_feature_vectors=users_feature_vectors,
+                    document_feature_vector=topic_feature_vector,
                     min_grade=0.9)
 
                 # TODO Save the updated user in DB (return only updated users ?) pylint: disable=fixme

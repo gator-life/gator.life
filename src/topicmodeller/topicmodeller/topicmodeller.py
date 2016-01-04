@@ -2,65 +2,71 @@
 # -*- coding: utf-8 -*-
 
 import os
-import re
-import nltk
-from nltk.corpus import stopwords
-
-from boilerpipe.extract import Extractor
+import numpy as np
 from gensim import corpora, models
-from common.topicmodellerstructs import TopicModellerDocument
-
-
-class TopicModellableDocuments(object):
-    def __init__(self, documents):
-        self.documents = documents
-
-    def __iter__(self):
-        for document in self.documents:
-            yield _to_topicmodellable_document(document)
+from .doctokenizer import DocTokenizer
 
 
 class TopicModeller(object):
     corpus_batch_size = 250
 
-    def __init__(self):
-        self.dictionary = None
-        self.dictionary_words = None
+    @classmethod
+    def make(cls):
+        return TopicModeller(DocTokenizer())
 
-        self.lda = None
-
+    # constructor allowing injection of custom tokenizer
+    def __init__(self, document_tokenizer):
+        self._dictionary = None
+        self._dictionary_words = None
+        self._lda = None
         self.topics = None
+        self._tokenizer = document_tokenizer
+        np.random.seed(2406834896) # to get reproductible results
+        # nb: ideally gensim should allow to inject RandomState to not make side effects on other libs using numpy RNG
 
     def initialize(self, documents, num_topics):
-        # The dictionary must be fully initialized before "feeding" the model.
-        self._initialize_dictionary(documents)
-        self._feed(documents, num_topics)
+        """
+        Build/calibrate the topic modeller model, set the "topics" field.
+        The model can then be saved of used for classification
+        :param documents: corpus used by the model to build the model, as a generator of string
+        :param num_topics: number of topics to generate
+        """
+        for_dict_generator = (self._tokenizer.tokenize(document_content) for document_content in documents)
+        self._initialize_dictionary(for_dict_generator)
+        for_feed_generator = (self._tokenizer.tokenize(document_content) for document_content in documents)
+        self._feed(for_feed_generator, num_topics)
 
-    def classify(self, document):
-        classification = dict(
-            # weight.item() : from numpy float64 object to python native float.
-            ((topic_id, weight.item()) for (topic_id, weight)
-             in self.lda[self.dictionary.doc2bow(self._filter_document(document))])
-        )
+        self._cache_dictionary_words()
+        self._cache_topics()
 
-        # Generate a vector of [(topic_id, weight) | for each topic_id in topics]
-        vector = []
-        for (topic_id, _) in self.topics:
-            weight = classification.get(topic_id, 0)
-            vector.append((topic_id, weight))
-
-        return vector
+    def classify(self, html_document):
+        """
+        Do the topic classification of the document
+        :param html_document: html document as a string
+        :return: float vector of the size of TopicModeller.topics. Each value measure the significance of the associated
+         topic for this document
+        """
+        tokenized_doc = self._tokenizer.tokenize(html_document)
+        filtered_doc = self._filter_document(tokenized_doc)
+        doc_format_for_lda_model = self._dictionary.doc2bow(filtered_doc)
+        # self.lda LdaModel []-operator return list of (topic_id, topic_probability) 2-tuples
+        topic_id_weight_dict = dict(self._lda[doc_format_for_lda_model])
+        return [topic_id_weight_dict.get(topic_id, 0) for (topic_id, _) in self.topics]
 
     def load(self, model_data_folder):
+        """
+        Deserialize a previously saved model
+        :param model_data_folder: folder where the model has been saved
+        """
         dictionary_file_path = self._dictionary_file_path(model_data_folder)
         if os.path.isfile(dictionary_file_path):
-            self.dictionary = corpora.Dictionary.load(dictionary_file_path)
+            self._dictionary = corpora.Dictionary.load(dictionary_file_path)
         else:
             raise IOError(u'Dictionary file does not exists : ' + dictionary_file_path)
 
         lda_file_path = self._lda_file_path(model_data_folder)
         if os.path.isfile(lda_file_path):
-            self.lda = models.LdaModel.load(lda_file_path)
+            self._lda = models.LdaModel.load(lda_file_path)
         else:
             raise IOError(u'Lda model file does not exists : ' + lda_file_path)
 
@@ -68,8 +74,12 @@ class TopicModeller(object):
         self._cache_topics()
 
     def save(self, model_data_folder):
-        self.dictionary.save(self._dictionary_file_path(model_data_folder))
-        self.lda.save(self._lda_file_path(model_data_folder))
+        """
+        Serialize the model previously calibrated by the initialize function
+        :param model_data_folder: folder where to serialize the model
+        """
+        self._dictionary.save(self._dictionary_file_path(model_data_folder))
+        self._lda.save(self._lda_file_path(model_data_folder))
 
     @classmethod
     def _dictionary_file_path(cls, model_data_folder):
@@ -79,15 +89,15 @@ class TopicModeller(object):
     def _lda_file_path(cls, model_data_folder):
         return os.path.join(model_data_folder, 'lda.mod')
 
-    def _initialize_dictionary(self, documents):
-        self.dictionary = corpora.Dictionary()
-        corpora.Dictionary.add_documents(self.dictionary, documents)
+    def _initialize_dictionary(self, tokenized_documents):
+        self._dictionary = corpora.Dictionary()
+        corpora.Dictionary.add_documents(self._dictionary, tokenized_documents)
 
     def _feed(self, documents, num_topics):
         corpus = []
         for document in documents:
             # Construct the Corpus : Transform each document to a vector [(word_id, word_count) | word_count > 0]
-            corpus.append(self.dictionary.doc2bow(document))
+            corpus.append(self._dictionary.doc2bow(document))
             if len(corpus) == self.corpus_batch_size:
                 self._update_model(corpus, num_topics)
                 corpus = []
@@ -96,68 +106,21 @@ class TopicModeller(object):
             self._update_model(corpus, num_topics)
 
     def _update_model(self, new_corpus, num_topics):
-        if self.lda is None:
-            self.lda = models.LdaModel(new_corpus, id2word=self.dictionary, num_topics=num_topics)
+        if self._lda is None:
+            self._lda = models.LdaModel(new_corpus, id2word=self._dictionary, num_topics=num_topics)
         else:
-            self.lda.update(new_corpus)
+            self._lda.update(new_corpus)
 
     def _filter_document(self, document):
         # We want to keep only known words (those on our dictionary)
-        return [word for word in document if word in self.dictionary_words]
+        return [word for word in document if word in self._dictionary_words]
 
     def _cache_dictionary_words(self):
         # dictionary.values() is a list, looking into a list is an O(n) operation.
         # To avoid poor performances on _filter_document method, dictionary words
         # are "cached" on a set (O(1)).
-        self.dictionary_words = set(self.dictionary.values())
+        self._dictionary_words = set(self._dictionary.values())
 
     def _cache_topics(self):
-        self.topics = [(i, [word for (_, word) in self.lda.show_topic(topicid=i, topn=1)])
-                       for i in range(self.lda.num_topics)]
-
-
-# Extract a readable document from HTML
-def _readable_document(html_document):
-    return Extractor(extractor=u'ArticleExtractor', html=html_document).getText()
-
-
-def _word_tokenize(content):
-    word_tokenized = []
-    for sentence in nltk.sent_tokenize(content):
-        word_tokenized += nltk.word_tokenize(sentence)
-    return word_tokenized
-
-
-def _clean(words):
-    return _filter_latin_words(_remove_stop_words(words))
-
-
-def _remove_stop_words(words):
-    return [word for word in words if word not in stopwords.words('english')]
-
-
-def _filter_latin_words(words):
-    return [word for word in words if re.search(r'^[a-zA-Z]*$', word) is not None]
-
-
-def _to_topicmodellable_document(scraper_document):
-    word_tokenized_document = _word_tokenize(_readable_document(scraper_document.html_content))
-    lowercase_document = [word.lower() for word in word_tokenized_document]
-
-    document = _clean(lowercase_document)
-
-    return document
-
-
-def initialize_model(scraper_documents, tm_data_folder, num_topics):
-    topicmodeller = TopicModeller()
-    topicmodeller.initialize(TopicModellableDocuments(scraper_documents), num_topics)
-    topicmodeller.save(tm_data_folder)
-
-
-def classify(topicmodeller, scraper_document):
-    document = _to_topicmodellable_document(scraper_document)
-
-    return TopicModellerDocument(scraper_document.link_element.origin_info.title,
-                                 scraper_document.link_element.url,
-                                 topicmodeller.classify(document))
+        self.topics = [(i, [word for (word, _) in self._lda.show_topic(topicid=i, topn=1)])
+                       for i in range(self._lda.num_topics)]
