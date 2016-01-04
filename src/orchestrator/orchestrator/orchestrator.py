@@ -10,6 +10,7 @@ import jsonpickle
 from learner.learner import compute_user_doc_matching
 from scraper.scraper import scrap
 from server.frontendstructs import Document
+import server.dal as dal
 from topicmodeller.topicmodeller import TopicModeller, classify
 
 
@@ -36,7 +37,9 @@ def orchestrate(scraper_output_folder, tm_data_folder, tm_output_folder):
     topic_modeller.load(tm_data_folder)
 
     # TODO Get users pylint: disable=fixme
-    user_feature_vectors = []
+    users = dal.get_all_users()
+    users_feature_vectors = dal.get_users_feature_vectors(users)  # pylint: disable=unused-variable
+    users_docs = dal.get_user_docs(users)  # pylint: disable=unused-variable
 
     # We need this high level loop to prevent crashes for whatever reason.
     #
@@ -61,7 +64,7 @@ def orchestrate(scraper_output_folder, tm_data_folder, tm_output_folder):
                 user_doc_matching_by_user = compute_user_doc_matching(  # pylint: disable=unused-variable
                     user_feature_vectors=user_feature_vectors,
                     document_feature_vector=[topic_value for (_, topic_value) in topic_modeller_document.topics],
-                    min_grade=0.5)
+                    min_grade=0.9)
 
                 # TODO Save the updated user in DB (return only updated users ?) pylint: disable=fixme
 

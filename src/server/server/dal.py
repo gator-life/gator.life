@@ -80,13 +80,18 @@ def _to_db_feature_vector(feature_vector):
 
 def _to_user_docs(db_user_docs):
     db_doc_keys = [user_doc.document_key for user_doc in db_user_docs]
+    docs = _to_docs(db_doc_keys)
+    user_docs = [struct.UserDocument.make_from_scratch(
+        document=doc, grade=user_doc.grade) for doc, user_doc in zip(docs, db_user_docs)]
+    return user_docs
+
+
+def _to_docs(db_doc_keys):
     db_docs = ndb.get_multi(db_doc_keys)
     docs = (struct.Document.make_from_db(
         url=db_doc.url, title=db_doc.title, summary=db_doc.summary, date=db_doc.date, db_key=db_doc.key)
             for db_doc in db_docs)
-    user_docs = [struct.UserDocument.make_from_scratch(
-        document=doc, grade=user_doc.grade) for doc, user_doc in zip(docs, db_user_docs)]
-    return user_docs
+    return docs
 
 
 def save_user_docs(user, user_docs):
@@ -103,6 +108,22 @@ def save_user_docs(user, user_docs):
 def get_user_docs(user):
     user_doc_set = user._user_doc_set_db_key.get()  # pylint: disable=protected-access
     return _to_user_docs(user_doc_set.user_documents)
+
+
+def get_users_docs(users):
+    db_user_doc_sets = ndb.get_multi(user._user_doc_set_db_key for user in users)  # pylint: disable=protected-access
+    doc_keys_set = {user_doc.document_key for user_doc_set in db_user_doc_sets for user_doc in user_doc_set.user_documents}
+    doc_keys_list = list(doc_keys_set)
+    docs = _to_docs(doc_keys_list)
+    keys_to_docs = dict(zip(doc_keys_list, docs))
+
+    def to_user_doc(db_user_doc):
+        return struct.UserDocument.make_from_db(keys_to_docs[db_user_doc.document_key], db_user_doc.grade)
+
+    def db_set_to_user_doc_list(user_doc_set):
+        return [to_user_doc(db_user_doc) for db_user_doc in user_doc_set.user_documents]
+
+    return [db_set_to_user_doc_list(db_user_doc_set) for db_user_doc_set in db_user_doc_sets]
 
 
 def save_documents(documents):
