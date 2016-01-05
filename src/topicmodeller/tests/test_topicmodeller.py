@@ -3,71 +3,61 @@
 
 import os
 import unittest
-import jsonpickle
 
-from topicmodeller.topicmodeller import TopicModeller, _filter_latin_words, _readable_document, \
-    _remove_stop_words, _word_tokenize
+from topicmodeller.topicmodeller import TopicModeller
 
 
 class TopicModellerTests(unittest.TestCase):
-    def test_readable_document(self):
+
+    class MockTokenizer(object):
+        @classmethod
+        def tokenize(cls, text):
+            return [word for word in text.split() if word != 'is']
+
+    def test_initialize_classify_save_load_classify_is_ok(self):
+        doc1 = u'I like orange, i really love orange orange is my favorite color, green sucks'
+        doc2 = u'Green is cool, green is nice, green is swag, orange not so much'
+        docs = [doc1, doc2]
+
+        topic_modeller = TopicModeller(self.MockTokenizer())
+        topic_modeller.initialize(docs, num_topics=2)
+
+        # check number of topics is expected
+        self.assertEquals(2, len(topic_modeller.topics))
+
+        # check most recurrent words are selected topics (green, orange)
+        index_orange = -1
+        index_green = -1
+        for index, topic in topic_modeller.topics:
+            if topic[0] == u'orange':
+                index_orange = index
+            if topic[0] == u'green':
+                index_green = index
+        self.assertNotEquals(-1, index_orange)
+        self.assertNotEquals(-1, index_green)
+
+        # check classification is logical between doc1 and doc2 with two axes:
+        # -same doc, different topic
+        # -same topic, different docs
+        classification_after_init_doc1 = topic_modeller.classify(doc1)
+        self.assertEquals(len(topic_modeller.topics), len(classification_after_init_doc1))
+        classification_after_init_doc2 = topic_modeller.classify(doc2)
+        self.assertTrue(classification_after_init_doc1[index_orange] > classification_after_init_doc1[index_green])
+        self.assertTrue(classification_after_init_doc2[index_orange] < classification_after_init_doc2[index_green])
+        self.assertTrue(classification_after_init_doc1[index_orange] > classification_after_init_doc2[index_orange])
+        self.assertTrue(classification_after_init_doc1[index_green] < classification_after_init_doc2[index_green])
+
+        # check save then load model gives exact same classification for a document
         directory = os.path.dirname(os.path.abspath(__file__))
-        file_content = open(os.path.join(directory, 'scraper_documents/2015-08-01 18:00:22.926317_8.json')).read()
-        html_content = jsonpickle.decode(file_content).html_content
-        readable_document = _readable_document(html_content)
+        topic_modeller.save(directory)
 
-        self.assertTrue(u'just aired its thrilling, flame thrower-filled, metal shrapnel-rich'
-                        in readable_document)
-        self.assertTrue(u'1.) Continue to emphasize the competition as a sport.'
-                        in readable_document)
+        deserialized_topic_modeller = TopicModeller(self.MockTokenizer())
+        deserialized_topic_modeller.load(directory)
 
-    def test_word_tokenize(self):
-        document = u"\"BattleBots\" producers are definitely looking forward and feeling confident that ABC will renew " \
-                   u"the series for a second season (seventh if you count the five seasons it ran on Comedy Central from " \
-                   u"2000 to 2002). And they've definitely given some thought as to what they'd like to do similarly and " \
-                   u"what they'd like to change up."
-        word_tokenized = _word_tokenize(document)
-
-        words = [u'will', u'renew', u'the', u'series', u'for', u'a', u'second', u'season', u'seventh', u'if', u'you',
-                 u'count']
-        self.assertTrue(all(x in word_tokenized for x in words))
-
-    def test_remove_stop_words(self):
-        document = [u'``', u'BattleBots', u"''", u'producers', u'are', u'definitely', u'looking', u'forward', u'and',
-                    u'feeling', u'confident', u'that', u'ABC', u'will', u'renew', u'the', u'series', u'for', u'a', u'second',
-                    u'season', u'(', u'seventh', u'if', u'you', u'count', u'the', u'five', u'seasons', u'it', u'ran', u'on',
-                    u'Comedy', u'Central', u'from', u'2000', u'to', u'2002', u')', u'.', u'And', u'they', u"'ve",
-                    u'definitely', u'given', u'some', u'thought', u'as', u'to', u'what', u'they', u"'d", u'like', u'to',
-                    u'do', u'similarly', u'and', u'what', u'they', u"'d", u'like', u'to', u'change', u'up', u'.']
-
-        stop_words_removed = _remove_stop_words(document)
-
-        words = [u'this', u'that', u'at', u'the', u'a', u'is', u'are', u'was']
-        self.assertTrue(all(x not in stop_words_removed for x in words))
-
-    def test_filter_latin_words(self):
-        words = [u'I', u'know', u'how', u'to', u'do', u'it']
-        self.assertTrue(words == _filter_latin_words(words))
-
-        self.assertTrue(not _filter_latin_words([u'1000']))
-
-    def test_initialize_tm_dictionary(self):
-        tm_documents = [[u'BattleBots', u'producers', u'definitely', u'looking', u'forward', u'feeling', u'confident',
-                         u'ABC', u'renew', u'series', u'second', u'season', u'seventh', u'count', u'five', u'seasons',
-                         u'ran', u'Comedy', u'Central', u'And', u'\'ve', u'definitely', u'given', u'thought', u'like',
-                         u'similarly', u'like', u'change'],
-                        [u'In', u'many', u'ways', u'an', u'open', u'ournament', u'helps', u'here', u'But', u'the',
-                         u'producers', u'encourage', u'competitors', u'to', u'find', u'loopholes', u'in', u'the',
-                         u'rules']]
-
-        topicmodeller = TopicModeller()
-        topicmodeller.initialize(tm_documents, num_topics=2)
-
-        all_words = (word for document in tm_documents
-                     for word in document)
-
-        self.assertTrue(all(word in topicmodeller.dictionary.values() for word in all_words))
-
+        classification_after_load_doc1 = deserialized_topic_modeller.classify(doc1)
+        self.assertEquals(len(topic_modeller.topics), len(classification_after_load_doc1))
+        for after_init, after_load in zip(classification_after_init_doc1, classification_after_load_doc1):
+            self.assertAlmostEqual(after_init, after_load, places=4)
 
 if __name__ == '__main__':
     unittest.main()

@@ -3,7 +3,7 @@
 import re
 import unittest
 from scraper.scraper import _is_valid_link, _get_invalid_regex
-from common.scraperstructs import LinkElement
+from scraper.scraperstructs import LinkElement
 
 
 class ScraperTests(unittest.TestCase):

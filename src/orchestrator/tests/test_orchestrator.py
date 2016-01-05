@@ -7,7 +7,7 @@ import vcr
 import jsonpickle
 
 from orchestrator.orchestrator import _to_json, _setup_env
-from common.scraperstructs import Document, LinkElement
+from scraper.scraperstructs import Document, LinkElement
 from scraper.scraper import _get_doc_generator
 
 

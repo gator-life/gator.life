@@ -8,7 +8,7 @@ import cchardet
 import requests
 
 from .reddit import reddit_link_elements_generator
-from common.scraperstructs import Document
+from .scraperstructs import Document
 
 def _is_valid_link(link_element, invalid_paths_regex, invalid_extensions):
     url = link_element.url

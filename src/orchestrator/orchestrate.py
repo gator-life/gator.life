@@ -10,5 +10,4 @@ logging.basicConfig(format=u'%(asctime)s : %(levelname)s : %(message)s', level=l
 
 
 orchestrate(scraper_output_folder='/home/mohamed/Development/Data/gator/orchestrate/scraper_json/',
-            tm_data_folder='/home/mohamed/Development/Data/TopicModelling/data',
-            tm_output_folder='/home/mohamed/Development/Data/gator/orchestrate/topicmodeller_json/')
+            tm_data_folder='/home/mohamed/Development/Data/TopicModelling/data')
