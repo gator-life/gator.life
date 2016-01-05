@@ -30,14 +30,10 @@ def _filter_latin_words(words):
     return [word for word in words if re.search(r'^[a-zA-Z]*$', word) is not None]
 
 
-def _tokenize_document(html_content):
-    word_tokenized_document = _word_tokenize(_readable_document(html_content))
-    lowercase_document = [word.lower() for word in word_tokenized_document]
-    document = _clean(lowercase_document)
-    return document
-
-
 class DocTokenizer(object):
     @classmethod
     def tokenize(cls, html_document):
-        _tokenize_document(html_document)
+        word_tokenized_document = _word_tokenize(_readable_document(html_document))
+        lowercase_document = [word.lower() for word in word_tokenized_document]
+        document = _clean(lowercase_document)
+        return document

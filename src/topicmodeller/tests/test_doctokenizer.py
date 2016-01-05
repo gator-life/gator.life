@@ -4,10 +4,11 @@
 import os
 import unittest
 import jsonpickle
-from topicmodeller.doctokenizer import _filter_latin_words, _readable_document, _remove_stop_words, _word_tokenize
+from topicmodeller.doctokenizer import _filter_latin_words, _readable_document, _remove_stop_words, _word_tokenize, \
+    DocTokenizer
+
 
 class DocTokenizerTests(unittest.TestCase):
-
     def test_readable_document(self):
         directory = os.path.dirname(os.path.abspath(__file__))
         file_content = open(os.path.join(directory, 'scraper_documents/2015-08-01 18:00:22.926317_8.json')).read()
@@ -48,3 +49,19 @@ class DocTokenizerTests(unittest.TestCase):
         self.assertTrue(words == _filter_latin_words(words))
 
         self.assertTrue(not _filter_latin_words([u'1000']))
+
+    def test_tokenize(self):
+        directory = os.path.dirname(os.path.abspath(__file__))
+        file_content = open(os.path.join(directory, 'scraper_documents/2015-08-01 18:00:22.926317_8.json')).read()
+        html_content = jsonpickle.decode(file_content).html_content
+        tokenizer = DocTokenizer()
+        tokenized = tokenizer.tokenize(html_content)
+
+        self.assertTrue(len(tokenized) > 200)
+        self.assertTrue('a' not in tokenized)  # no too common english words
+        self.assertTrue('as' not in tokenized)
+        self.assertTrue(word.lower() == word for word in tokenized)  # lower cases
+
+
+if __name__ == '__main__':
+    unittest.main()
