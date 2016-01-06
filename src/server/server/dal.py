@@ -95,14 +95,27 @@ def _to_docs(db_doc_keys):
 
 
 def save_user_docs(user, user_docs):
+    db_user_doc_set = user._user_doc_set_db_key.get()  # pylint: disable=protected-access
+    db_user_docs = _to_db_user_docs(user_docs)
+    db_user_doc_set.user_documents = db_user_docs
+    db_user_doc_set.put()
+
+
+def _to_db_user_docs(user_docs):
     db_user_docs = [
         db.UserDocument.make(
             document_key=user_doc.document._db_key,  # pylint: disable=protected-access
             grade=user_doc.grade
         ) for user_doc in user_docs]
-    user_doc_set = user._user_doc_set_db_key.get()  # pylint: disable=protected-access
-    user_doc_set.user_documents = db_user_docs
-    user_doc_set.put()
+    return db_user_docs
+
+
+def save_users_docs(user_to_user_docs_dict):
+    user_set_db_keys = [user._user_doc_set_db_key for user in user_to_user_docs_dict]  # pylint: disable=protected-access
+    db_user_sets = ndb.get_multi(user_set_db_keys)
+    for (db_user_set, user_docs) in zip(db_user_sets, user_to_user_docs_dict.itervalues()):
+        db_user_set.user_documents = _to_db_user_docs(user_docs)
+    ndb.put_multi(db_user_sets)
 
 
 def get_user_docs(user):
