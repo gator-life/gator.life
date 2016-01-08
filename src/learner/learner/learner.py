@@ -84,9 +84,6 @@ class _FixedSizeHeap(object):
     """
     Min Heap data structure with a fixed size. It means at each instant, you keep the "max_size" biggest elements
     based on the comparison of the keys.
-    If len(heap.list)==max_size, adding a new element
-        -won't change anything if key<min(list)
-        -will remove the minimum present element and add replace it by the new element in the list
     """
     def __init__(self, key_value_list, max_size):
         self._max_size = max_size
@@ -95,6 +92,14 @@ class _FixedSizeHeap(object):
             self.push(key, value)
 
     def push(self, key, value):
+        """
+        If len(heap.list)<max_size, push key-value in the container
+        If len(heap.list)=max_size:
+            -if key<min(list): don't change anything
+            -else replace the minimum present element by input
+        :param key: comparable value used to compare elements
+        :param value: value associated to the key, can be anything
+        """
         if len(self.list) < self._max_size:
             heapq.heappush(self.list, (key, value))
         else:
