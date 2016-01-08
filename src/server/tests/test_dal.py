@@ -152,7 +152,7 @@ class DalTests(unittest.TestCase):
         expected_user2_docs = [
             struct.UserDocument.make_from_scratch(doc1, 0.3)]
 
-        dal.save_users_docs({user1: expected_user1_docs, user2: expected_user2_docs})
+        dal.save_users_docs([(user1, expected_user1_docs), (user2, expected_user2_docs)])
         user_docs_by_user = dal.get_users_docs((user2, user1))
 
         self.assertEqual(2, len(user_docs_by_user))
