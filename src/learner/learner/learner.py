@@ -103,4 +103,4 @@ class _FixedSizeHeap(object):
         if len(self.list) < self._max_size:
             heapq.heappush(self.list, (key, value))
         else:
-            heapq.heappushpop(self.list, (key, value))
+            heapq.heappushpop(self.list, (key, value))  # emulate heappush then heappop but O(1) if key<min(list)
