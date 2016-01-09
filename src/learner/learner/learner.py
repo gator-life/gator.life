@@ -77,7 +77,8 @@ def _similarity_by_row(matrix, vector):
     :return: vector of size n
     """
     vec_as_1_p_matrix = [vector]
-    return 1 - distance.cdist(matrix, vec_as_1_p_matrix, metric='cosine')
+    similarity_as_matrix =  1 - distance.cdist(matrix, vec_as_1_p_matrix, metric='cosine')
+    return similarity_as_matrix.ravel()  # ravel transform matrix in a vector so indexing return float
 
 
 class _FixedSizeHeap(object):

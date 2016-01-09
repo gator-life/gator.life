@@ -4,7 +4,6 @@ from math import sqrt
 import unittest
 from learner.learner import UserDocumentsAccumulator, UserData, UserDoc, _similarity_by_row, _FixedSizeHeap
 
-
 # test implementation of L2 norm without re-using numpy code
 def norm(vec):
     return sqrt(sum(x*x for x in vec))
@@ -18,6 +17,8 @@ class LearnerTests(unittest.TestCase):
         users = [user1, user2]
         doc = [1.0, 0.5, 0.1]
         matching = _similarity_by_row(matrix=users, vector=doc)
+        self.assertIsInstance(matching[0], float)
+        self.assertIsInstance(matching[1], float)
         self.assertEqual(0.99/(norm(user1)*norm(doc)), matching[0])
         self.assertEqual(1.01/(norm(user2)*norm(doc)), matching[1])
 
@@ -49,7 +50,7 @@ class FixedSizeHeapTests(unittest.TestCase):
 
 class UserDocumentsAccumulatorTest(unittest.TestCase):
 
-    def test_init_then_add_docs_then_build_user_docs(self):
+    def test_init_then_add_docs_then_build_user_docs(self): #todo don't check only docId !!! => grade is an array of size 1 sometime
         vec1 = [-1.0, 1.0]
         vec2 = [1.0, -1.0]
         user_docs1 = (user_doc for user_doc in [UserDoc("doc1", 100)])
