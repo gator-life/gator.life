@@ -4,7 +4,7 @@ import unittest
 import os
 import vcr
 
-from scraper.scraper import scrap
+from scraper.scraper import Scraper
 
 class ScraperIntegrationTests(unittest.TestCase):
 
@@ -15,10 +15,10 @@ class ScraperIntegrationTests(unittest.TestCase):
     def test_scrap(self):
         nb_doc = 12  # <20 to keep test under 2sec, 20 minus 8 filtered
         curr_doc = 0
-
+        scraper = Scraper(disconnected=True)
         directory = os.path.dirname(os.path.abspath(__file__))
         with vcr.use_cassette(directory + '/vcr_cassettes/test_run_scraper.yaml', record_mode='none'):
-            for doc in scrap(disconnected=True):
+            for doc in scraper.scrap():
                 self.assertIsNotNone(doc.html_content)  # we don't return unavailable pages
                 self.assertIsInstance(doc.html_content, unicode)  # 'str' sucks, must use unicode (python 3 str versions)
                 self.assertNotIn('.gif', doc.link_element.url)  # check extension filter

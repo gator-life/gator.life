@@ -50,7 +50,7 @@ class FixedSizeHeapTests(unittest.TestCase):
 
 class UserDocumentsAccumulatorTest(unittest.TestCase):
 
-    def test_init_then_add_docs_then_build_user_docs(self): #todo don't check only docId !!! => grade is an array of size 1 sometime
+    def test_init_then_add_docs_then_build_user_docs(self):
         vec1 = [-1.0, 1.0]
         vec2 = [1.0, -1.0]
         user_docs1 = (user_doc for user_doc in [UserDoc("doc1", 100)])
