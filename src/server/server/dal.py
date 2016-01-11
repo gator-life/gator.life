@@ -110,10 +110,18 @@ def _to_db_user_docs(user_docs):
     return db_user_docs
 
 
-def save_users_docs(user_to_user_docs_dict):
-    user_set_db_keys = [user._user_doc_set_db_key for user in user_to_user_docs_dict]  # pylint: disable=protected-access
+def save_users_docs(user_to_user_docs_list):
+    """
+    Save UserDocuments list associated to each User
+    :param user_to_user_docs_list: list of tuples (User, List of UserDocument)
+    """
+    user_set_db_keys = []
+    users_docs = []
+    for user, user_docs in user_to_user_docs_list:
+        user_set_db_keys.append(user._user_doc_set_db_key)  # pylint: disable=protected-access
+        users_docs.append(user_docs)
     db_user_sets = ndb.get_multi(user_set_db_keys)
-    for (db_user_set, user_docs) in zip(db_user_sets, user_to_user_docs_dict.itervalues()):
+    for (db_user_set, user_docs) in zip(db_user_sets, users_docs):  # zip is ok because ndb.get_multi() maintains order
         db_user_set.user_documents = _to_db_user_docs(user_docs)
     ndb.put_multi(db_user_sets)
 
