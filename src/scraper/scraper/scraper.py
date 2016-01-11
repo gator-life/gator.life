@@ -10,6 +10,7 @@ import requests
 from .reddit import reddit_link_elements_generator
 from .scraperstructs import Document
 
+
 def _is_valid_link(link_element, invalid_paths_regex, invalid_extensions):
     url = link_element.url
     path = urlparse.urlparse(url).path
@@ -61,7 +62,7 @@ def _get_invalid_regex():
     return invalid_paths_regex
 
 
-def scrap(disconnected=False):
+def _scrap(disconnected):
     invalid_paths_regex = _get_invalid_regex()
     invalid_extensions = ['.jpg', '.gif', '.png', '.webm']
     links_elts = reddit_link_elements_generator(disconnected)
@@ -74,3 +75,14 @@ def _get_doc_generator(link_elts):
     links_and_htmls = ((link, _try_get_html(link.url)) for link in link_elts)
     documents = (Document(link, html) for link, html in links_and_htmls if html is not None)
     return documents
+
+
+class Scraper(object):
+    def __init__(self, disconnected=False):
+        self.disconnected = disconnected
+
+    def scrap(self):
+        """
+        :return: generator of scraperstructs.Document
+        """
+        return _scrap(self.disconnected)

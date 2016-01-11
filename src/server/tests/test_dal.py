@@ -2,19 +2,16 @@
 import unittest
 import itertools
 from google.appengine.ext import ndb
-from google.appengine.ext import testbed
 import server.dal as dal
 import server.dbentities as db
 import server.frontendstructs as struct
+from common.testhelpers import make_gae_testbed
 
 
 class DalTests(unittest.TestCase):
     def setUp(self):
         # standard set of calls to initialize unit test ndb environment
-        self.testbed = testbed.Testbed()
-        self.testbed.activate()
-        self.testbed.init_datastore_v3_stub()
-        self.testbed.init_memcache_stub()
+        self.testbed = make_gae_testbed()
         ndb.get_context().clear_cache()
 
     def tearDown(self):
