@@ -134,14 +134,11 @@ class DalTests(unittest.TestCase):
         self.assertEqual(0.1, result_vectors[0].vector[0])
         self.assertEqual(0.2, result_vectors[1].vector[0])
 
-    def test_get_users_docs(self):
-        # setup : init docs in database
-        db_doc1 = db.Document.make(url='url1', title='title1', summary='')
-        db_doc2 = db.Document.make(url='url2', title='title2', summary='')
-        ndb.put_multi([db_doc1, db_doc2])
+    def test_save_then_get_users_docs_should_be_equals(self):
 
-        doc1 = struct.Document.make_from_db(url=db_doc1.url, title=db_doc1.title, summary='', date=None, db_key=db_doc1.key)
-        doc2 = struct.Document.make_from_db(url=db_doc2.url, title=db_doc2.title, summary='', date=None, db_key=db_doc2.key)
+        doc1 = struct.Document.make_from_scratch(url='url1', title='title1', summary='')
+        doc2 = struct.Document.make_from_scratch(url='url2', title='title2', summary='')
+        dal.save_documents([doc1, doc2])
 
         # create user and save it to init user_document_set_key field
         user1 = struct.User.make_from_scratch("test_get_users_docs1")
@@ -155,8 +152,7 @@ class DalTests(unittest.TestCase):
         expected_user2_docs = [
             struct.UserDocument.make_from_scratch(doc1, 0.3)]
 
-        dal.save_user_docs(user1, expected_user1_docs)
-        dal.save_user_docs(user2, expected_user2_docs)
+        dal.save_users_docs({user1: expected_user1_docs, user2: expected_user2_docs})
         user_docs_by_user = dal.get_users_docs((user2, user1))
 
         self.assertEqual(2, len(user_docs_by_user))
