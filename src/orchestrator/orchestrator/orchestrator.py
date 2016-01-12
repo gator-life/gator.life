@@ -19,19 +19,15 @@ def _setup_env():
     jsonpickle.set_encoder_options('simplejson', indent=4, ensure_ascii=False)
 
 
-def _dump_as_json_document(document, folder):
-    json = jsonpickle.encode(document)
-    filename = folder + '/' + str(datetime.datetime.utcnow()) + '.json'
-    with codecs.open(filename=filename, mode='w', encoding='utf-8') as file_desc:
-        file_desc.write(json)
-
-
 class DocSaver(object):
     def __init__(self, folder):
         self.folder = folder
 
     def save(self, document):
-        _dump_as_json_document(document, self.folder)
+        json = jsonpickle.encode(document)
+        filename = self.folder + '/' + str(datetime.datetime.utcnow()) + '.json'
+        with codecs.open(filename=filename, mode='w', encoding='utf-8') as file_desc:
+            file_desc.write(json)
 
 
 def orchestrate(scraper_output_folder, tm_data_folder):

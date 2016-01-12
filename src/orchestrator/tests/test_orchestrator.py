@@ -61,8 +61,10 @@ class OrchestratorTests(unittest.TestCase):
         doc2 = struct.Document.make_from_scratch("url2", 'title2', "sum2")
         dal.save_documents([doc1, doc2])
         # I.3) userDoc
-        dal.save_users_docs([(user1, [struct.UserDocument.make_from_scratch(doc1, grade=0.0)])])  # should be removed
-        dal.save_users_docs([(user1, [struct.UserDocument.make_from_scratch(doc2, grade=1.0)])])
+        user1_user_docs = [
+            struct.UserDocument.make_from_scratch(doc1, grade=0.0),  # this one should be removed
+            struct.UserDocument.make_from_scratch(doc2, grade=1.0)]
+        dal.save_users_docs([(user1, user1_user_docs)])
         # II) Orchestrate
         mock_saver = MockSaver()
         _orchestrate(MockScraper(), mock_saver, MockTopicModeller(), docs_chunk_size=3, user_docs_max_size=5)
