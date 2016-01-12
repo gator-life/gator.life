@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from topicmodeller.topicmodeller import initialize_model, _to_topicmodellable_document
+from topicmodeller.topicmodeller import TopicModeller
 
 import jsonpickle
 import logging
@@ -12,7 +12,7 @@ logging.basicConfig(format=u'%(asctime)s : %(levelname)s : %(message)s', level=l
                     filename='tm_initialize_model.log')
 
 
-class RepeatableScraperDocuments(object):
+class RepeatableHtmlDocuments(object):
     def __init__(self, folder):
         self.folder = folder
 
@@ -21,9 +21,12 @@ class RepeatableScraperDocuments(object):
             file_path = os.path.join(self.folder, file_name)
             file_content = open(file_path).read()
 
-            yield jsonpickle.decode(file_content)
+            scraper_document = jsonpickle.decode(file_content)
+            yield scraper_document.html_content
 
 
-scraper_documents = RepeatableScraperDocuments('/home/mohamed/Development/Data/TopicModelling/recorded_html_01_08')
+html_documents = RepeatableHtmlDocuments('/home/mohamed/Development/Data/gator/Scraping_11-01-2016')
 
-initialize_model(scraper_documents, tm_data_folder='/home/mohamed/Development/Data/TopicModelling/data', num_topics=128)
+topic_modeller = TopicModeller.make()
+topic_modeller.initialize(html_documents, num_topics=128)
+topic_modeller.save('/home/mohamed/Development/Data/gator/TopicModellerData')
