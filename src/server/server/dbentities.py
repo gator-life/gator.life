@@ -4,15 +4,13 @@ this module should not be included except from dal.py
 """
 from google.appengine.ext import ndb
 
-
-
 # ----------- entities modified by backend -----------
 
 class Document(ndb.Model):
     url = ndb.StringProperty(indexed=False, required=True)  # NB: url cannot be the key because it's 500 bytes max
     title = ndb.StringProperty(indexed=False, required=True)
     summary = ndb.StringProperty(indexed=False, required=False)
-    date = ndb.DateTimeProperty(indexed=False, required=True, auto_now_add=True)
+    datetime = ndb.DateTimeProperty(indexed=False, required=True, auto_now_add=True)
 
     @staticmethod
     def make(url, title, summary):
@@ -86,3 +84,14 @@ class User(ndb.Model):
     @staticmethod
     def get(user_id):
         return User.get_by_id(user_id)
+
+
+class UserActionOnDoc(ndb.Model):
+    document_key = ndb.KeyProperty(kind=Document, indexed=False, required=True)
+    user_key = ndb.KeyProperty(kind=User, indexed=True, required=True)
+    action_type = ndb.StringProperty(indexed=False, required=True)
+    datetime = ndb.DateTimeProperty(indexed=True, required=True, auto_now_add=True)
+
+    @staticmethod
+    def make(user_id, document_key, action_type):
+        return UserActionOnDoc(user_key=ndb.Key(User, user_id), document_key=document_key, action_type=action_type)

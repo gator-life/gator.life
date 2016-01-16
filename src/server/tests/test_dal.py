@@ -1,4 +1,5 @@
 # coding=utf-8
+from datetime import datetime
 import unittest
 import itertools
 from google.appengine.ext import ndb
@@ -66,9 +67,9 @@ class DalTests(unittest.TestCase):
         ndb.put_multi([db_doc1, db_doc2])
 
         doc1 = struct.Document.make_from_db(
-            url=db_doc1.url, title=db_doc1.title, summary=None, date=None, db_key=db_doc1.key)
+            url=db_doc1.url, title=db_doc1.title, summary=None, datetime=None, db_key=db_doc1.key)
         doc2 = struct.Document.make_from_db(
-            url=db_doc2.url, title=db_doc2.title, summary=None, date=None, db_key=db_doc2.key)
+            url=db_doc2.url, title=db_doc2.title, summary=None, datetime=None, db_key=db_doc2.key)
 
         expected_user_docs = [
             struct.UserDocument.make_from_scratch(doc1, 0.1),
@@ -162,6 +163,41 @@ class DalTests(unittest.TestCase):
         self.assertEqual(0.2, result_user1[1].grade)
         self.assertEqual(result_user1[0].document, result_user2[0].document)  # check that we use the same reference
         self.assertEqual('title2', result_user1[1].document.title)
+
+    def test_save_then_get_user_actions_on_doc(self):
+        doc1 = struct.Document.make_from_scratch(url='url1', title='title1', summary='')
+        doc2 = struct.Document.make_from_scratch(url='url2', title='title2', summary='')
+        dal.save_documents([doc1, doc2])
+        user1 = struct.User.make_from_scratch("test_save_then_get_user_actions_on_doc1")
+        user2 = struct.User.make_from_scratch("test_save_then_get_user_actions_on_doc2")
+        user3 = struct.User.make_from_scratch("test_save_then_get_user_actions_on_doc3")
+        dal.save_user(user1)
+        dal.save_user(user2)
+        dal.save_user(user3)
+        dal.save_user_action_on_doc(user1, doc2, struct.UserActionTypeOnDoc.up_vote)  # before min_datetime, filtered
+        min_datetime = datetime.utcnow()
+        dal.save_user_action_on_doc(user1, doc1, struct.UserActionTypeOnDoc.up_vote)
+        dal.save_user_action_on_doc(user2, doc1, struct.UserActionTypeOnDoc.down_vote)
+        dal.save_user_action_on_doc(user1, doc2, struct.UserActionTypeOnDoc.click_link)
+        dal.save_user_action_on_doc(user3, doc2, struct.UserActionTypeOnDoc.click_link)  # not in user list, filtered
+
+        result = dal.get_user_actions_on_docs([user2, user1], min_datetime)
+
+        self.assertEquals(2, len(result))
+        user2_actions = result[0]
+        user1_actions = result[1]
+        self.assertEquals(1, len(user2_actions))
+        user2_action = user2_actions[0]
+        self.assertEquals('title1', user2_action.document.title)
+        self.assertEquals(struct.UserActionTypeOnDoc.down_vote, user2_action.action_type)
+        self.assertTrue(min_datetime < user2_action.datetime)
+        self.assertEquals(2, len(user1_actions))
+
+    # for each static member of the class (remove special fields __***__), check we do a proper round-trip with database
+    def test_action_type_on_doc_mapping_with_db(self):
+        for enum_name, enum_value in vars(struct.UserActionTypeOnDoc).iteritems():
+            if not enum_name.startswith("__"):
+                self.assertEquals(enum_value, dal._to_user_action_type_on_doc(dal._to_db_action_type_on_doc(enum_value)))
 
     @staticmethod
     def build_dummy_feature_set():
