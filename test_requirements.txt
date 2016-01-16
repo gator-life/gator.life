@@ -1,4 +1,4 @@
-selenium=2.48.0
+selenium==2.48.0
 pytest
 pylint
 vcrpy
