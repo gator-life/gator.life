@@ -4,38 +4,8 @@ this module should not be included except from dal.py
 """
 from google.appengine.ext import ndb
 
+
 # ----------- entities modified by backend -----------
-
-class Document(ndb.Model):
-    url = ndb.StringProperty(indexed=False, required=True)  # NB: url cannot be the key because it's 500 bytes max
-    title = ndb.StringProperty(indexed=False, required=True)
-    summary = ndb.StringProperty(indexed=False, required=False)
-    datetime = ndb.DateTimeProperty(indexed=False, required=True, auto_now_add=True)
-
-    @staticmethod
-    def make(url, title, summary):
-        return Document(url=url, title=title, summary=summary)
-
-
-class UserDocument(ndb.Model):
-    document_key = ndb.KeyProperty(kind=Document, indexed=False, required=True)
-    grade = ndb.FloatProperty(indexed=False, required=True)
-
-    @staticmethod
-    def make(document_key, grade):
-        return UserDocument(document_key=document_key, grade=grade)
-
-
-class UserDocumentSet(ndb.Model):
-    user_documents = ndb.StructuredProperty(UserDocument, indexed=False, repeated=True)
-
-    @staticmethod
-    def make():
-        return UserDocumentSet(user_documents=[])
-
-    def set_user_documents(self, user_documents):
-        self.user_documents = user_documents
-
 
 class FeatureDescription(ndb.Model):
     name = ndb.StringProperty(indexed=False, required=True)
@@ -64,6 +34,38 @@ class FeatureVector(ndb.Model):
     @staticmethod
     def make(feature_set_id, vector):
         return FeatureVector(feature_set_key=ndb.Key(FeatureSet, feature_set_id), vector=vector)
+
+
+class Document(ndb.Model):
+    url = ndb.StringProperty(indexed=False, required=True)  # NB: url cannot be the key because it's 500 bytes max
+    title = ndb.StringProperty(indexed=False, required=True)
+    summary = ndb.StringProperty(indexed=False, required=False)
+    datetime = ndb.DateTimeProperty(indexed=False, required=True, auto_now_add=True)
+    feature_vector = ndb.StructuredProperty(FeatureVector, indexed=False, repeated=False, required=True)
+
+    @staticmethod
+    def make(url, title, summary, feature_vector):
+        return Document(url=url, title=title, summary=summary, feature_vector=feature_vector)
+
+
+class UserDocument(ndb.Model):
+    document_key = ndb.KeyProperty(kind=Document, indexed=False, required=True)
+    grade = ndb.FloatProperty(indexed=False, required=True)
+
+    @staticmethod
+    def make(document_key, grade):
+        return UserDocument(document_key=document_key, grade=grade)
+
+
+class UserDocumentSet(ndb.Model):
+    user_documents = ndb.StructuredProperty(UserDocument, indexed=False, repeated=True)
+
+    @staticmethod
+    def make():
+        return UserDocumentSet(user_documents=[])
+
+    def set_user_documents(self, user_documents):
+        self.user_documents = user_documents
 
 
 # ----------- entities modified by frontend -----------

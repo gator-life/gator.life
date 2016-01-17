@@ -62,14 +62,9 @@ class DalTests(unittest.TestCase):
 
     def test_save_then_get_user_docs_should_be_equals(self):
         # setup : init docs in database
-        db_doc1 = db.Document.make(url='url1', title='title1', summary=None)
-        db_doc2 = db.Document.make(url='url2', title='title2', summary=None)
-        ndb.put_multi([db_doc1, db_doc2])
-
-        doc1 = struct.Document.make_from_db(
-            url=db_doc1.url, title=db_doc1.title, summary=None, datetime=None, db_key=db_doc1.key)
-        doc2 = struct.Document.make_from_db(
-            url=db_doc2.url, title=db_doc2.title, summary=None, datetime=None, db_key=db_doc2.key)
+        doc1 = self.make_dummy_doc('test_save_then_get_user_docs_should_be_equals1')
+        doc2 = self.make_dummy_doc('test_save_then_get_user_docs_should_be_equals2')
+        dal.save_documents([doc1, doc2])
 
         expected_user_docs = [
             struct.UserDocument.make_from_scratch(doc1, 0.1),
@@ -88,21 +83,26 @@ class DalTests(unittest.TestCase):
             self.assertEquals(expected.document.title, result.document.title)
 
     def test_save_documents(self):
+        feature_set = self.build_dummy_db_feature_set()
+        feat_vec1 = struct.FeatureVector.make_from_scratch(vector=[0.5, 0.6], feature_set_id=feature_set.key.id())
+        feat_vec2 = struct.FeatureVector.make_from_scratch(vector=[1.5, 0.6], feature_set_id=feature_set.key.id())
+
         expected_doc1 = struct.Document.make_from_scratch(
-            url='url1_test_save_documents', title='title1_test_save_documents', summary='summary1')
+            url='url1_test_save_documents', title='title1_test_save_documents', summary='s1', feature_vector=feat_vec1)
         expected_doc2 = struct.Document.make_from_scratch(
-            url='url2_test_save_documents', title='title1_test_save_documents', summary='summary2')
+            url='url2_test_save_documents', title='title2_test_save_documents', summary='s2', feature_vector=feat_vec2)
         expected_docs = [expected_doc1, expected_doc2]
         dal.save_documents(expected_docs)
 
         for expected_doc in expected_docs:
-            result_doc = expected_doc._db_key.get()
+            result_doc = dal._to_doc(expected_doc._db_key.get())
             self.assertEquals(expected_doc.url, result_doc.url)
             self.assertEquals(expected_doc.title, result_doc.title)
             self.assertEquals(expected_doc.summary, result_doc.summary)
+            self.assertEquals(expected_doc.feature_vector.vector[0], result_doc.feature_vector.vector[0])
 
     def test_save_then_get_user_feature_vector_should_be_equals(self):
-        feature_set = self.build_dummy_feature_set()
+        feature_set = self.build_dummy_db_feature_set()
         expected_feat_vec = struct.FeatureVector.make_from_scratch(
             vector=[0.5, 0.6], feature_set_id=feature_set.key.id())
 
@@ -121,7 +121,7 @@ class DalTests(unittest.TestCase):
         user2 = struct.User.make_from_scratch('test_get_users_feature_vectors2')
         dal.save_user(user1)
         dal.save_user(user2)
-        feature_set = self.build_dummy_feature_set()
+        feature_set = self.build_dummy_db_feature_set()
         feat_vec_1 = struct.FeatureVector.make_from_scratch(
             vector=[0.2], feature_set_id=feature_set.key.id())
         feat_vec_2 = struct.FeatureVector.make_from_scratch(
@@ -134,8 +134,8 @@ class DalTests(unittest.TestCase):
 
     def test_save_then_get_users_docs_should_be_equals(self):
 
-        doc1 = struct.Document.make_from_scratch(url='url1', title='title1', summary='')
-        doc2 = struct.Document.make_from_scratch(url='url2', title='title2', summary='')
+        doc1 = self.make_dummy_doc('test_save_then_get_users_docs_should_be_equals1')
+        doc2 = self.make_dummy_doc('test_save_then_get_users_docs_should_be_equals2')
         dal.save_documents([doc1, doc2])
 
         # create user and save it to init user_document_set_key field
@@ -162,11 +162,11 @@ class DalTests(unittest.TestCase):
         self.assertEqual(0.1, result_user1[0].grade)
         self.assertEqual(0.2, result_user1[1].grade)
         self.assertEqual(result_user1[0].document, result_user2[0].document)  # check that we use the same reference
-        self.assertEqual('title2', result_user1[1].document.title)
+        self.assertEqual(doc2.title, result_user1[1].document.title)
 
     def test_save_then_get_user_actions_on_doc(self):
-        doc1 = struct.Document.make_from_scratch(url='url1', title='title1', summary='')
-        doc2 = struct.Document.make_from_scratch(url='url2', title='title2', summary='')
+        doc1 = self.make_dummy_doc('test_save_then_get_user_actions_on_doc1')
+        doc2 = self.make_dummy_doc('test_save_then_get_user_actions_on_doc2')
         dal.save_documents([doc1, doc2])
         user1 = struct.User.make_from_scratch("test_save_then_get_user_actions_on_doc1")
         user2 = struct.User.make_from_scratch("test_save_then_get_user_actions_on_doc2")
@@ -188,10 +188,16 @@ class DalTests(unittest.TestCase):
         user1_actions = result[1]
         self.assertEquals(1, len(user2_actions))
         user2_action = user2_actions[0]
-        self.assertEquals('title1', user2_action.document.title)
+        self.assertEquals(doc1.title, user2_action.document.title)
         self.assertEquals(struct.UserActionTypeOnDoc.down_vote, user2_action.action_type)
         self.assertTrue(min_datetime < user2_action.datetime)
         self.assertEquals(2, len(user1_actions))
+
+    def make_dummy_doc(self, str_id):
+        feature_set = self.build_dummy_db_feature_set()
+        feat_vec = struct.FeatureVector.make_from_scratch(vector=[0.2], feature_set_id=feature_set.key.id())
+        return struct.Document.make_from_scratch(
+            url='url_' + str_id, title='title' + str_id, summary='s_' + str_id, feature_vector=feat_vec)
 
     # for each static member of the class (remove special fields __***__), check we do a proper round-trip with database
     def test_action_type_on_doc_mapping_with_db(self):
@@ -200,7 +206,7 @@ class DalTests(unittest.TestCase):
                 self.assertEquals(enum_value, dal._to_user_action_type_on_doc(dal._to_db_action_type_on_doc(enum_value)))
 
     @staticmethod
-    def build_dummy_feature_set():
+    def build_dummy_db_feature_set():
         feature2 = db.FeatureDescription.make('desc2')
         feature1 = db.FeatureDescription.make('desc1')
         feature_set = db.FeatureSet.make(feature_set_id='set', feature_descriptions=[feature1, feature2])

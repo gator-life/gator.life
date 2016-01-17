@@ -9,7 +9,7 @@ import jsonpickle
 
 import learner.learner as lrn
 from scraper.scraper import Scraper
-from server.frontendstructs import Document, UserDocument
+from server.frontendstructs import Document, UserDocument, FeatureVector
 import server.dal as dal
 from topicmodeller.topicmodeller import TopicModeller
 
@@ -57,11 +57,14 @@ def _orchestrate(scraper, scraper_doc_saver, topic_modeller, docs_chunk_size, us
     while True:
         try:
             for scraper_document in scraper.scrap():
+
+                topic_feature_vector = topic_modeller.classify(scraper_document.html_content)
                 doc = Document.make_from_scratch(
-                    scraper_document.link_element.url, scraper_document.link_element.origin_info.title, summary=None)
+                    scraper_document.link_element.url, scraper_document.link_element.origin_info.title, summary=None,
+                    feature_vector=FeatureVector.make_from_scratch(topic_feature_vector, dal.REF_FEATURE_SET))
                 scraper_doc_saver.save(doc)
                 doc_chunk[index_in_docs_chunk] = doc
-                topic_feature_vector = topic_modeller.classify(scraper_document.html_content)
+
                 user_docs_accumulator.add_doc(doc, topic_feature_vector)
 
                 index_in_docs_chunk += 1
