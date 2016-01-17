@@ -154,10 +154,7 @@ def get_users_docs(users):
 
 def save_documents(documents):
     docs_with_order = [doc for doc in documents]
-    db_docs = [db.Document.make(
-        url=doc.url, title=doc.title, summary=doc.summary,
-        feature_vector=_to_db_feature_vector(doc.feature_vector))
-               for doc in docs_with_order]
+    db_docs = [_to_db_doc(doc) for doc in docs_with_order]
     db_doc_keys = ndb.put_multi(db_docs)
     for (doc, key) in zip(documents, db_doc_keys):
         doc._db_key = key  # pylint: disable=protected-access
