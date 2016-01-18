@@ -156,7 +156,7 @@ def save_documents(documents):
     docs_with_order = [doc for doc in documents]
     db_docs = [_to_db_doc(doc) for doc in docs_with_order]
     db_doc_keys = ndb.put_multi(db_docs)
-    for (doc, key) in zip(documents, db_doc_keys):
+    for (doc, key) in zip(docs_with_order, db_doc_keys):
         doc._db_key = key  # pylint: disable=protected-access
 
 
