@@ -27,9 +27,6 @@ class HomePageHandler(webapp2.RequestHandler):
     def _get_or_create_user(self):
         email = self.request.get('email')
         user = dal.get_user(email)
-        if user is None:
-            user = dal.init_user_dummy(email)
-            dal.save_user(user)
         return user
 
     def _get_or_create_features(self, user):

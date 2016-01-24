@@ -2,7 +2,6 @@ import os
 import webapp2
 
 import handlers # pylint: disable=relative-import
-import dal  # pylint: disable=relative-import
 # problem (to solve) with app engine: server is not seen as a package by GAE
 # so you can't do proper relative import (from . import dal)
 
@@ -18,10 +17,6 @@ ROUTING = [
     ('/', handlers.LoginPageHandler),
     ('/home', handlers.HomePageHandler)
 ]
-
-dal.init_user_dummy(dal.NEW_USER_ID)
-dal.init_features_dummy(dal.REF_FEATURE_SET)
-dal.init_null_feature_set()
 
 # 'app' name is the convention for webapp. It must match the suffix of the 'script' directive in app.yaml file
 # cf. https://cloud.google.com/appengine/docs/python/config/appconfig
