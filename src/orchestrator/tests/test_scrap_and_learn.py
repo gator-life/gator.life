@@ -1,9 +1,9 @@
 # coding=utf-8
 
 import unittest
-from orchestrator.orchestrator import _orchestrate
-import scraper.scraperstructs as scrap
 from google.appengine.ext import ndb
+from orchestrator.scrap_and_learn import scrap_and_learn
+import scraper.scraperstructs as scrap
 from common.testhelpers import make_gae_testbed
 import server.dal as dal
 import server.frontendstructs as struct
@@ -38,7 +38,7 @@ class MockTopicModeller(object):
             raise ValueError(doc_content)
 
 
-class OrchestratorTests(unittest.TestCase):
+class ScrapAndLearnTests(unittest.TestCase):
 
     def setUp(self):
         self.testbed = make_gae_testbed()
@@ -47,7 +47,7 @@ class OrchestratorTests(unittest.TestCase):
     def tearDown(self):
         self.testbed.deactivate()  # pylint: disable=duplicate-code
 
-    def test_orchestrate(self):
+    def test_scrap_and_learn(self):
         # I)setup database and mocks
         # I.1) user
         user1 = struct.User.make_from_scratch("user1")
@@ -67,7 +67,7 @@ class OrchestratorTests(unittest.TestCase):
         dal.save_users_docs([(user1, user1_user_docs)])
         # II) Orchestrate
         mock_saver = MockSaver()
-        _orchestrate(MockScraper(), mock_saver, MockTopicModeller(), docs_chunk_size=3, user_docs_max_size=5)
+        scrap_and_learn(MockScraper(), mock_saver, MockTopicModeller(), docs_chunk_size=3, user_docs_max_size=5)
 
         # III) check database and mocks
         result_users_docs = dal.get_users_docs([user1, user2])

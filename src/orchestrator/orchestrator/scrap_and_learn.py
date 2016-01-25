@@ -1,48 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import codecs
-import datetime
 import logging
 from time import sleep
-import jsonpickle
 
 import learner.learner as lrn
-from scraper.scraper import Scraper
 from server.frontendstructs import Document, UserDocument
 import server.dal as dal
-from topicmodeller.topicmodeller import TopicModeller
 
 
-def _setup_env():
-    # set unicode and pretty-print
-    jsonpickle.set_encoder_options('simplejson', indent=4, ensure_ascii=False)
-
-
-class DocSaver(object):
-    def __init__(self, folder):
-        self.folder = folder
-
-    def save(self, document):
-        json = jsonpickle.encode(document)
-        filename = self.folder + '/' + str(datetime.datetime.utcnow()) + '.json'
-        with codecs.open(filename=filename, mode='w', encoding='utf-8') as file_desc:
-            file_desc.write(json)
-
-
-def orchestrate(scraper_output_folder, tm_data_folder):
-    _setup_env()
-    user_docs_max_size = 30
-    docs_chunk_size = 1000
-
-    topic_modeller = TopicModeller.make()
-    topic_modeller.load(tm_data_folder)
-    scraper = Scraper()
-
-    _orchestrate(scraper, DocSaver(scraper_output_folder), topic_modeller, docs_chunk_size, user_docs_max_size)
-
-
-def _orchestrate(scraper, scraper_doc_saver, topic_modeller, docs_chunk_size, user_docs_max_size):
+def scrap_and_learn(scraper, scraper_doc_saver, topic_modeller, docs_chunk_size, user_docs_max_size):
     users = dal.get_all_users()
     users_docs = dal.get_users_docs(users)
     users_feature_vectors = dal.get_users_feature_vectors(users)
