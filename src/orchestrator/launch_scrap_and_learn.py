@@ -24,7 +24,7 @@ class FileLoaderScraper(object):
 
 class NoActionSaver(object):
     def save(self, doc):
-        None
+        pass
 
 
 def launch_scrap_and_learn(scraper, doc_saver, tm_data_folder):
