@@ -5,6 +5,10 @@ import common.daltesthelpers as daltesthelpers
 from common.remote_api import initialize_remote_api
 
 
+def init_features_dummy(feature_set_id):
+    dal.save_features(feature_set_id, feature_names=['sport', 'trading', 'bmw', 'c++'])
+
+
 class NewVisitorTests(unittest.TestCase):
 
     def setUp(self):
@@ -13,7 +17,7 @@ class NewVisitorTests(unittest.TestCase):
 
         initialize_remote_api()
 
-        daltesthelpers.init_features_dummy(dal.REF_FEATURE_SET)
+        init_features_dummy(dal.REF_FEATURE_SET)
 
     def tearDown(self):
         self.browser.quit()
