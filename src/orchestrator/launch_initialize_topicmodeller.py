@@ -28,4 +28,5 @@ initialize_remote_api()
 
 html_documents = RepeatableHtmlDocuments('/home/mohamed/Development/Data/gator/DocsLight')
 
-initialize_topicmodeller(TopicModeller.make(), html_documents, tm_data_folder='/home/mohamed/Development/Data/gator/TM')
+initialize_topicmodeller_and_db(TopicModeller.make(), html_documents,
+                         tm_data_folder='/home/mohamed/Development/Data/gator/TM', num_topics=128)
