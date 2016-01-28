@@ -1,13 +1,8 @@
 import unittest
 from selenium import webdriver
 import server.dal as dal
-import common.daltesthelpers as daltesthelpers
 from common.remote_api import initialize_remote_api
-
-
-def init_features_dummy(feature_set_id):
-    dal.save_features(feature_set_id, feature_names=['sport', 'trading', 'bmw', 'c++'])
-
+import daltesthelpers as daltesthelpers
 
 class NewVisitorTests(unittest.TestCase):
 
@@ -17,7 +12,7 @@ class NewVisitorTests(unittest.TestCase):
 
         initialize_remote_api()
 
-        init_features_dummy(dal.REF_FEATURE_SET)
+        daltesthelpers.init_features_dummy(dal.REF_FEATURE_SET)
 
     def tearDown(self):
         self.browser.quit()

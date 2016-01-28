@@ -1,6 +1,6 @@
 import unittest
 from common.remote_api import initialize_remote_api
-import common.daltesthelpers as daltesthelpers
+import daltesthelpers as daltesthelpers
 import server.dal as dal
 
 class RemoteAPiTests(unittest.TestCase):

@@ -20,4 +20,8 @@ def init_user_dummy(user_id):
     dal.save_user_docs(new_user, [user_doc1, user_doc2])
 
 
+def init_features_dummy(feature_set_id):
+    dal.save_features(feature_set_id, feature_names=['sport', 'trading', 'bmw', 'c++'])
+
+
 NEW_USER_ID = "new_user_id"
