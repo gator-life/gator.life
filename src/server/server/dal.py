@@ -53,6 +53,12 @@ def get_features(feature_set_id):
     return [feature.name for feature in db_feature_set.features]
 
 
+def save_features(feature_set_id, feature_names):
+    features = [db.FeatureDescription.make(name) for name in feature_names]
+    feature_set = db.FeatureSet.make(feature_set_id=feature_set_id, feature_descriptions=features)
+    feature_set.put()
+
+
 def save_user_feature_vector(user, feature_vector):
     db_feature_vector = _to_db_feature_vector(feature_vector)
     # by setting as key the key previously referenced by the user, we will overwrite the previous feature_vector in db
@@ -234,35 +240,5 @@ def _to_db_action_type_on_doc(user_action_on_doc_enum):
         return 'view_link'
 
 
-# should be deleted, just to mock input from scraper/learner
-def init_user_dummy(user_id):
-    dummy_doc1 = struct.Document.make_from_scratch(
-        url='https://www.google.com', title='google.com', summary='we will buy you',
-        feature_vector=struct.FeatureVector.make_from_scratch([], NULL_FEATURE_SET))
-    dummy_doc2 = struct.Document.make_from_scratch(
-        url='gator.life', title='gator.life', summary='YGNI',
-        feature_vector=struct.FeatureVector.make_from_scratch([], NULL_FEATURE_SET))
-    save_documents([dummy_doc1, dummy_doc2])
-
-    new_user = struct.User.make_from_scratch(email=user_id)
-    save_user(new_user)
-    user_doc1 = struct.UserDocument.make_from_scratch(document=dummy_doc1, grade=1.0)
-    user_doc2 = struct.UserDocument.make_from_scratch(document=dummy_doc2, grade=0.5)
-    save_user_docs(new_user, [user_doc1, user_doc2])
-    return new_user
-
-
-# should be deleted, just to mock input from scraper/learner
-def init_features_dummy(feature_set_id):
-    feature_names = ['sport', 'trading', 'bmw', 'c++']
-    features = [db.FeatureDescription.make(name) for name in feature_names]
-    feature_set = db.FeatureSet.make(feature_set_id=feature_set_id, feature_descriptions=features)
-    feature_set.put()
-
-
-def init_null_feature_set():
-    db.FeatureSet.make(NULL_FEATURE_SET, []).put()
-
-NEW_USER_ID = "new_user_id"
 REF_FEATURE_SET = "ref_feature_set"
 NULL_FEATURE_SET = "null_feature_set"

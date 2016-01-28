@@ -22,3 +22,14 @@ http://stackoverflow.com/questions/27114470/gae-sdk-1-9-5-and-an-invalidcertific
 
 problem with gcloud local server with java 8 => choose java7
 http://askubuntu.com/questions/272187/setting-jdk-7-as-default
+
+I had the error "ImportError: No module named cryptography.hazmat.bindings._openssl". I reinstalled cryptography helped with "http://stackoverflow.com/questions/22073516/failed-to-install-python-cryptography-package-with-pip-and-setup-py"
+- sudo apt-get install build-essential libssl-dev libffi-dev python-dev
+- sudo pip install --upgrade cryptography
+
+While running unit tests I had the error "AttributeError: 'NoneType' object has no attribute 'close'". I reinstallad selenium.
+- sudo pip install --upgrade selenium
+
+While launching orchestrate.py script I had the error "AttributeError: 'module' object has no attribute 'code_pb2'". I dit not exported PYTHONPATH variable with "lib/google_appengine:lib/google_appengine/lib/fancy_urllib".
+- export PYTHONPATH=lib/google_appengine:lib/google_appengine/lib/fancy_urllib
+

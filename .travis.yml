@@ -23,7 +23,7 @@ before_script:
 - export GOOGLE_PIP_DIR=$(pip show protobuf | grep Location | awk {'print $2'})/google
 - ln -s $(pwd)/lib/google_appengine/google/appengine $GOOGLE_PIP_DIR/appengine
 - ln -s $(pwd)/lib/google_appengine/google/net $GOOGLE_PIP_DIR/net
-- ./lib/google_appengine/dev_appserver.py ./src/server/server/ --skip_sdk_update_check --clear_datastore yes --api_port=33001 &
+- ./tools/start_gae.sh &
 - sleep 3
 script:
 - py.test src

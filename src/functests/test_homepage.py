@@ -1,12 +1,18 @@
 import unittest
 from selenium import webdriver
-
+import server.dal as dal
+from common.remote_api import initialize_remote_api
+import daltesthelpers as daltesthelpers
 
 class NewVisitorTests(unittest.TestCase):
 
     def setUp(self):
         self.browser = webdriver.PhantomJS()
         self.browser.implicitly_wait(5)
+
+        initialize_remote_api()
+
+        daltesthelpers.init_features_dummy(dal.REF_FEATURE_SET)
 
     def tearDown(self):
         self.browser.quit()
@@ -42,6 +48,8 @@ class NewVisitorTests(unittest.TestCase):
         self.assertEquals('0.99', result_trading_feature_value)
 
     def test_login_kevin_should_go_to_homepage(self):
+        daltesthelpers.init_user_dummy('kevin@gator.com')
+
         # Kevin connects to the site
         self.browser.get('http://localhost:8080')
         # The tab is called "Gator Life !"
