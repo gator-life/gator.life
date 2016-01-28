@@ -61,6 +61,7 @@ def save_features(feature_set_id, feature_names):
 
 def save_user_feature_vector(user, feature_vector):
     db_feature_vector = _to_db_feature_vector(feature_vector)
+    # by setting as key the key previously referenced by the user, we will overwrite the previous feature_vector in db
     db_feature_vector.key = user._feature_vector_db_key  # pylint: disable=protected-access
     db_feature_vector.put()
 
@@ -94,10 +95,14 @@ def _to_user_docs(db_user_docs):
 
 def _to_docs(db_doc_keys):
     db_docs = ndb.get_multi(db_doc_keys)
-    docs = (struct.Document.make_from_db(
-        url=db_doc.url, title=db_doc.title, summary=db_doc.summary, date=db_doc.date, db_key=db_doc.key)
-            for db_doc in db_docs)
+    docs = (_to_doc(db_doc) for db_doc in db_docs)
     return docs
+
+
+def _to_doc(db_doc):
+    return struct.Document.make_from_db(
+        url=db_doc.url, title=db_doc.title, summary=db_doc.summary, datetime=db_doc.datetime, db_key=db_doc.key,
+        feature_vector=_to_feature_vector(db_doc.feature_vector))
 
 
 def save_user_docs(user, user_docs):
@@ -155,10 +160,84 @@ def get_users_docs(users):
 
 def save_documents(documents):
     docs_with_order = [doc for doc in documents]
-    db_docs = [db.Document.make(url=doc.url, title=doc.title, summary=doc.summary) for doc in docs_with_order]
+    db_docs = [_to_db_doc(doc) for doc in docs_with_order]
     db_doc_keys = ndb.put_multi(db_docs)
-    for (doc, key) in zip(documents, db_doc_keys):
+    for (doc, key) in zip(docs_with_order, db_doc_keys):
         doc._db_key = key  # pylint: disable=protected-access
+
+
+def _to_db_doc(doc):
+    return db.Document.make(
+        url=doc.url, title=doc.title, summary=doc.summary,
+        feature_vector=_to_db_feature_vector(doc.feature_vector))
+
+
+def save_user_action_on_doc(user, document, action_on_doc):
+    """
+    :param user: frontendstructs.User
+    :param document: frontendstructs.Document
+    :param action_on_doc: frontendstructs.UserActionTypeOnDoc
+    """
+    db_str_action = _to_db_action_type_on_doc(action_on_doc)
+    db.UserActionOnDoc.make(user.email, document._db_key, db_str_action).put()  # pylint: disable=protected-access
+
+
+def get_user_actions_on_docs(users, from_datetime):
+    """
+    :param users: list of frontendstructs.User
+    :param from_datetime:
+    :return: return a list matching users input list, each element is the list of frontendstructs.UserActionOnDoc
+     for this user inserted after 'from_datetime'
+    """
+    # 1) retrieve actions from database
+    actions_query = db.UserActionOnDoc.query(db.UserActionOnDoc.datetime > from_datetime)
+    db_actions = actions_query.fetch(10000)
+    # NB: we only filter on datetime (and not the users) on the query because you can't mix
+    # an 'IN something' query with other filter in datastore.
+    # Moreover, request with filter 'IN users' is limited to 30 elements and is very inefficient
+    # a long term solution if we need scalability is to replace users list by a range (min_user, max_user).
+    # fetch(10000) is not scalable either, but I won't make something complex because I think
+    # this second point would be solved if the first one (filter on user range) is solved
+
+    # 2) retrieve docs present in actions from database
+    doc_keys = list(set(action.document_key for action in db_actions))
+    docs = _to_docs(doc_keys)
+    doc_key_to_doc = dict(zip(doc_keys, docs))
+
+    # 3) build result, from two above database results
+    actions_by_user = [[] for _ in users]
+    user_mail_to_index = dict(zip((user.email for user in users), range(len(users))))
+    for db_action in db_actions:
+        doc = doc_key_to_doc[db_action.document_key]
+        action_type = _to_user_action_type_on_doc(db_action.action_type)
+        action = struct.UserActionOnDoc.make_from_db(doc, action_type, db_action.datetime)
+        user_index = user_mail_to_index.get(db_action.user_key.id())
+        if user_index is not None:  # because we did not filter query on users
+            actions_by_user[user_index].append(action)
+    return actions_by_user
+
+
+def _to_user_action_type_on_doc(user_action_on_doc_db_string):
+    if user_action_on_doc_db_string == 'up_vote':
+        return struct.UserActionTypeOnDoc.up_vote
+    if user_action_on_doc_db_string == 'down_vote':
+        return struct.UserActionTypeOnDoc.down_vote
+    if user_action_on_doc_db_string == 'click_link':
+        return struct.UserActionTypeOnDoc.click_link
+    if user_action_on_doc_db_string == 'view_link':
+        return struct.UserActionTypeOnDoc.view_link
+    raise ValueError(user_action_on_doc_db_string + ' has no matching for Enum UserActionTypeOnDoc')
+
+# NB: when struct.UserActionTypeOnDoc become an Enum, we can just call user_action_on_doc_enum.name
+def _to_db_action_type_on_doc(user_action_on_doc_enum):
+    if user_action_on_doc_enum == struct.UserActionTypeOnDoc.up_vote:
+        return 'up_vote'
+    if user_action_on_doc_enum == struct.UserActionTypeOnDoc.down_vote:
+        return 'down_vote'
+    if user_action_on_doc_enum == struct.UserActionTypeOnDoc.click_link:
+        return 'click_link'
+    if user_action_on_doc_enum == struct.UserActionTypeOnDoc.view_link:
+        return 'view_link'
 
 
 REF_FEATURE_SET = "ref_feature_set"

@@ -30,10 +30,12 @@ class MockSaver(object):
 
 
 class MockTopicModeller(object):
+    feature_vector = [1.0]
+
     @staticmethod
     def classify(doc_content):
         if doc_content == 'html':
-            return [1.0]
+            return MockTopicModeller.feature_vector
         else:
             raise ValueError(doc_content)
 
@@ -43,6 +45,7 @@ class ScrapAndLearnTests(unittest.TestCase):
     def setUp(self):
         self.testbed = make_gae_testbed()
         ndb.get_context().clear_cache()
+        self.dummy_feat_vec = struct.FeatureVector.make_from_scratch([], dal.NULL_FEATURE_SET)
 
     def tearDown(self):
         self.testbed.deactivate()  # pylint: disable=duplicate-code
@@ -57,8 +60,8 @@ class ScrapAndLearnTests(unittest.TestCase):
         dal.save_user(user2)
         dal.save_user_feature_vector(user2, struct.FeatureVector.make_from_scratch([1.0], "featureSetId-test_orchestrate"))
         # I.2) doc
-        doc1 = struct.Document.make_from_scratch("url1", 'title1', "sum1")
-        doc2 = struct.Document.make_from_scratch("url2", 'title2', "sum2")
+        doc1 = struct.Document.make_from_scratch("url1", 'title1', "sum1", self.dummy_feat_vec)
+        doc2 = struct.Document.make_from_scratch("url2", 'title2', "sum2", self.dummy_feat_vec)
         dal.save_documents([doc1, doc2])
         # I.3) userDoc
         user1_user_docs = [
@@ -79,6 +82,11 @@ class ScrapAndLearnTests(unittest.TestCase):
             if user_doc.document.title == 'title1':  # doc1 should have been deleted because grade=0.0
                 self.fail()
         self.assertEquals(4, len(mock_saver.saved_docs))  # MockScraper generate 4 docs
+        for doc in mock_saver.saved_docs:
+            # currently, model versioning is not managed, all is set to ref
+            self.assertEquals(dal.REF_FEATURE_SET, doc.feature_vector.feature_set_id)
+            self.assertEquals(MockTopicModeller.feature_vector, doc.feature_vector.vector)
+
 
 
 if __name__ == '__main__':
