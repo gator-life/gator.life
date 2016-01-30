@@ -69,7 +69,7 @@ class UserProfiler(object):
         }
 
 
-    def compute_user_profile(self, previous_user_profile, action_ond_docs, datetime):
+    def compute_user_profile(self, previous_user_profile, action_on_docs, datetime):
         """
         Compute user profile (feature vector plus intermediate values to iterate as the user execute new actions)
         This execute the Rocchio algorithm based on the Wikipedia article, tweaked for:
@@ -78,7 +78,7 @@ class UserProfiler(object):
                          (no recomputing of all actions since the beginning)
             -coefficients among positive actions set or negative actions set: to give more relevance to up vote that click...
         :param previous_user_profile: previous UserProfile
-        :param action_ond_docs: list of action since previous computation of UserProfile
+        :param action_on_docs: list of action since previous computation of UserProfile
         :param datetime: now
         :return: updated UserProfile for new actions
         """
@@ -88,7 +88,7 @@ class UserProfiler(object):
             previous_vec=previous_user_profile.positive_feedback_vector,
             previous_sum_coeff=previous_user_profile.sum_coeff_positive_feedback,
             previous_date=previous_user_profile.datetime,
-            actions=action_ond_docs,
+            actions=action_on_docs,
             new_date=datetime,
             action_to_coeff=self._action_type_to_positive_coeff
         )
