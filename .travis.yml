@@ -28,11 +28,7 @@ before_script:
 script:
 - py.test src
 - coverage run --source=src --omit=*tests* -m py.test src
-  #NB: when you change this, you must also change command in tools/run_pylint.py
-- pylint src/server/**.py src/scraper/**.py src/common/**.py src/topicmodeller/**.py src/learner/**.py src/orchestrator/**.py
-- pylint --rcfile=pylintrc_tests src/server/tests/*.py src/scraper/tests/*.py src/common/tests/*.py src/functests/*.py src/topicmodeller/tests/*.py src/learner/tests/*.py src/orchestrator/tests/*.py
-# NB: this pylint command with *.py is not resilient for nested directories, if we need it we might
-# check https://gist.github.com/gregorynicholas/3152237.
+- ./tools/run_pylint.py src/
 after_success:
 - coveralls
 - if [[ ("${TRAVIS_BRANCH}" = "master") &&  ("${TRAVIS_PULL_REQUEST}" = "false") ]]; then ./lib/google_appengine/appcfg.py -A gator-01 --skip_sdk_update_check --oauth2_access_token=$GAE_TOKEN --oauth2_refresh_token=$GAE_REFRESH_TOKEN update ./src/server/server; fi

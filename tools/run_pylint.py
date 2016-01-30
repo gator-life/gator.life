@@ -7,19 +7,25 @@ import re
 
 BASE_PATH = sys.argv[1]
 
-FILE_NAME = re.compile(r'[-a-zA-Z0-9_/]*\.py')
+FILE_NAME = re.compile(r'[-a-zA-Z0-9_/]*\.py$')
+TEST_FOLDER_NAME = re.compile(r'tests')
 CODE_RATING = re.compile('Your code has been rated at 10')
 
 #NB: If you change it, you must also change it in .travis.yml
-COMMAND = 'pylint src/server/**.py src/scraper/**.py src/common/**.py src/topicmodeller/**.py ' \
-          'src/learner/**.py src/orchestrator/**.py -f parseable'
-TEST_COMMAND = 'pylint --rcfile=pylintrc_tests src/server/tests/*.py src/scraper/tests/*.py src/common/tests/*.py ' \
-               'src/functests/*.py src/topicmodeller/tests/*.py src/learner/tests/*.py src/orchestrator/tests/*.py ' \
-               '-f parseable'
+COMMAND = 'pylint -f parseable'
+TEST_COMMAND = 'pylint --rcfile=pylintrc_tests -f parseable'
+
+
+def files_list(base_folder, for_tests):
+    result = []
+    for root_folder, sub_folders, files in os.walk(base_folder, topdown=False):
+        is_test_folder = TEST_FOLDER_NAME.search(root_folder) is not None
+        if for_tests == is_test_folder:
+            result += [os.path.join(root_folder, file) for file in files if FILE_NAME.match(file)]
+    return ' '.join(result)
 
 
 def run_pylint(command):
-    os.chdir(BASE_PATH)
     print(command)
     try:
         output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
@@ -46,8 +52,7 @@ def add_file_paths(input):
 
 
 def main():
-
-    exitcode, output = run_pylint(COMMAND)
+    exitcode, output = run_pylint(COMMAND + ' ' + files_list(BASE_PATH, for_tests=False))
     output = add_file_paths(output)
     print output
 
@@ -55,7 +60,7 @@ def main():
         print 'FAIL...Try, try again'
         sys.exit(1)
 
-    exitcode_test, output_test = run_pylint(TEST_COMMAND)
+    exitcode_test, output_test = run_pylint(TEST_COMMAND + ' ' + files_list(BASE_PATH, for_tests=True))
     output_test = add_file_paths(output_test)
     print output_test
 
@@ -67,7 +72,5 @@ def main():
     sys.exit(1)
 
 
-
 if __name__ == '__main__':
     main()
-
