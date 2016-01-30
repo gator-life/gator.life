@@ -66,7 +66,7 @@ def main():
 
     if exitcode_test == 0:
         print 'You nailed it boy !'
-        sys.exit(1)
+        sys.exit(0)
 
     print 'Fail (just the tests)'
     sys.exit(1)
