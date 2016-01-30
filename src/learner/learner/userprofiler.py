@@ -96,7 +96,7 @@ class UserProfiler(object):
             previous_vec=previous_user_profile.negative_feedback_vector,
             previous_sum_coeff=previous_user_profile.sum_coeff_negative_feedback,
             previous_date=previous_user_profile.datetime,
-            actions=action_ond_docs,
+            actions=action_on_docs,
             new_date=datetime,
             action_to_coeff=self._action_type_to_negative_coeff
         )
