@@ -53,4 +53,4 @@ def launch_by_folder(scraper_documents_folder, tm_data_folder):
 initialize_remote_api()
 
 launch_by_folder('/home/mohamed/Development/Data/gator/Scraping_11-01-2016_Snapshot',
-                      '/home/mohamed/Development/Data/gator/TopicModellerData')
+                 '/home/mohamed/Development/Data/gator/TopicModellerData')
