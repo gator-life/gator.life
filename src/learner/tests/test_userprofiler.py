@@ -4,6 +4,7 @@ import math
 from learner.userprofiler import UserProfile, UserProfiler, ActionOnDoc
 from server.frontendstructs import UserActionTypeOnDoc
 
+
 class UserProfilerTests(unittest.TestCase):
 
     def test_compute_user_profile_initial(self):
@@ -27,8 +28,8 @@ class UserProfilerTests(unittest.TestCase):
 
         # --------1) test that profile computed from scratch gives the expected feature_vector
         # expected vector =
-        # +pos_coeff*(up_doc*up_coeff/4 + click_doc/2)/(up_coeff/4+1/2)
-        # -neg_coeff*(down_doc*down_coeff/4+view_doc/2)/(down_coeff/4+1/2)
+        # +pos_coeff*(up_doc*up_coeff/4 + click_doc*click_coeff/2)/(up_coeff/4+click_coeff/2)
+        # -neg_coeff*(down_doc*down_coeff/4+view_doc*view_coeff/2)/(down_coeff/4+view_coeff/2)
         pos_factor = 0.8/(5.0/4.0+0.5)
         neg_factor = 0.2/(10.0/4.0+1./2)
         pos_vec = [5./4+1./2, 5./4]
