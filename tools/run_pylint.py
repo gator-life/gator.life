@@ -11,14 +11,13 @@ FILE_NAME = re.compile(r'[-a-zA-Z0-9_/]*\.py$')
 TEST_FOLDER_NAME = re.compile(r'tests')
 CODE_RATING = re.compile('Your code has been rated at 10')
 
-#NB: If you change it, you must also change it in .travis.yml
 COMMAND = 'pylint -f parseable'
 TEST_COMMAND = 'pylint --rcfile=pylintrc_tests -f parseable'
 
 
 def files_list(base_folder, for_tests):
     result = []
-    for root_folder, sub_folders, files in os.walk(base_folder, topdown=False):
+    for root_folder, sub_folders, files in os.walk(base_folder):
         is_test_folder = TEST_FOLDER_NAME.search(root_folder) is not None
         if for_tests == is_test_folder:
             result += [os.path.join(root_folder, file) for file in files if FILE_NAME.match(file)]
