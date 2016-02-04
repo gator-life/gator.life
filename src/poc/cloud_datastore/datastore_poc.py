@@ -1,114 +1,111 @@
-import logging
-import sys
 import os
-
-os.environ["DATASTORE_HOST"] = "http://localhost:33001"
-os.environ["DATASTORE_DATASET"] = "gator-01"
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/nico/projects/gator/not_versioned/gator-484905471895_gae_key.json"
-
-
 from gcloud import datastore
 
 
-#client = datastore.Client(dataset_id="test")
-client = datastore.Client()
+def main(): #pylint: disable=too-many-statements
+    os.environ["DATASTORE_HOST"] = "http://localhost:33001"
+    os.environ["DATASTORE_DATASET"] = "gator-01"
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/nico/projects/gator/not_versioned/gator-484905471895_gae_key.json"
 
-# Let's create a new entity of type "Thing" and name it 'Toy':
-key = client.key('Thing')
-toy = datastore.Entity(key)
-toy.update({'name': 'Toy'})
+    #client = datastore.Client(dataset_id="test")
+    client = datastore.Client()
 
-# Now let's save it to our datastore:
-client.put(toy)
+    # Let's create a new entity of type "Thing" and name it 'Toy':
+    key = client.key('Thing')
+    toy = datastore.Entity(key)
+    toy.update({'name': 'Toy'})
 
-# If we look it up by its key, we should find it...
-print(client.get(toy.key))
+    # Now let's save it to our datastore:
+    client.put(toy)
 
-# And we should be able to delete it...
-client.delete(toy.key)
+    # If we look it up by its key, we should find it...
+    print client.get(toy.key)
 
-# Since we deleted it, if we do another lookup it shouldn't be there again:
-print(client.get(toy.key))
+    # And we should be able to delete it...
+    client.delete(toy.key)
 
-# Now let's try a more advanced query.
-# First, let's create some entities.
-SAMPLE_DATA = [
-    (1234, 'Computer', 10),
-    (2345, 'Computer', 8),
-    (3456, 'Laptop', 10),
-    (4567, 'Printer', 11),
-    (5678, 'Printer', 12),
-    (6789, 'Computer', 13)]
-sample_keys = []
-for id, name, age in SAMPLE_DATA:
-    key = client.key('Thing', id)
-    sample_keys.append(key)
-    entity = datastore.Entity(key)
-    entity['name'] = name
-    entity['age'] = age
-    client.put(entity)
-# We'll start by look at all Thing entities:
-query = client.query(kind='Thing')
+    # Since we deleted it, if we do another lookup it shouldn't be there again:
+    print client.get(toy.key)
 
-# Let's look at the first two.
-print(list(query.fetch(limit=2)))
+    # Now let's try a more advanced query.
+    # First, let's create some entities.
+    sample_data = [
+        (1234, 'Computer', 10),
+        (2345, 'Computer', 8),
+        (3456, 'Laptop', 10),
+        (4567, 'Printer', 11),
+        (5678, 'Printer', 12),
+        (6789, 'Computer', 13)]
+    sample_keys = []
+    for sample_id, name, age in sample_data:
+        key = client.key('Thing', sample_id)
+        sample_keys.append(key)
+        entity = datastore.Entity(key)
+        entity['name'] = name
+        entity['age'] = age
+        client.put(entity)
+    # We'll start by look at all Thing entities:
+    query = client.query(kind='Thing')
 
-# Now let's check for Thing entities named 'Computer'
-query.add_filter('name', '=', 'Computer')
-print(list(query.fetch()))
+    # Let's look at the first two.
+    print list(query.fetch(limit=2))
 
-# If you want to filter by multiple attributes,
-# you can call .add_filter multiple times on the query.
-query.add_filter('age', '=', 10)
-print(list(query.fetch()))
+    # Now let's check for Thing entities named 'Computer'
+    query.add_filter('name', '=', 'Computer')
+    print list(query.fetch())
 
-# Now delete them.
-client.delete_multi(sample_keys)
+    # If you want to filter by multiple attributes,
+    # you can call .add_filter multiple times on the query.
+    query.add_filter('age', '=', 10)
+    print list(query.fetch())
 
-# You can also work inside a transaction.
-# (Check the official docs for explanations of what's happening here.)
-with client.transaction() as xact:
-    print('Creating and saving an entity...')
-    key = client.key('Thing', 'foo')
-    thing = datastore.Entity(key)
-    thing['age'] = 10
-    xact.put(thing)
+    # Now delete them.
+    client.delete_multi(sample_keys)
 
-    print('Creating and saving another entity...')
-    key2 = client.key('Thing', 'bar')
-    thing2 = datastore.Entity(key2)
-    thing2['age'] = 15
-    xact.put(thing2)
+    # You can also work inside a transaction.
+    # (Check the official docs for explanations of what's happening here.)
+    with client.transaction() as xact:
+        print 'Creating and saving an entity...'
+        key = client.key('Thing', 'foo')
+        thing = datastore.Entity(key)
+        thing['age'] = 10
+        xact.put(thing)
 
-    print('Committing the transaction...')
+        print 'Creating and saving another entity...'
+        key2 = client.key('Thing', 'bar')
+        thing2 = datastore.Entity(key2)
+        thing2['age'] = 15
+        xact.put(thing2)
 
-# Now that the transaction is commited, let's delete the entities.
-client.delete_multi([key, key2])
+        print 'Committing the transaction...'
 
-# To rollback a transaction, just call .rollback()
-with client.transaction() as xact:
-    key = client.key('Thing', 'another')
-    thing = datastore.Entity(key)
-    xact.put(thing)
-    xact.rollback()
+    # Now that the transaction is commited, let's delete the entities.
+    client.delete_multi([key, key2])
 
-# Let's check if the entity was actually created:
-created = client.get(key)
-print('yes' if created else 'no')
+    # To rollback a transaction, just call .rollback()
+    with client.transaction() as xact:
+        key = client.key('Thing', 'another')
+        thing = datastore.Entity(key)
+        xact.put(thing)
+        xact.rollback()
 
-# Remember, a key won't be complete until the transaction is commited.
-# That is, while inside the transaction block, thing.key will be incomplete.
-with client.transaction() as xact:
-    key = client.key('Thing')  # partial
-    thing = datastore.Entity(key)
-    xact.put(thing)
-    print(thing.key)  # This will still be partial
+    # Let's check if the entity was actually created:
+    created = client.get(key)
+    print 'yes' if created else 'no'
 
-print(thing.key)  # This will be complete
+    # Remember, a key won't be complete until the transaction is commited.
+    # That is, while inside the transaction block, thing.key will be incomplete.
+    with client.transaction() as xact:
+        key = client.key('Thing')  # partial
+        thing = datastore.Entity(key)
+        xact.put(thing)
+        print thing.key  # This will still be partial
 
-# Now let's delete the entity.
-client.delete(thing.key)
+    print thing.key  # This will be complete
+
+    # Now let's delete the entity.
+    client.delete(thing.key)
 
 
-#if __name__ == '__main__':
-#    main()
+if __name__ == '__main__':
+    main()
