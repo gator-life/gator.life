@@ -5,3 +5,5 @@ vcrpy
 mock>=1.3.0
 #pytest plugin to add paths before running tests (because GAE modules are not pip-installed)
 pytest-pythonpath
+pep8
+autopep8
