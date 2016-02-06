@@ -11,6 +11,7 @@ class UserProfile(object):
     -global_feedback_vector is the vector to compute the interest of the user for a document in a VSM (Vector Space Model)
     -the others fields are the intermediate variables to compute this vector at each learning step in Rocchio algorithm
     """
+
     def __init__(self, datetime, sum_coeff_positive_feedback, sum_coeff_negative_feedback, positive_feedback_vector,
                  negative_feedback_vector, global_feedback_vector):
         self.datetime = datetime
@@ -28,13 +29,14 @@ class UserProfile(object):
         :param vector_size:
         :return: UserProfile
         """
-        return UserProfile(datetime, 0.0, 0.0, [0.0]*vector_size, [0.0]*vector_size, [1.0]*vector_size)
+        return UserProfile(datetime, 0.0, 0.0, [0.0] * vector_size, [0.0] * vector_size, [1.0] * vector_size)
 
 
 class ActionOnDoc(object):
     """
     Represent an action of a user as needed by the UserProfiler
     """
+
     def __init__(self, datetime, doc_feature_vector, action_type):
         """
         :param datetime: date of the action
@@ -51,6 +53,7 @@ class UserProfiler(object):
     """
     Class executing the algorithm to compute the User profile from the actions of this user
     """
+
     def __init__(self):
         self._positive_feedback_coeff = 0.8
         self._negative_feedback_coeff = 1.0 - self._positive_feedback_coeff
@@ -67,7 +70,6 @@ class UserProfiler(object):
             UserActionTypeOnDoc.down_vote: 10.0,
             UserActionTypeOnDoc.view_link: 1.0
         }
-
 
     def compute_user_profile(self, previous_user_profile, action_on_docs, datetime):
         """
@@ -108,7 +110,6 @@ class UserProfiler(object):
         return UserProfile(
             datetime, pos_elt.sum_coeff, neg_elt.sum_coeff, pos_elt.sum_vec, neg_elt.sum_vec, global_vec)
 
-
     def _compute_user_profile_elt(self, previous_vec, previous_sum_coeff, previous_date, actions, new_date, action_to_coeff):
         """ compute user profile variables for one element (positive or negative).
         3 steps algorithms:
@@ -146,14 +147,13 @@ class UserProfiler(object):
 
 
 def _compute_discount_factor(annual_rate, start_date, end_date):
-    time_incr = end_date-start_date
+    time_incr = end_date - start_date
     time_incr_in_years = time_incr.days / 365.25
-    return e**(-annual_rate*time_incr_in_years)
+    return e**(-annual_rate * time_incr_in_years)
 
 
 class _ElementProfile(object):
+
     def __init__(self, sum_vector, sum_coeff):
         self.sum_vec = sum_vector
         self.sum_coeff = sum_coeff
-
-

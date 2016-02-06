@@ -8,7 +8,9 @@ from common.testhelpers import make_gae_testbed
 import server.dal as dal
 import server.frontendstructs as struct
 
+
 class MockScraper(object):
+
     @staticmethod
     def scrap():
         def scrap_doc(index):
@@ -18,10 +20,11 @@ class MockScraper(object):
                     "url" + str_index, None, scrap.OriginInfo("title" + str_index, None, None, None, None), None),
                 'html')
 
-        return [scrap_doc(3), scrap_doc(4), scrap_doc(5), scrap_doc(6)] # chunk_size(3) + 1
+        return [scrap_doc(3), scrap_doc(4), scrap_doc(5), scrap_doc(6)]  # chunk_size(3) + 1
 
 
 class MockSaver(object):
+
     def __init__(self):
         self.saved_docs = []
 
@@ -86,7 +89,6 @@ class ScrapAndLearnTests(unittest.TestCase):
             # currently, model versioning is not managed, all is set to ref
             self.assertEquals(dal.REF_FEATURE_SET, doc.feature_vector.feature_set_id)
             self.assertEquals(MockTopicModeller.feature_vector, doc.feature_vector.vector)
-
 
 
 if __name__ == '__main__':

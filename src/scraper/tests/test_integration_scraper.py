@@ -6,6 +6,7 @@ import vcr
 
 from scraper.scraper import Scraper
 
+
 class ScraperIntegrationTests(unittest.TestCase):
 
     # to record:
@@ -32,8 +33,3 @@ class ScraperIntegrationTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-
-
-

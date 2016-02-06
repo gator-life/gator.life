@@ -1,7 +1,7 @@
 import os
 import webapp2
 
-import handlers # pylint: disable=relative-import
+import handlers  # pylint: disable=relative-import
 # problem (to solve) with app engine: server is not seen as a package by GAE
 # so you can't do proper relative import (from . import dal)
 

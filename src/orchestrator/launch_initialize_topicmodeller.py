@@ -13,6 +13,7 @@ logging.basicConfig(format=u'%(asctime)s : %(levelname)s : %(message)s', level=l
 
 
 class RepeatableHtmlDocuments(object):
+
     def __init__(self, folder):
         self.doc_loader = JsonDocLoader(folder)
 

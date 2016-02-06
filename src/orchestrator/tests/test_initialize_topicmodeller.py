@@ -7,6 +7,7 @@ import server.dal as dal
 
 
 class MockTopicModeller(object):
+
     def __init__(self, topics, html_documents, tm_data_folder, num_topics):
         self.topics = topics
 
@@ -25,6 +26,7 @@ class MockTopicModeller(object):
 
 
 class TopicModellerTests(unittest.TestCase):
+
     def test_initialize_topicmodeller(self):
         num_topics = 128
 

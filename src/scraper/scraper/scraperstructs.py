@@ -1,5 +1,6 @@
 
 class Document(object):
+
     def __init__(self, link_element, html_content):
         """
         :param link_element: LinkElement
@@ -13,6 +14,7 @@ class OriginInfo(object):
     """
     info extracted from the origin (reddit...) related to the current linkElement
     """
+
     def __init__(self, title, category, url, unique_id, category_id):
         """
         :param title: string
@@ -30,6 +32,7 @@ class OriginInfo(object):
 
 
 class LinkElement(object):
+
     def __init__(self, url, origin, origin_info, date_utc_timestamp):
         """
         :param url: string of the url
@@ -42,4 +45,3 @@ class LinkElement(object):
         self.origin = origin
         self.origin_info = origin_info
         self.date_utc_timestamp = date_utc_timestamp
-

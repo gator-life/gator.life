@@ -9,6 +9,7 @@ from topicmodeller.doctokenizer import _filter_latin_words, _readable_document, 
 
 
 class DocTokenizerTests(unittest.TestCase):
+
     def test_readable_document(self):
         directory = os.path.dirname(os.path.abspath(__file__))
         file_content = open(os.path.join(directory, 'scraper_documents/2015-08-01 18:00:22.926317_8.json')).read()

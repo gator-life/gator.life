@@ -15,14 +15,17 @@ logging.basicConfig(format=u'%(asctime)s : %(levelname)s : %(message)s', level=l
 
 
 class FileLoaderScraper(object):
+
     def __init__(self, folder):
         self.scraper_docs = JsonDocLoader(folder)
+
     def scrap(self):
         for scraper_document in self.scraper_docs:
             yield scraper_document
 
 
 class NoActionSaver(object):
+
     def save(self, doc):
         pass
 

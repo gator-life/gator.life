@@ -4,6 +4,7 @@ import server.dal as dal
 from common.remote_api import initialize_remote_api
 import daltesthelpers as daltesthelpers
 
+
 class NewVisitorTests(unittest.TestCase):
 
     def setUp(self):

@@ -21,7 +21,7 @@ class TopicModeller(object):
         self._lda = None
         self.topics = None
         self._tokenizer = document_tokenizer
-        np.random.seed(2406834896) # to get reproductible results
+        np.random.seed(2406834896)  # to get reproductible results
         # nb: ideally gensim should allow to inject RandomState to not make side effects on other libs using numpy RNG
 
     def initialize(self, documents, num_topics):

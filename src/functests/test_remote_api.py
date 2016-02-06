@@ -3,6 +3,7 @@ from common.remote_api import initialize_remote_api
 import daltesthelpers as daltesthelpers
 import server.dal as dal
 
+
 class RemoteAPiTests(unittest.TestCase):
 
     def test_save_then_data_with_remote_api(self):

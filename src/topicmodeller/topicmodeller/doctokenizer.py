@@ -31,6 +31,7 @@ def _filter_latin_words(words):
 
 
 class DocTokenizer(object):
+
     @classmethod
     def tokenize(cls, html_document):
         word_tokenized_document = _word_tokenize(_readable_document(html_document))
