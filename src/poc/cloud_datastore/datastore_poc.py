@@ -2,7 +2,7 @@ import os
 from gcloud import datastore
 
 
-def main(): #pylint: disable=too-many-statements
+def main():  # pylint: disable=too-many-statements
     os.environ["DATASTORE_HOST"] = "http://localhost:33001"
     os.environ["DATASTORE_DATASET"] = "gator-01"
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/nico/projects/gator/not_versioned/gator-484905471895_gae_key.json"

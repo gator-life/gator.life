@@ -4,6 +4,7 @@
 from google.appengine.ext.remote_api import remote_api_stub
 from google.appengine.tools import appengine_rpc_httplib2
 
+
 def initialize_remote_api():
     auth2 = appengine_rpc_httplib2.HttpRpcServerOAuth2.OAuth2Parameters(
         access_token=None,

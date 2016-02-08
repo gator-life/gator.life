@@ -4,6 +4,7 @@
 import server.frontendstructs as struct
 import server.dal as dal
 
+
 def init_user_dummy(user_id):
     dummy_doc1 = struct.Document.make_from_scratch(
         url='https://www.google.com', title='google.com', summary='we will buy you',

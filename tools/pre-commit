@@ -1,0 +1,12 @@
+#!/bin/sh
+#Copy this file in .git/hooks/ folder of this repo so it is executed
+#before each commit
+
+#Reformat staged python files to follow pep8 guidelines
+PYTHON_FILES_STAGED=$(git diff --name-only --cached | grep **\.py)
+if [ -n "$PYTHON_FILES_STAGED" ]; then
+	autopep8 -i --max-line-length 125 $PYTHON_FILES_STAGED
+	git add $PYTHON_FILES_STAGED
+fi
+
+

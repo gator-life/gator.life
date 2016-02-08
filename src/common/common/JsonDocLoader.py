@@ -4,7 +4,9 @@
 import os
 import jsonpickle
 
+
 class JsonDocLoader(object):
+
     def __init__(self, folder):
         self.folder = folder
 

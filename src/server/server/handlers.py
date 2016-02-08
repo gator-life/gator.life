@@ -5,18 +5,21 @@ import frontendstructs as struct  # pylint: disable=relative-import
 
 
 class Link(object):
+
     def __init__(self, link, text):
         self.link = link
         self.text = text
 
 
 class Feature(object):
+
     def __init__(self, label, value):
         self.label = label
         self.value = value
 
 
 class LoginPageHandler(webapp2.RequestHandler):
+
     def get(self):
         response = jinjaenvironment.render_template(html_file='login.html', attributes_dict={})
         self.response.write(response)

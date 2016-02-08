@@ -5,7 +5,9 @@ import codecs
 import datetime
 import jsonpickle
 
+
 class JsonDocSaver(object):
+
     def __init__(self, folder):
         self.folder = folder
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+
 class Document(object):
 
     @staticmethod
@@ -69,11 +70,14 @@ class FeatureVector(object):
         self.feature_set_id = feature_set_id
 
 # NB: when we manage dependencies in server, we can reference enum34 and make this class an enum
+
+
 class UserActionTypeOnDoc(object):
     up_vote = 1
     down_vote = 2
     click_link = 3
     view_link = 4
+
 
 class UserActionOnDoc(object):
 
@@ -89,4 +93,3 @@ class UserActionOnDoc(object):
         self.document = document
         self.action_type = action_type
         self.datetime = datetime
-

@@ -10,6 +10,7 @@ from common.testhelpers import make_gae_testbed
 
 
 class DalTests(unittest.TestCase):
+
     def setUp(self):
         # standard set of calls to initialize unit test ndb environment
         self.testbed = make_gae_testbed()

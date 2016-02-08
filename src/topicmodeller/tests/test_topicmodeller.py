@@ -10,6 +10,7 @@ from topicmodeller.topicmodeller import TopicModeller
 class TopicModellerTests(unittest.TestCase):
 
     class MockTokenizer(object):
+
         @classmethod
         def tokenize(cls, text):
             return [word for word in text.split() if word != 'is']

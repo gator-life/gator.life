@@ -6,6 +6,7 @@ import numpy as np
 
 
 class UserDoc(object):
+
     def __init__(self, doc_id, grade):
         """
         :param doc_id: object whose reference is used as identifier of a document, concrete type does not matter and can be
@@ -17,6 +18,7 @@ class UserDoc(object):
 
 
 class UserData(object):
+
     def __init__(self, feature_vector, user_docs):
         """
         :param feature_vector: feature_vector of the user (double array)
@@ -86,6 +88,7 @@ class _FixedSizeHeap(object):
     Min Heap data structure with a fixed size. It means at each instant, you keep the "max_size" biggest elements
     based on the comparison of the keys.
     """
+
     def __init__(self, key_value_list, max_size):
         self._max_size = max_size
         self.list = []

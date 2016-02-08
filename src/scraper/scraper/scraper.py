@@ -78,6 +78,7 @@ def _get_doc_generator(link_elts):
 
 
 class Scraper(object):
+
     def __init__(self, disconnected=False):
         self.disconnected = disconnected
 

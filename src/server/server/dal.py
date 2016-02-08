@@ -229,6 +229,8 @@ def _to_user_action_type_on_doc(user_action_on_doc_db_string):
     raise ValueError(user_action_on_doc_db_string + ' has no matching for Enum UserActionTypeOnDoc')
 
 # NB: when struct.UserActionTypeOnDoc become an Enum, we can just call user_action_on_doc_enum.name
+
+
 def _to_db_action_type_on_doc(user_action_on_doc_enum):
     if user_action_on_doc_enum == struct.UserActionTypeOnDoc.up_vote:
         return 'up_vote'
