@@ -20,7 +20,9 @@ class MockScraper(object):
                     "url" + str_index, None, scrap.OriginInfo("title" + str_index, None, None, None, None), None),
                 'html')
 
-        return [scrap_doc(3), scrap_doc(4), scrap_doc(5), scrap_doc(6)]  # chunk_size(3) + 1
+        # chunk_size(3) + 1
+        # the last document is an other instance of a duplicated url, should be ignored by the url unicity checker
+        return [scrap_doc(3), scrap_doc(4), scrap_doc(5), scrap_doc(6), scrap_doc(3)]
 
 
 class MockSaver(object):
@@ -41,6 +43,28 @@ class MockTopicModeller(object):
             return MockTopicModeller.feature_vector
         else:
             raise ValueError(doc_content)
+
+
+class MockUrlUnicityChecker(object):
+
+    def __init__(self):
+        self.urls_set = set()
+        self.is_unique_count = 0
+        self.saved_count = 0
+
+    def is_unique(self, url):
+        self.is_unique_count += 1
+
+        prev_len = len(self.urls_set)
+
+        self.urls_set.add(url)
+
+        new_len = len(self.urls_set)
+
+        return prev_len != new_len
+
+    def save(self):
+        self.saved_count += 1
 
 
 class ScrapAndLearnTests(unittest.TestCase):
@@ -73,7 +97,9 @@ class ScrapAndLearnTests(unittest.TestCase):
         dal.save_users_docs([(user1, user1_user_docs)])
         # II) Orchestrate
         mock_saver = MockSaver()
-        scrap_and_learn(MockScraper(), mock_saver, MockTopicModeller(), docs_chunk_size=3, user_docs_max_size=5)
+        mock_url_unicity_checker = MockUrlUnicityChecker()
+        scrap_and_learn(MockScraper(), mock_saver, MockTopicModeller(), mock_url_unicity_checker,
+                        docs_chunk_size=2, user_docs_max_size=5)
 
         # III) check database and mocks
         result_users_docs = dal.get_users_docs([user1, user2])
@@ -89,6 +115,10 @@ class ScrapAndLearnTests(unittest.TestCase):
             # currently, model versioning is not managed, all is set to ref
             self.assertEquals(dal.REF_FEATURE_SET, doc.feature_vector.feature_set_id)
             self.assertEquals(MockTopicModeller.feature_vector, doc.feature_vector.vector)
+        # is_unique() should be called for each document
+        self.assertEqual(mock_url_unicity_checker.is_unique_count, 5)
+        # save() should be called at 'docs_chunk_size' frequency and 1 time at the end of the loop.
+        self.assertEqual(mock_url_unicity_checker.saved_count, 3)
 
 
 if __name__ == '__main__':
