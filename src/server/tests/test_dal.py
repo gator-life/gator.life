@@ -227,7 +227,7 @@ class DalTests(unittest.TestCase):
     def test_action_type_on_doc_mapping_with_db(self):
         for enum_name, enum_value in vars(struct.UserActionTypeOnDoc).iteritems():
             if not enum_name.startswith("__"):
-                self.assertEquals(enum_value, dal._to_user_action_type_on_doc(dal._to_db_action_type_on_doc(enum_value)))
+                self.assertEquals(enum_value, dal.to_user_action_type_on_doc(dal._to_db_action_type_on_doc(enum_value)))
 
     @staticmethod
     def build_dummy_db_feature_set():

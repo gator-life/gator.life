@@ -20,6 +20,8 @@ def init_user_dummy(user_id, password, interests):
     user_doc2 = struct.UserDocument.make_from_scratch(document=dummy_doc2, grade=0.5)
     dal.save_user_docs(new_user, [user_doc1, user_doc2])
 
+    return new_user
+
 
 def init_features_dummy(feature_set_id):
     dal.save_features(feature_set_id, feature_names=['sport', 'trading', 'bmw', 'c++'])

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block body %}
     <section>
-        <form action="/login" method="post">
+        <form action="/register" method="post">
             <div class="error-message" name="error-message">{{ error_message }}</div>
             <table>
                 <tr>
@@ -13,8 +13,11 @@
                     <td><input type="password" name="password" required></td>
                 </tr>
                 <tr>
-                    <td><a name="register-link" href="/register">Register</a></td>
-                    <td><button name="login-button" type="submit">Login</button></td>
+                    <td><label for="interests">Interests</label></td>
+                    <td><textarea name="interests" rows="10" cols="80" required></textarea></td>
+                </tr>
+                <tr>
+                    <td><button name="register-button" type="submit">Register</button></td>
                 </tr>
             </table>
         </form>

@@ -180,6 +180,11 @@ def _to_db_doc(doc):
         feature_vector=_to_db_feature_vector(doc.feature_vector))
 
 
+def get_doc_by_urlsafe_key(key):
+    db_key = ndb.Key(urlsafe=key)
+    return _to_doc(db_key.get())
+
+
 def save_user_action_on_doc(user, document, action_on_doc):
     """
     :param user: frontendstructs.User
@@ -217,7 +222,7 @@ def get_user_actions_on_docs(users, from_datetime):
     user_mail_to_index = dict(zip((user.email for user in users), range(len(users))))
     for db_action in db_actions:
         doc = doc_key_to_doc[db_action.document_key]
-        action_type = _to_user_action_type_on_doc(db_action.action_type)
+        action_type = to_user_action_type_on_doc(db_action.action_type)
         action = struct.UserActionOnDoc.make_from_db(doc, action_type, db_action.datetime)
         user_index = user_mail_to_index.get(db_action.user_key.id())
         if user_index is not None:  # because we did not filter query on users
@@ -225,16 +230,16 @@ def get_user_actions_on_docs(users, from_datetime):
     return actions_by_user
 
 
-def _to_user_action_type_on_doc(user_action_on_doc_db_string):
-    if user_action_on_doc_db_string == 'up_vote':
+def to_user_action_type_on_doc(user_action_on_doc_string):
+    if user_action_on_doc_string == 'up_vote':
         return struct.UserActionTypeOnDoc.up_vote
-    if user_action_on_doc_db_string == 'down_vote':
+    if user_action_on_doc_string == 'down_vote':
         return struct.UserActionTypeOnDoc.down_vote
-    if user_action_on_doc_db_string == 'click_link':
+    if user_action_on_doc_string == 'click_link':
         return struct.UserActionTypeOnDoc.click_link
-    if user_action_on_doc_db_string == 'view_link':
+    if user_action_on_doc_string == 'view_link':
         return struct.UserActionTypeOnDoc.view_link
-    raise ValueError(user_action_on_doc_db_string + ' has no matching for Enum UserActionTypeOnDoc')
+    raise ValueError(user_action_on_doc_string + ' has no matching for Enum UserActionTypeOnDoc')
 
 # NB: when struct.UserActionTypeOnDoc become an Enum, we can just call user_action_on_doc_enum.name
 

@@ -1,69 +1,153 @@
 import webapp2
+from webapp2_extras import sessions
 import dal  # pylint: disable=relative-import
 import jinjaenvironment  # pylint: disable=relative-import
 import frontendstructs as struct  # pylint: disable=relative-import
+import frontendhelpers as helpers  # pylint: disable=relative-import
 
 
 class Link(object):
 
-    def __init__(self, link, text):
-        self.link = link
+    def __init__(self, key, text):
+        self.key = key
         self.text = text
 
 
-class Feature(object):
+# How to use sessions :
+# http://stackoverflow.com/questions/14078054/gae-webapp2-session-the-correct-process-of-creating-and-checking-sessions
+class BaseHandler(webapp2.RequestHandler):
 
-    def __init__(self, label, value):
-        self.label = label
-        self.value = value
+    sessions_store = None
+
+    def dispatch(self):
+        self.sessions_store = sessions.get_store(request=self.request)
+
+        try:
+            webapp2.RequestHandler.dispatch(self)
+        finally:
+            self.sessions_store.save_sessions(self.response)
+
+    @webapp2.cached_property
+    def session(self):
+        return self.sessions_store.get_session()
+
+    def set_connected_user(self, user):
+        self.session['email'] = user.email
+
+    def unset_connected_user(self):
+        self.session['email'] = None
+
+    def get_connected_user(self):
+        email = self.session.get('email')
+        if email is not None:
+            return dal.get_user(email)
+        return None
 
 
-class LoginPageHandler(webapp2.RequestHandler):
+class LoginHandler(BaseHandler):
 
     def get(self):
-        response = jinjaenvironment.render_template(html_file='login.html', attributes_dict={})
-        self.response.write(response)
-
-
-class HomePageHandler(webapp2.RequestHandler):
-
-    def _get_or_create_user(self):
-        email = self.request.get('email')
-        user = dal.get_user(email)
-        return user
-
-    def _get_or_create_features(self, user):
-        source = self.request.get('source')
-        if source == 'save_features':
-            feature_set_id = self.request.get('feature_set_id')
-            labels = dal.get_features(feature_set_id)
-            vector = [float(self.request.get(label)) for label in labels]
-            feature_vector = struct.FeatureVector.make_from_scratch(vector=vector, feature_set_id=feature_set_id)
-            dal.save_user_feature_vector(user, feature_vector)
-
-        feature_vector = dal.get_user_feature_vector(user)
-        if feature_vector.feature_set_id == dal.NULL_FEATURE_SET:
-            feature_set_id = dal.REF_FEATURE_SET
-            labels = dal.get_features(dal.REF_FEATURE_SET)
-            vector = [x * 0.1 for x in range(len(labels))]
-            feature_vector = struct.FeatureVector.make_from_scratch(vector=vector, feature_set_id=feature_set_id)
-
-        return feature_vector
+        user = self.get_connected_user()
+        if user is None:
+            response = jinjaenvironment.render_template(html_file='login.html', attributes_dict={})
+            self.response.write(response)
+        else:
+            self.redirect('/')
 
     def post(self):
-        user = self._get_or_create_user()
-        feature_vector = self._get_or_create_features(user)
-        labels = dal.get_features(feature_vector.feature_set_id)
-        user_docs = dal.get_user_docs(user)
-        links = [Link(link=user_doc.document.url, text=user_doc.document.title) for user_doc in user_docs]
-        features = [Feature(label, value) for (label, value) in zip(labels, feature_vector.vector)]
+        email = self.request.get('email')
+        password = self.request.get('password')
 
-        template_values = {
-            'email': user.email,
-            'links': links,
-            'features': features,
-            'feature_set_id': feature_vector.feature_set_id
-        }
-        response = jinjaenvironment.render_template(html_file='index.html', attributes_dict=template_values)
+        user = dal.get_user(email)
+        if user is not None and helpers.PasswordHelpers.is_password_valid_for_user(user, password):
+            self.set_connected_user(user)
+            self.redirect('/')
+        else:
+            template_value = {'error_message': 'Unknown email or invalid password'}
+            response = jinjaenvironment.render_template(html_file='login.html', attributes_dict=template_value)
+            self.response.write(response)
 
-        self.response.write(response)
+
+class RegisterHandler(BaseHandler):
+
+    def get(self):
+        user = self.get_connected_user()
+        if user is None:
+            response = jinjaenvironment.render_template(html_file='register.html', attributes_dict={})
+            self.response.write(response)
+        else:
+            self.redirect('/')
+
+    def post(self):
+        connected_user = self.get_connected_user()
+        if connected_user is None:
+            email = self.request.get('email')
+            password = self.request.get('password')
+            interests = self.request.get('interests')
+
+            user = dal.get_user(email)
+            if user is None:
+                user = struct.User.make_from_scratch(email, helpers.PasswordHelpers.hash_password(password), interests)
+                dal.save_user(user)
+
+                # Create an empty feature vector for the newly created user
+                features_set = dal.get_features(dal.REF_FEATURE_SET)
+                feature_vector = struct.FeatureVector.make_from_scratch([0]*len(features_set), dal.REF_FEATURE_SET)
+                dal.save_user_feature_vector(user, feature_vector)
+
+                self.redirect('/login')
+            else:
+                template_value = {'error_message': 'This account already exists'}
+                response = jinjaenvironment.render_template(html_file='register.html', attributes_dict=template_value)
+                self.response.write(response)
+        else:
+            self.redirect('/')
+
+
+class DisconnectHandler(BaseHandler):
+
+    def get(self):
+        user = self.get_connected_user()
+        if user is not None:
+            self.unset_connected_user()
+        self.redirect('/login')
+
+
+class HomeHandler(BaseHandler):
+
+    def get(self):
+        user = self.get_connected_user()
+        if user is not None:
+            user_docs = dal.get_user_docs(user)
+            links = [Link(key=user_doc.document._db_key.urlsafe(), # pylint: disable=protected-access
+                          text=user_doc.document.title) for user_doc in user_docs]
+
+            template_values = {
+                'email': user.email,
+                'links': links
+            }
+
+            response = jinjaenvironment.render_template(html_file='index.html', attributes_dict=template_values)
+
+            self.response.write(response)
+        else:
+            self.redirect('/login')
+
+
+class LinkHandler(BaseHandler):
+
+    def get(self, action, document_key):
+        user = self.get_connected_user()
+        if user is not None:
+            action_type_on_doc = dal.to_user_action_type_on_doc(action)
+
+            document = dal.get_doc_by_urlsafe_key(document_key)
+
+            dal.save_user_action_on_doc(user, document, action_type_on_doc)
+
+            if action_type_on_doc == struct.UserActionTypeOnDoc.click_link:
+                self.redirect(document.url.encode('utf-8'))
+            else:
+                self.redirect('/')
+        else:
+            self.redirect('/login')

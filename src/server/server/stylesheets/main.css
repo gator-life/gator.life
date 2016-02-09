@@ -1,4 +1,68 @@
 body {
-  font-family: Verdana, Helvetica, sans-serif;
-  background-color: #DDDDDD;
+    font-family: Verdana, Helvetica, sans-serif;
+    font-size: 12px;
+
+    margin-left: auto;
+    margin-right: auto;
+    width: 768px
+}
+
+header {
+    /*Bottom solid line*/
+    border-style: solid;
+    border-width: 0px 0px 1px 0px;
+
+    margin-bottom: 32px;
+
+    position: relative
+}
+
+header img {
+    float: left;
+    width: 80px;
+    height: 80px;
+}
+
+header h1 {
+    position: relative;
+    font-size: 24px;
+}
+
+header h2 {
+    position: relative;
+    font-size: 12px;
+}
+
+footer {
+    text-align: center;
+
+    /*Top solid line*/
+    border-style: solid;
+    border-width: 1px 0px 0px 0px;
+
+    margin-top: 32px
+}
+
+.link {
+    vertical-align: middle;
+
+    padding-left: 1em;
+}
+
+.up-vote, .down-vote {
+    font-size: 8px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+header .disconnect-link {
+    position: absolute;
+    top: 0;
+    right: 0;
+    text-align:right;
+}
+
+.error-message {
+    font-weight: bold;
+    color: red;
 }
