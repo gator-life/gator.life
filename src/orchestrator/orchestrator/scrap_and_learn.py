@@ -25,7 +25,7 @@ def scrap_and_learn(scraper, scraper_doc_saver, topic_modeller, url_unicity_chec
     while True:
         try:
             for scraper_document in scraper.scrap():
-                if not url_unicity_checker.is_unique(scraper_document.link_element.url):
+                if not url_unicity_checker.is_unique_and_add(scraper_document.link_element.url):
                     continue
 
                 topic_feature_vector = topic_modeller.classify(scraper_document.html_content)

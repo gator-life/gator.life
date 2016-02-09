@@ -52,16 +52,14 @@ class MockUrlUnicityChecker(object):
         self.is_unique_count = 0
         self.saved_count = 0
 
-    def is_unique(self, url):
+    def is_unique_and_add(self, url):
         self.is_unique_count += 1
 
-        prev_len = len(self.urls_set)
+        if url in self.urls_set:
+            return False
 
         self.urls_set.add(url)
-
-        new_len = len(self.urls_set)
-
-        return prev_len != new_len
+        return True
 
     def save(self):
         self.saved_count += 1
