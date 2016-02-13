@@ -2,34 +2,7 @@
 # -*- coding: utf-8 -*-
 from math import e
 import numpy as np
-from server.frontendstructs import UserActionTypeOnDoc
-
-
-class UserProfile(object):
-    """
-    Represent the information about the profile:
-    -global_feedback_vector is the vector to compute the interest of the user for a document in a VSM (Vector Space Model)
-    -the others fields are the intermediate variables to compute this vector at each learning step in Rocchio algorithm
-    """
-
-    def __init__(self, datetime, sum_coeff_positive_feedback, sum_coeff_negative_feedback, positive_feedback_vector,
-                 negative_feedback_vector, global_feedback_vector):
-        self.datetime = datetime
-        self.sum_coeff_positive_feedback = sum_coeff_positive_feedback
-        self.sum_coeff_negative_feedback = sum_coeff_negative_feedback
-        self.positive_feedback_vector = positive_feedback_vector
-        self.negative_feedback_vector = negative_feedback_vector
-        self.global_feedback_vector = global_feedback_vector
-
-    @staticmethod
-    def make_empty(datetime, vector_size):
-        """
-        Initialize an empty structure for a user without any actions yet
-        :param datetime:
-        :param vector_size:
-        :return: UserProfile
-        """
-        return UserProfile(datetime, 0.0, 0.0, [0.0] * vector_size, [0.0] * vector_size, [1.0] * vector_size)
+from server.frontendstructs import UserActionTypeOnDoc, UserProfileModelData
 
 
 class ActionOnDoc(object):
@@ -47,6 +20,19 @@ class ActionOnDoc(object):
         self.datetime = datetime
         self.doc_feature_vector = doc_feature_vector
         self.action_type = action_type
+
+
+class UserProfile(object):
+
+    def __init__(self, model_data, feedback_vector):
+        """
+        User profile computed by profiler
+        :param model_data: UserProfileModelData, intermediate variables needed by rocchio algorithm
+        to compute feedback vector at each learning step in profiler
+        :param feedback_vector: [float], computed feedback vector of the user
+        """
+        self.model_data = model_data
+        self.feedback_vector = feedback_vector
 
 
 class UserProfiler(object):
@@ -71,7 +57,7 @@ class UserProfiler(object):
             UserActionTypeOnDoc.view_link: 1.0
         }
 
-    def compute_user_profile(self, previous_user_profile, action_on_docs, datetime):
+    def compute_user_profile(self, previous_model_data, previous_datetime, actions_on_docs, new_datetime):
         """
         Compute user profile (feature vector plus intermediate values to iterate as the user execute new actions)
         This execute the Rocchio algorithm based on the Wikipedia article, tweaked for:
@@ -79,36 +65,49 @@ class UserProfiler(object):
                          it uses e**(-rt) because only this form allows streaming algorithm
                          (no recomputing of all actions since the beginning)
             -coefficients among positive actions set or negative actions set: to give more relevance to up vote that click...
-        :param previous_user_profile: previous UserProfile
-        :param action_on_docs: list of action since previous computation of UserProfile
-        :param datetime: now
-        :return: updated UserProfile for new actions
+        :param previous_model_data: previously UserProfileModelData by the profiler
+        :param previous_datetime: datetime when previous_user_profile_model_data has been computed by the profiler
+        :param actions_on_docs: list of action since previous computation of UserProfile
+        :param new_datetime: now
+        :return: updated userprofiler.UserProfile for new actions
         """
 
         # we compute separately the 2 elements (positive and negative) the we add them to get final feature vector
         pos_elt = self._compute_user_profile_elt(
-            previous_vec=previous_user_profile.positive_feedback_vector,
-            previous_sum_coeff=previous_user_profile.sum_coeff_positive_feedback,
-            previous_date=previous_user_profile.datetime,
-            actions=action_on_docs,
-            new_date=datetime,
+            previous_vec=previous_model_data.positive_feedback_vector,
+            previous_sum_coeff=previous_model_data.positive_feedback_sum_coeff,
+            previous_date=previous_datetime,
+            actions=actions_on_docs,
+            new_date=new_datetime,
             action_to_coeff=self._action_type_to_positive_coeff
         )
         neg_elt = self._compute_user_profile_elt(
-            previous_vec=previous_user_profile.negative_feedback_vector,
-            previous_sum_coeff=previous_user_profile.sum_coeff_negative_feedback,
-            previous_date=previous_user_profile.datetime,
-            actions=action_on_docs,
-            new_date=datetime,
+            previous_vec=previous_model_data.negative_feedback_vector,
+            previous_sum_coeff=previous_model_data.negative_feedback_sum_coeff,
+            previous_date=previous_datetime,
+            actions=actions_on_docs,
+            new_date=new_datetime,
             action_to_coeff=self._action_type_to_negative_coeff
         )
+        global_vec = self._compute_global_feedback_vector(neg_elt, pos_elt)
 
-        weighted_normalized_pos_vec = self._positive_feedback_coeff * pos_elt.sum_vec / pos_elt.sum_coeff
-        weighted_normalized_neg_vec = self._negative_feedback_coeff * neg_elt.sum_vec / neg_elt.sum_coeff
+        updated_model_data = UserProfileModelData.make_from_scratch(
+            pos_elt.sum_vec.tolist(), neg_elt.sum_vec.tolist(), pos_elt.sum_coeff, neg_elt.sum_coeff)
+
+        return UserProfile(updated_model_data, global_vec.tolist())
+
+    def _compute_global_feedback_vector(self, neg_elt, pos_elt):
+        weighted_normalized_pos_vec = self._positive_feedback_coeff * self._compute_normalized_vector(pos_elt)
+        weighted_normalized_neg_vec = self._negative_feedback_coeff * self._compute_normalized_vector(neg_elt)
         global_vec = weighted_normalized_pos_vec - weighted_normalized_neg_vec
+        return global_vec
 
-        return UserProfile(
-            datetime, pos_elt.sum_coeff, neg_elt.sum_coeff, pos_elt.sum_vec, neg_elt.sum_vec, global_vec)
+    @staticmethod
+    def _compute_normalized_vector(profile_elt):
+        if profile_elt.sum_coeff == 0:
+            return np.zeros(len(profile_elt.sum_vec))
+        else:
+            return profile_elt.sum_vec / profile_elt.sum_coeff
 
     def _compute_user_profile_elt(self, previous_vec, previous_sum_coeff, previous_date, actions, new_date, action_to_coeff):
         """ compute user profile variables for one element (positive or negative).

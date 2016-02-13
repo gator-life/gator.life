@@ -39,7 +39,9 @@ class HomePageHandler(webapp2.RequestHandler):
             labels = dal.get_features(feature_set_id)
             vector = [float(self.request.get(label)) for label in labels]
             feature_vector = struct.FeatureVector.make_from_scratch(vector=vector, feature_set_id=feature_set_id)
-            dal.save_user_feature_vector(user, feature_vector)
+            model_data = struct.UserProfileModelData.make_empty(len(feature_vector))
+            profile = struct.UserComputedProfile.make_from_scratch(feature_vector, model_data)
+            dal.save_computed_user_profile(user, profile)
 
         feature_vector = dal.get_user_feature_vector(user)
         if feature_vector.feature_set_id == dal.NULL_FEATURE_SET:
