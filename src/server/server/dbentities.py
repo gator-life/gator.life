@@ -41,7 +41,7 @@ class Document(ndb.Model):
     title = ndb.StringProperty(indexed=False, required=True)
     summary = ndb.StringProperty(indexed=False, required=False)
     datetime = ndb.DateTimeProperty(indexed=False, required=True, auto_now_add=True)
-    feature_vector = ndb.StructuredProperty(FeatureVector, indexed=False, repeated=False, required=True)
+    feature_vector = ndb.StructuredProperty(FeatureVector, indexed=False, required=True)
 
     @staticmethod
     def make(url, title, summary, feature_vector):
@@ -99,7 +99,7 @@ class UserComputedProfile(ndb.Model):
 class User(ndb.Model):
     google_user_id = ndb.StringProperty(indexed=True, required=False)
     user_document_set_key = ndb.KeyProperty(UserDocumentSet, indexed=False, required=True)
-    user_computed_profile_key = ndb.KeyProperty(UserComputedProfile, repeated=False, required=True)
+    user_computed_profile_key = ndb.KeyProperty(UserComputedProfile, indexed=False, required=True)
 
     @staticmethod
     def make(user_id, google_user_id, user_document_set_key, user_computed_profile_key):
