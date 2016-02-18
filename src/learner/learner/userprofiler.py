@@ -104,6 +104,9 @@ class UserProfiler(object):
 
     @staticmethod
     def _compute_normalized_vector(profile_elt):
+        # An absence of any action on one side is characterized by a sum_coeff to zero.
+        # when there is no action on one side (ie: no negative actions), the best we can do is to take only
+        # the other side in account. The two vectors (positive, negative) are added, so neutral element is the zero vector
         if profile_elt.sum_coeff == 0:
             return np.zeros(len(profile_elt.sum_vec))
         else:
