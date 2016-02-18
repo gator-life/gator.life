@@ -50,14 +50,18 @@ class UserProfilerTests(unittest.TestCase):
 
         self.assert_profile_equals(new_profile, final_profile)
 
-    def test_compute_global_feedback_vector_with_zero_positive_coeff(self):
+    def test_compute_global_feedback_vector_with_no_positive_feedback_only_use_negative(self):
+        # If there is no positive feedback. The best we can do is using only negative feedback.
+        # What really matters is the direction of the vector. Here in 2 dimensions, this is just the slope between
+        # first and second axis
         profiler = UserProfiler()
         pos_elt = _ElementProfile(np.asarray([3.0, 3.0]), 0)
         neg_elt = _ElementProfile(np.asarray([5.0, 1.0]), 1)
         vector = profiler._compute_global_feedback_vector(neg_elt, pos_elt)
-        self.assertEqual(5.0, vector[0] / vector[1])
+        self.assertEqual(5.0, vector[0] / vector[1])  # 'slope' of negative vector should be kept
 
-    def test_compute_global_feedback_vector_with_zero_negative_coeff(self):
+    def test_compute_global_feedback_vector_with_no_negative_feedback_only_use_positive(self):
+        # same logic as test_compute_global_feedback_vector_with_no_positive_feedback_only_use_negative
         profiler = UserProfiler()
         neg_elt = _ElementProfile(np.asarray([3.0, 3.0]), 0)
         pos_elt = _ElementProfile(np.asarray([5.0, 1.0]), 1)
