@@ -87,7 +87,7 @@ def save_computed_user_profiles(user_profile_list):
     db_profiles = []
     for user, computed_user_profile in user_profile_list:
         db_profile = _to_db_computed_user_profile(computed_user_profile)
-        # by setting as key the key previously referenced by the user, we will overwrite the previous feature_vector in db
+        # by setting as key the key previously referenced by the user, we will overwrite the previous profile in db
         db_profile.key = user._user_computed_profile_db_key  # pylint: disable=protected-access
         db_profiles.append(db_profile)
     ndb.put_multi(db_profiles)
