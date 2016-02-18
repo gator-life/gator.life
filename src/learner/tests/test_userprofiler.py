@@ -31,10 +31,10 @@ class UserProfilerTests(unittest.TestCase):
         # expected vector =
         # +pos_coeff*(up_doc*up_coeff/4 + click_doc*click_coeff/2)/(up_coeff/4+click_coeff/2)
         # -neg_coeff*(down_doc*down_coeff/4+view_doc*view_coeff/2)/(down_coeff/4+view_coeff/2)
-        pos_factor = 0.8 / (5.0 / 4.0 + 0.5)
+        pos_factor = 0.8 / (5.0 / 4.0 + 1. / 2)
         neg_factor = 0.2 / (10.0 / 4.0 + 1. / 2)
         pos_vec = [5. / 4 + 1. / 2, 5. / 4]
-        neg_vec = [1.0, 10. / 4 + 1. / 2]
+        neg_vec = [2. / 2, 10. / 4 + 1. / 2]
 
         expected_vec = [pos_factor * pos_val - neg_factor * neg_val for pos_val, neg_val in zip(pos_vec, neg_vec)]
         self.assert_list_almost_equals(expected_vec, new_profile.feedback_vector, places=3)
@@ -55,14 +55,14 @@ class UserProfilerTests(unittest.TestCase):
         pos_elt = _ElementProfile(np.asarray([3.0, 3.0]), 0)
         neg_elt = _ElementProfile(np.asarray([5.0, 1.0]), 1)
         vector = profiler._compute_global_feedback_vector(neg_elt, pos_elt)
-        self.assertEqual(5.0, vector[0]/vector[1])
+        self.assertEqual(5.0, vector[0] / vector[1])
 
     def test_compute_global_feedback_vector_with_zero_negative_coeff(self):
         profiler = UserProfiler()
         neg_elt = _ElementProfile(np.asarray([3.0, 3.0]), 0)
         pos_elt = _ElementProfile(np.asarray([5.0, 1.0]), 1)
         vector = profiler._compute_global_feedback_vector(neg_elt, pos_elt)
-        self.assertEqual(5.0, vector[0]/vector[1])
+        self.assertEqual(5.0, vector[0] / vector[1])
 
     def assert_profile_equals(self, expected, result):
         self.assert_model_data_equals(expected.model_data, result.model_data)
