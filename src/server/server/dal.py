@@ -5,7 +5,6 @@ abstract database scheme and ndb API to communicate with the rest of the package
 from google.appengine.ext import ndb
 import dbentities as db  # pylint: disable=relative-import
 import frontendstructs as struct  # pylint: disable=relative-import
-
 # problem (to solve) with app engine: server is not seen as a package by GAE
 # so you can't do proper relative import (from . import dbentities) as expected by pylint / pep8
 
@@ -19,7 +18,7 @@ def _to_user(db_user):
     return struct.User.make_from_db(
         email=db_user.key.id(),
         user_doc_set_db_key=db_user.user_document_set_key,
-        feature_vector_db_key=db_user.feature_vector_key)
+        user_computed_profile_db_key=db_user.user_computed_profile_key)
 
 
 def get_all_users():
@@ -33,9 +32,11 @@ def save_user(user):
     """
     if user._user_doc_set_db_key is None:  # pylint: disable=protected-access
         user._user_doc_set_db_key = db.UserDocumentSet.make().put()  # pylint: disable=protected-access
-    if user._feature_vector_db_key is None:  # pylint: disable=protected-access
-        user._feature_vector_db_key = db.FeatureVector.make(NULL_FEATURE_SET, []).put()  # pylint: disable=protected-access
-
+    if user._user_computed_profile_db_key is None:  # pylint: disable=protected-access
+        null_feature_vector = db.FeatureVector.make(NULL_FEATURE_SET, [])
+        null_model_data = db.UserProfileModelData.make([], [], 0., 0.)
+        profile_key = db.UserComputedProfile.make(null_feature_vector, null_model_data).put()
+        user._user_computed_profile_db_key = profile_key  # pylint: disable=protected-access
     db_user = _to_db_user(user)
     db_user.put()
 
@@ -44,7 +45,7 @@ def _to_db_user(user):
     db_user = db.User.make(user_id=user.email,
                            google_user_id=None,
                            user_document_set_key=user._user_doc_set_db_key,  # pylint: disable=protected-access
-                           feature_vector_key=user._feature_vector_db_key)  # pylint: disable=protected-access
+                           user_computed_profile_key=user._user_computed_profile_db_key)  # pylint: disable=protected-access
     return db_user
 
 
@@ -59,20 +60,70 @@ def save_features(feature_set_id, feature_names):
     feature_set.put()
 
 
-def save_user_feature_vector(user, feature_vector):
-    db_feature_vector = _to_db_feature_vector(feature_vector)
-    # by setting as key the key previously referenced by the user, we will overwrite the previous feature_vector in db
-    db_feature_vector.key = user._feature_vector_db_key  # pylint: disable=protected-access
-    db_feature_vector.put()
+def _to_db_user_profile_model_data(user_profile_model_data):
+    return db.UserProfileModelData.make(
+        user_profile_model_data.positive_feedback_vector,
+        user_profile_model_data.negative_feedback_vector,
+        user_profile_model_data.positive_feedback_sum_coeff,
+        user_profile_model_data.negative_feedback_sum_coeff
+    )
+
+
+def _to_db_computed_user_profile(user_computed_profile):
+    db_feature_vector = _to_db_feature_vector(user_computed_profile.feature_vector)
+    db_model_data = _to_db_user_profile_model_data(user_computed_profile.model_data)
+    return db.UserComputedProfile.make(db_feature_vector, db_model_data)
+
+
+def save_computed_user_profile(user, user_computed_profile):
+    save_computed_user_profiles([(user, user_computed_profile)])
+
+
+def save_computed_user_profiles(user_profile_list):
+    """
+    :param user_profile_list: list of tuples (struct.User, struct.UserComputedProfile)
+    :return:
+    """
+    db_profiles = []
+    for user, computed_user_profile in user_profile_list:
+        db_profile = _to_db_computed_user_profile(computed_user_profile)
+        # by setting as key the key previously referenced by the user, we will overwrite the previous profile in db
+        db_profile.key = user._user_computed_profile_db_key  # pylint: disable=protected-access
+        db_profiles.append(db_profile)
+    ndb.put_multi(db_profiles)
+
+
+def _to_user_profile_model_data(db_user_profile_model_data):
+    return struct.UserProfileModelData.make_from_db(
+        db_user_profile_model_data.positive_feedback_vector,
+        db_user_profile_model_data.negative_feedback_vector,
+        db_user_profile_model_data.positive_feedback_sum_coeff,
+        db_user_profile_model_data.negative_feedback_sum_coeff
+    )
+
+
+def _to_user_computed_profile(db_user_computed_profile):
+    model_data = _to_user_profile_model_data(db_user_computed_profile.model_data)
+    feature_vector = _to_feature_vector(db_user_computed_profile.feature_vector)
+    datetime = db_user_computed_profile.datetime
+    return struct.UserComputedProfile.make_from_db(feature_vector, model_data, datetime)
+
+
+def get_user_computed_profiles(users):
+    keys = [user._user_computed_profile_db_key for user in users]  # pylint: disable=protected-access
+    db_profiles = ndb.get_multi(keys)
+    profiles = [_to_user_computed_profile(db_profile) for db_profile in db_profiles]
+    return profiles
 
 
 def get_user_feature_vector(user):
-    return _to_feature_vector(user._feature_vector_db_key.get())  # pylint: disable=protected-access
+    return get_users_feature_vectors([user])[0]
 
 
 def get_users_feature_vectors(users):
-    db_feature_vectors = ndb.get_multi(user._feature_vector_db_key for user in users)  # pylint: disable=protected-access
-    return [_to_feature_vector(db_vec) for db_vec in db_feature_vectors]
+    # NB: this could be probably optimized by projection query if we need, but it would require to index vector property.
+    profiles = get_user_computed_profiles(users)
+    return [profile.feature_vector for profile in profiles]
 
 
 def _to_feature_vector(db_feature_vector):
@@ -240,6 +291,7 @@ def _to_db_action_type_on_doc(user_action_on_doc_enum):
         return 'click_link'
     if user_action_on_doc_enum == struct.UserActionTypeOnDoc.view_link:
         return 'view_link'
+    raise ValueError(str(user_action_on_doc_enum) + ' has not string matching for database')
 
 
 REF_FEATURE_SET = "ref_feature_set"

@@ -73,17 +73,17 @@ class ScrapAndLearnTests(unittest.TestCase):
         self.dummy_feat_vec = struct.FeatureVector.make_from_scratch([], dal.NULL_FEATURE_SET)
 
     def tearDown(self):
-        self.testbed.deactivate()  # pylint: disable=duplicate-code
+        self.testbed.deactivate()
 
     def test_scrap_and_learn(self):
         # I)setup database and mocks
         # I.1) user
         user1 = struct.User.make_from_scratch("user1")
         dal.save_user(user1)
-        dal.save_user_feature_vector(user1, struct.FeatureVector.make_from_scratch([1.0], "featureSetId-test_orchestrate"))
+        _save_dummy_profile_for_user(user1)
         user2 = struct.User.make_from_scratch("user2")
         dal.save_user(user2)
-        dal.save_user_feature_vector(user2, struct.FeatureVector.make_from_scratch([1.0], "featureSetId-test_orchestrate"))
+        _save_dummy_profile_for_user(user2)
         # I.2) doc
         doc1 = struct.Document.make_from_scratch("url1", 'title1', "sum1", self.dummy_feat_vec)
         doc2 = struct.Document.make_from_scratch("url2", 'title2', "sum2", self.dummy_feat_vec)
@@ -117,6 +117,12 @@ class ScrapAndLearnTests(unittest.TestCase):
         self.assertEqual(mock_url_unicity_checker.is_unique_count, 5)
         # save() should be called at 'docs_chunk_size' frequency and 1 time at the end of the loop.
         self.assertEqual(mock_url_unicity_checker.saved_count, 3)
+
+
+def _save_dummy_profile_for_user(user):
+    feature_vector = struct.FeatureVector.make_from_scratch([1.0], "featureSetId-test_scrap_learn")
+    model_data = struct.UserProfileModelData.make_empty(1)
+    dal.save_computed_user_profile(user, struct.UserComputedProfile.make_from_scratch(feature_vector, model_data))
 
 
 if __name__ == '__main__':
