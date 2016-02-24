@@ -500,7 +500,7 @@ Attribution Phrase (not exceeding 10 words): Powered by gator.life
 Attribution URL: http://gator.life
 
 Graphic Image as provided in the Covered Code:
-https://github.com/gator-life/gator/blob/master/gatorlife_logo.png
+https://github.com/gator-life/gator/blob/master/src/server/server/images/gatorlife_logo.png
 
 Display of Attribution Information is required in Larger Works which are defined
 in the CPAL as a work which combines Covered Code or portions thereof with code
