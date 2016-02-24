@@ -56,10 +56,10 @@ class ScrapAndLearnTests(unittest.TestCase):
     def test_scrap_and_learn(self):
         # I)setup database and mocks
         # I.1) user
-        user1 = struct.User.make_from_scratch("user1")
+        user1 = struct.User.make_from_scratch("user1", "password1", "interests1")
         dal.save_user(user1)
         dal.save_user_feature_vector(user1, struct.FeatureVector.make_from_scratch([1.0], "featureSetId-test_orchestrate"))
-        user2 = struct.User.make_from_scratch("user2")
+        user2 = struct.User.make_from_scratch("user2", "password2", "interests2")
         dal.save_user(user2)
         dal.save_user_feature_vector(user2, struct.FeatureVector.make_from_scratch([1.0], "featureSetId-test_orchestrate"))
         # I.2) doc

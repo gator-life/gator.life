@@ -71,15 +71,17 @@ class UserDocumentSet(ndb.Model):
 # ----------- entities modified by frontend -----------
 
 class User(ndb.Model):
-    google_user_id = ndb.StringProperty(indexed=True, required=False)
+    password = ndb.StringProperty(indexed=False, required=True)
+    interests = ndb.StringProperty(indexed=False, required=True)
     user_document_set_key = ndb.KeyProperty(UserDocumentSet, indexed=False, required=True)
     feature_vector_key = ndb.KeyProperty(FeatureVector, repeated=False, required=True)
 
     @staticmethod
-    def make(user_id, google_user_id, user_document_set_key, feature_vector_key):
+    def make(user_id, password, interests, user_document_set_key, feature_vector_key):
         return User(
             id=user_id,
-            google_user_id=google_user_id,
+            password=password,
+            interests=interests,
             user_document_set_key=user_document_set_key,
             feature_vector_key=feature_vector_key)
 

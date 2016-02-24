@@ -14,10 +14,17 @@ def get_user(email):
     db_user = db.User.get(email)
     return _to_user(db_user) if db_user else None
 
+def get_user_by_checking_password(email, password):
+    user = get_user(email)
+    if user is not None and user.password == password:
+        return user
+    return None
 
 def _to_user(db_user):
     return struct.User.make_from_db(
         email=db_user.key.id(),
+        password=db_user.password,
+        interests=db_user.interests,
         user_doc_set_db_key=db_user.user_document_set_key,
         feature_vector_db_key=db_user.feature_vector_key)
 
@@ -42,7 +49,8 @@ def save_user(user):
 
 def _to_db_user(user):
     db_user = db.User.make(user_id=user.email,
-                           google_user_id=None,
+                           password=user.password,
+                           interests=user.interests,
                            user_document_set_key=user._user_doc_set_db_key,  # pylint: disable=protected-access
                            feature_vector_key=user._feature_vector_db_key)  # pylint: disable=protected-access
     return db_user
