@@ -3,9 +3,10 @@ import logging
 import re
 import unittest
 import os
+from collections import namedtuple
 import vcr
 import jsonpickle
-from scraper.scraper import _is_valid_link, _get_invalid_regex, _get_doc_generator
+from scraper.scraper import _is_valid_link, _get_invalid_regex, _get_doc_generator, _HtmlExtractor
 from scraper.scraperstructs import LinkElement, Document
 
 
@@ -32,6 +33,36 @@ class ScraperTests(unittest.TestCase):
     def test_get_invalid_regex(self):
         regex = _get_invalid_regex()
         self.assertTrue(regex.search('vfgbvdfggyoutubedhkufjhc'))
+
+    def test_html_extractor_try_get_html_with_long_html_return_none(self):
+
+        long_string = u"ボ" * 100001  # more than 1M char, chinese to force guessed_encoding to utf-8 (else it gives ASCII)
+
+        html_doc = """
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>title</title>
+  </head>
+  <body>
+    <!""" + long_string + """/>
+  </body>
+</html>
+"""
+        # mock of requests lib
+
+        class RequestsLongDocMock(object):
+
+            @classmethod
+            def get(cls):
+                # return a mock result result with same fields as result type from requests.get(url)
+                request_result = namedtuple('request_data', ['encoding', 'content', 'text'])
+                return request_result(encoding='utf-8', content=html_doc, text=html_doc)
+
+        html_extractor = _HtmlExtractor()
+        html_extractor._requests = RequestsLongDocMock()  # set mock requests lib
+        self.assertIsNone(html_extractor.try_get_html('url'))
 
     def test_get_doc_generator_return_docs_correctly_serializable_as_json(self):
         logging.disable('WARNING')  # this test raise logged exceptions, we disable it to not pollute console output

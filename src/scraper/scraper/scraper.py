@@ -23,29 +23,50 @@ def _is_valid_link(link_element, invalid_paths_regex, invalid_extensions):
     return True
 
 
-def _try_get_html(url):
-    try:
-        data = requests.get(url, timeout=2)
+class _HtmlExtractor(object):
 
-        header_encoding = data.encoding
-        if not header_encoding:
+    def __init__(self):
+        self._requests = requests  # field instead of static call for mocking 'requests' lib in some tests
+
+    def try_get_html(self, url):
+        try:
+            data = self._requests.get(url, timeout=2)
+
+            header_encoding = data.encoding
+            if not header_encoding:
+                logging.debug('filtered: no header encoding, url:%s', url)
+                return None
+            # cchardet way faster than data.apparent_encoding
+            # https://github.com/kennethreitz/requests/issues/2359
+            guessed_encoding = cchardet.detect(data.content)['encoding'].lower()
+            if guessed_encoding is None or header_encoding.lower() != guessed_encoding:
+                logging.debug(
+                    'filtered: guessed encoding %s different from header encoding %s, url:%s',
+                    guessed_encoding, header_encoding, url)
+                return None
+            data.content.decode(guessed_encoding)  # check we can get unicode object from raw data (could raise exception)
+            if not self._is_size_reasonable(data.text):
+                logging.debug('filtered: size too big, url:%s', url)
+                return None
+            return data.text
+        except (
+                ssl.SSLError,
+                socket.timeout,
+                UnicodeDecodeError,
+                requests.exceptions.RequestException
+        ) as expected_exception:
+            logging.warning('managed exception, url: ' + url)
+            logging.exception(expected_exception)
             return None
-        # cchardet way faster than data.apparent_encoding
-        # https://github.com/kennethreitz/requests/issues/2359
-        guessed_encoding = cchardet.detect(data.content)['encoding'].lower()
-        if guessed_encoding is None or header_encoding.lower() != guessed_encoding:
+        #  to not crash the whole process...
+        except Exception as unexpected_exception:  # pylint: disable=broad-except
+            logging.error('unexpected exception, url: ' + url)
+            logging.exception(unexpected_exception)
             return None
-        data.content.decode(guessed_encoding)  # check we can get unicode object from raw data (could raise exception)
-        return data.text
-    except (ssl.SSLError, socket.timeout, UnicodeDecodeError, requests.exceptions.RequestException) as expected_exception:
-        logging.warning('managed exception, url: ' + url)
-        logging.exception(expected_exception)
-        return None
-    #  to not crash the whole process...
-    except Exception as unexpected_exception:  # pylint: disable=broad-except
-        logging.error('unexpected exception, url: ' + url)
-        logging.exception(unexpected_exception)
-        return None
+
+    @classmethod
+    def _is_size_reasonable(cls, text):
+        return len(text) < 1000000
 
 
 def _get_invalid_regex():
@@ -72,7 +93,8 @@ def _scrap(disconnected):
 
 
 def _get_doc_generator(link_elts):
-    links_and_htmls = ((link, _try_get_html(link.url)) for link in link_elts)
+    html_extractor = _HtmlExtractor()
+    links_and_htmls = ((link, html_extractor.try_get_html(link.url)) for link in link_elts)
     documents = (Document(link, html) for link, html in links_and_htmls if html is not None)
     return documents
 
