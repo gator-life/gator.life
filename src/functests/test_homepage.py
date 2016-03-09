@@ -73,6 +73,10 @@ class NewVisitorTests(unittest.TestCase):
         self.assertEquals('This account already exists', error_message)
 
     def test_register_then_login_should_go_to_homepage(self):
+        # Retrieve actions done after the beginning of this test as it can be launched more than once on the same
+        # GAE instance. Use utcnow() instead now() because datastore timezone is UTC.
+        now = datetime.datetime.utcnow()
+
         email = 'kevin@gator.com'
         password = 'kevintheboss'
 
@@ -118,7 +122,7 @@ class NewVisitorTests(unittest.TestCase):
         google_link.click()
         self.assertEqual("Google", self.browser.title)
 
-        actions_by_user = dal.get_user_actions_on_docs([user], datetime.datetime.now()-datetime.timedelta(days=1))
+        actions_by_user = dal.get_user_actions_on_docs([user], now)
         actions = actions_by_user[0]
         self.assertEqual(3, len(actions))
 

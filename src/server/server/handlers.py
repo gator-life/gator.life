@@ -90,10 +90,13 @@ class RegisterHandler(BaseHandler):
                 user = struct.User.make_from_scratch(email, helpers.PasswordHelpers.hash_password(password), interests)
                 dal.save_user(user)
 
-                # Create an empty feature vector for the newly created user
+                # Create an empty profile for the newly created user
                 features_set = dal.get_features(dal.REF_FEATURE_SET)
-                feature_vector = struct.FeatureVector.make_from_scratch([0]*len(features_set), dal.REF_FEATURE_SET)
-                dal.save_user_feature_vector(user, feature_vector)
+                feature_vector = struct.FeatureVector.make_from_scratch([1]*len(features_set), dal.REF_FEATURE_SET)
+                model_data = struct.UserProfileModelData.make_empty(len(features_set))
+                profile = struct.UserComputedProfile.make_from_scratch(feature_vector, model_data)
+
+                dal.save_computed_user_profiles([(user, profile)])
 
                 self.redirect('/login')
             else:
