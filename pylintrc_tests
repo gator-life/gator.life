@@ -286,7 +286,8 @@ spelling-store-unknown-words=no
 [SIMILARITIES]
 
 # Minimum lines number of a similarity.
-min-similarity-lines=4
+min-similarity-lines=5
+# default is 4, take 5 to make common setup/teardown with ndb passing
 
 # Ignore comments when computing similarities.
 ignore-comments=yes

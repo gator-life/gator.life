@@ -41,7 +41,7 @@ class Document(ndb.Model):
     title = ndb.StringProperty(indexed=False, required=True)
     summary = ndb.StringProperty(indexed=False, required=False)
     datetime = ndb.DateTimeProperty(indexed=False, required=True, auto_now_add=True)
-    feature_vector = ndb.StructuredProperty(FeatureVector, indexed=False, repeated=False, required=True)
+    feature_vector = ndb.StructuredProperty(FeatureVector, indexed=False, required=True)
 
     @staticmethod
     def make(url, title, summary, feature_vector):
@@ -68,22 +68,48 @@ class UserDocumentSet(ndb.Model):
         self.user_documents = user_documents
 
 
+class UserProfileModelData(ndb.Model):
+    positive_feedback_vector = ndb.FloatProperty(indexed=False, repeated=True)
+    negative_feedback_vector = ndb.FloatProperty(indexed=False, repeated=True)
+    positive_feedback_sum_coeff = ndb.FloatProperty(indexed=False, required=True)
+    negative_feedback_sum_coeff = ndb.FloatProperty(indexed=False, required=True)
+
+    @staticmethod
+    def make(positive_feedback_vector, negative_feedback_vector, positive_feedback_sum_coeff, negative_feedback_sum_coeff):
+        return UserProfileModelData(
+            positive_feedback_vector=positive_feedback_vector,
+            negative_feedback_vector=negative_feedback_vector,
+            positive_feedback_sum_coeff=positive_feedback_sum_coeff,
+            negative_feedback_sum_coeff=negative_feedback_sum_coeff
+        )
+
+
+class UserComputedProfile(ndb.Model):
+    feature_vector = ndb.StructuredProperty(FeatureVector, indexed=False, required=True)
+    model_data = ndb.StructuredProperty(UserProfileModelData, indexed=False, required=True)
+    datetime = ndb.DateTimeProperty(indexed=True, required=True, auto_now_add=True)
+
+    @staticmethod
+    def make(feature_vector, model_data):
+        return UserComputedProfile(feature_vector=feature_vector, model_data=model_data)
+
+
 # ----------- entities modified by frontend -----------
 
 class User(ndb.Model):
     password = ndb.StringProperty(indexed=False, required=True)
     interests = ndb.StringProperty(indexed=False, required=True)
     user_document_set_key = ndb.KeyProperty(UserDocumentSet, indexed=False, required=True)
-    feature_vector_key = ndb.KeyProperty(FeatureVector, repeated=False, required=True)
+    user_computed_profile_key = ndb.KeyProperty(UserComputedProfile, indexed=False, required=True)
 
     @staticmethod
-    def make(user_id, password, interests, user_document_set_key, feature_vector_key):
+    def make(user_id, password, interests, user_document_set_key, user_computed_profile_key):
         return User(
             id=user_id,
             password=password,
             interests=interests,
             user_document_set_key=user_document_set_key,
-            feature_vector_key=feature_vector_key)
+            user_computed_profile_key=user_computed_profile_key)
 
     @staticmethod
     def get(user_id):

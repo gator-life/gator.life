@@ -9,7 +9,8 @@ from server.frontendstructs import Document, UserDocument, FeatureVector
 import server.dal as dal
 
 
-def scrap_and_learn(scraper, scraper_doc_saver, topic_modeller, docs_chunk_size, user_docs_max_size):
+def scrap_and_learn(scraper, scraper_doc_saver, topic_modeller, url_unicity_checker, docs_chunk_size, user_docs_max_size):
+    #pylint: disable=too-many-locals
     users = dal.get_all_users()
     users_docs = dal.get_users_docs(users)
     users_feature_vectors = dal.get_users_feature_vectors(users)
@@ -24,6 +25,8 @@ def scrap_and_learn(scraper, scraper_doc_saver, topic_modeller, docs_chunk_size,
     while True:
         try:
             for scraper_document in scraper.scrap():
+                if not url_unicity_checker.is_unique_and_add(scraper_document.link_element.url):
+                    continue
 
                 topic_feature_vector = topic_modeller.classify(scraper_document.html_content)
                 doc = Document.make_from_scratch(
@@ -36,12 +39,14 @@ def scrap_and_learn(scraper, scraper_doc_saver, topic_modeller, docs_chunk_size,
 
                 index_in_docs_chunk += 1
                 if index_in_docs_chunk == docs_chunk_size:
+                    url_unicity_checker.save()
                     dal.save_documents(doc_chunk)
                     _save_users_docs_current_state(users, user_docs_accumulator)
                     doc_chunk = [None] * docs_chunk_size
                     index_in_docs_chunk = 0
 
             # exit function if scraper generator exited without error
+            url_unicity_checker.save()
             dal.save_documents(doc_chunk[:index_in_docs_chunk])
             _save_users_docs_current_state(users, user_docs_accumulator)
             return

@@ -46,19 +46,19 @@ class UserDocument(object):
 class User(object):
 
     @staticmethod
-    def make_from_db(email, password, interests, user_doc_set_db_key, feature_vector_db_key):
-        return User(email, password, interests, user_doc_set_db_key, feature_vector_db_key)
+    def make_from_db(email, password, interests, user_doc_set_db_key, user_computed_profile_db_key):
+        return User(email, password, interests, user_doc_set_db_key, user_computed_profile_db_key)
 
     @staticmethod
     def make_from_scratch(email, password, interests):
         return User(email, password, interests, None, None)
 
-    def __init__(self, email, password, interests, user_doc_set_db_key, feature_vector_db_key):
+    def __init__(self, email, password, interests, user_doc_set_db_key, user_computed_profile_db_key):
         self.email = email
         self.password = password
         self.interests = interests
         self._user_doc_set_db_key = user_doc_set_db_key
-        self._feature_vector_db_key = feature_vector_db_key
+        self._user_computed_profile_db_key = user_computed_profile_db_key
 
 
 class FeatureVector(object):
@@ -95,3 +95,55 @@ class UserActionOnDoc(object):
         self.document = document
         self.action_type = action_type
         self.datetime = datetime
+
+
+class UserComputedProfile(object):
+    """
+    Represent the information about the user profile:
+    """
+    @staticmethod
+    def make_from_scratch(feature_vector, model_data):
+        return UserComputedProfile(feature_vector, model_data, datetime=None)
+
+    @staticmethod
+    def make_from_db(feature_vector, model_data, datetime):
+        return UserComputedProfile(feature_vector, model_data, datetime)
+
+    def __init__(self, feature_vector, model_data, datetime):
+        """
+        :param feature_vector: FeatureVector, to compute interests of the user for a document in a VSM (Vector Space Model)
+        :param model_data: UserProfileModelData, intermediate data to compute this vector at each learning step in profiler
+        :param datetime: datetime when the vector has been computed
+        """
+        self.feature_vector = feature_vector
+        self.model_data = model_data
+        self.datetime = datetime
+
+
+class UserProfileModelData(object):
+
+    @staticmethod
+    def make_empty(size_vector):
+        return UserProfileModelData.make_from_scratch([0] * size_vector, [0] * size_vector, 0.0, 0.0)
+
+    @staticmethod
+    def make_from_scratch(
+            positive_feedback_vector, negative_feedback_vector, positive_feedback_sum_coeff, negative_feedback_sum_coeff):
+        return UserProfileModelData(
+            positive_feedback_vector, negative_feedback_vector, positive_feedback_sum_coeff, negative_feedback_sum_coeff
+        )
+
+    @staticmethod
+    def make_from_db(
+            positive_feedback_vector, negative_feedback_vector, positive_feedback_sum_coeff, negative_feedback_sum_coeff):
+        return UserProfileModelData(
+            positive_feedback_vector, negative_feedback_vector, positive_feedback_sum_coeff, negative_feedback_sum_coeff
+        )
+
+    def __init__(self,
+                 positive_feedback_vector, negative_feedback_vector,
+                 positive_feedback_sum_coeff, negative_feedback_sum_coeff):
+        self.positive_feedback_vector = positive_feedback_vector
+        self.negative_feedback_vector = negative_feedback_vector
+        self.positive_feedback_sum_coeff = positive_feedback_sum_coeff
+        self.negative_feedback_sum_coeff = negative_feedback_sum_coeff

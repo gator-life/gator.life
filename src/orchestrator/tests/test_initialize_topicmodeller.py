@@ -34,7 +34,7 @@ class TopicModellerTests(unittest.TestCase):
         ndb.get_context().clear_cache()
 
     def tearDown(self):
-        self.testbed.deactivate()  # pylint: disable=duplicate-code
+        self.testbed.deactivate()
 
     def test_initialize_topicmodeller(self):
         num_topics = 128

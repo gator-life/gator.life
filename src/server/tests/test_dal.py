@@ -35,12 +35,12 @@ class DalTests(unittest.TestCase):
         expected_user = struct.User.make_from_scratch(email='email', password='password', interests='interests')
 
         # ------------- check save_user --------------
-        self.assertIsNone(expected_user._feature_vector_db_key)
+        self.assertIsNone(expected_user._user_computed_profile_db_key)
         self.assertIsNone(expected_user._user_doc_set_db_key)
         dal.save_user(expected_user)
         # save should init db keys
         self.assertIsNotNone(expected_user._user_doc_set_db_key)
-        self.assertIsNotNone(expected_user._feature_vector_db_key)
+        self.assertIsNotNone(expected_user._user_computed_profile_db_key)
 
         # ------------- check get_user --------------
         result_user = dal.get_user('email')
@@ -48,7 +48,7 @@ class DalTests(unittest.TestCase):
         self.assertEquals(expected_user.password, result_user.password)
         self.assertEquals(expected_user.interests, result_user.interests)
         self.assertEquals(expected_user._user_doc_set_db_key, result_user._user_doc_set_db_key)
-        self.assertEquals(expected_user._feature_vector_db_key, result_user._feature_vector_db_key)
+        self.assertEquals(expected_user._user_computed_profile_db_key, result_user._user_computed_profile_db_key)
 
     def test_get_user_by_checking_password_ko(self):
         expected_user = struct.User.make_from_scratch('email', 'password', 'interests')
@@ -67,7 +67,7 @@ class DalTests(unittest.TestCase):
         self.assertEquals(expected_user.password, result_user.password)
         self.assertEquals(expected_user.interests, result_user.interests)
         self.assertEquals(expected_user._user_doc_set_db_key, result_user._user_doc_set_db_key)
-        self.assertEquals(expected_user._feature_vector_db_key, result_user._feature_vector_db_key)
+        self.assertEquals(expected_user._user_computed_profile_db_key, result_user._user_computed_profile_db_key)
 
     def test_get_all_users(self):
         users_data = [('user1', 'password1', 'interests1'), ('user2', 'password2', 'interests2'),
@@ -124,37 +124,69 @@ class DalTests(unittest.TestCase):
             self.assertEquals(expected_doc.summary, result_doc.summary)
             self.assertEquals(expected_doc.feature_vector.vector[0], result_doc.feature_vector.vector[0])
 
-    def test_save_then_get_user_feature_vector_should_be_equals(self):
-        feature_set = self.build_dummy_db_feature_set()
-        expected_feat_vec = struct.FeatureVector.make_from_scratch(
-            vector=[0.5, 0.6], feature_set_id=feature_set.key.id())
+    def test_save_then_get_computed_user_profiles(self):
+        user1, profile1 = self._build_profile(1)
+        user2, profile2 = self._build_profile(2)
 
-        user = struct.User.make_from_scratch('test_save_then_get_user_feature_vector_should_be_equals', 'password',
-                                             'interests')
-        dal.save_user(user)
-        dal.save_user_feature_vector(user, expected_feat_vec)
+        dal.save_computed_user_profiles([(user1, profile1), (user2, profile2)])
+        result_profiles = dal.get_user_computed_profiles([user2, user1])
+        self.assertEquals(2, len(result_profiles))
+        self._assert_profiles_equals(profile1, result_profiles[1])
+        self._assert_profiles_equals(profile2, result_profiles[0])
 
-        result_feat_vec = dal.get_user_feature_vector(
-            dal.get_user('test_save_then_get_user_feature_vector_should_be_equals')
-        )
-        self.assertEquals(expected_feat_vec.feature_set_id, result_feat_vec.feature_set_id)
-        self.assertEquals(expected_feat_vec.vector, result_feat_vec.vector)
+        vectors = dal.get_users_feature_vectors([user2, user1])
+        self.assertEquals(2, len(vectors))
+        self._assert_feature_vector_equals(profile1.feature_vector, vectors[1])
+        self._assert_feature_vector_equals(profile2.feature_vector, vectors[0])
+
+    def test_save_computed_user_profile(self):
+        user, profile = self._build_profile(3)
+        dal.save_computed_user_profile(user, profile)
+        result_profile = dal.get_user_computed_profiles([user])[0]
+        self._assert_profiles_equals(profile, result_profile)
 
     def test_get_users_feature_vectors(self):
-        user1 = struct.User.make_from_scratch('test_get_users_feature_vectors1', 'password1', 'interest1')
-        user2 = struct.User.make_from_scratch('test_get_users_feature_vectors2', 'password2', 'interest2')
-        dal.save_user(user1)
-        dal.save_user(user2)
-        feature_set = self.build_dummy_db_feature_set()
-        feat_vec_1 = struct.FeatureVector.make_from_scratch(
-            vector=[0.2], feature_set_id=feature_set.key.id())
-        feat_vec_2 = struct.FeatureVector.make_from_scratch(
-            vector=[0.1], feature_set_id=feature_set.key.id())
-        dal.save_user_feature_vector(user1, feat_vec_1)
-        dal.save_user_feature_vector(user2, feat_vec_2)
-        result_vectors = dal.get_users_feature_vectors([user2, user1])
-        self.assertEqual(0.1, result_vectors[0].vector[0])
-        self.assertEqual(0.2, result_vectors[1].vector[0])
+        user1, profile1 = self._build_profile(4)
+        user2, profile2 = self._build_profile(5)
+        dal.save_computed_user_profiles([(user1, profile1), (user2, profile2)])
+
+        vectors = dal.get_users_feature_vectors([user2, user1])
+
+        self.assertEquals(2, len(vectors))
+        self._assert_feature_vector_equals(profile1.feature_vector, vectors[1])
+        self._assert_feature_vector_equals(profile2.feature_vector, vectors[0])
+
+    def test_get_user_feature_vector(self):
+        user, profile = self._build_profile(6)
+        dal.save_computed_user_profiles([(user, profile)])
+        vector = dal.get_user_feature_vector(user)
+        self._assert_feature_vector_equals(profile.feature_vector, vector)
+
+    def _build_profile(self, index):
+        feature_set_id = self.build_dummy_db_feature_set().key.id()
+        user = struct.User.make_from_scratch(email='user' + str(index), password='password' + str(index),
+                                             interests='interests' + str(index))
+        dal.save_user(user)
+        feature_vector = struct.FeatureVector.make_from_scratch(
+            vector=[0.5 + index, 0.6 + index], feature_set_id=feature_set_id)
+        model_data = struct.UserProfileModelData.make_from_scratch(
+            [0.3 + index, 0.4], [-1.0 + index, -2.0], 5.0 + index, 9.0 + index)
+        profile = struct.UserComputedProfile.make_from_scratch(feature_vector, model_data)
+        return user, profile
+
+    def _assert_profiles_equals(self, expected_profile, result_profile):
+        self._assert_feature_vector_equals(expected_profile.feature_vector, result_profile.feature_vector)
+        self._assert_model_data_equals(expected_profile.model_data, result_profile.model_data)
+
+    def _assert_feature_vector_equals(self, expected_feature_vector, result_feature_vector):
+        self.assertEquals(expected_feature_vector.vector, result_feature_vector.vector)
+        self.assertEquals(expected_feature_vector.feature_set_id, result_feature_vector.feature_set_id)
+
+    def _assert_model_data_equals(self, expected_model_data, result_model_data):
+        self.assertEquals(expected_model_data.positive_feedback_vector, result_model_data.positive_feedback_vector)
+        self.assertEquals(expected_model_data.negative_feedback_vector, result_model_data.negative_feedback_vector)
+        self.assertEquals(expected_model_data.positive_feedback_sum_coeff, result_model_data.positive_feedback_sum_coeff)
+        self.assertEquals(expected_model_data.negative_feedback_sum_coeff, result_model_data.negative_feedback_sum_coeff)
 
     def test_save_then_get_users_docs_should_be_equals(self):
 
