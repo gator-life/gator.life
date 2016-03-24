@@ -58,8 +58,8 @@ class LoginHandler(BaseHandler):
         email = self.request.get('email')
         password = self.request.get('password')
 
-        user = dal.get_user(email)
-        if user is not None and helpers.PasswordHelpers.is_password_valid_for_user(user, password):
+        (user, user_password) = dal.get_user_and_password(email)
+        if user is not None and helpers.PasswordHelpers.is_password_valid_for_user(user_password, password):
             self.set_connected_user(user)
             self.redirect('/')
         else:
@@ -87,8 +87,8 @@ class RegisterHandler(BaseHandler):
 
             user = dal.get_user(email)
             if user is None:
-                user = struct.User.make_from_scratch(email, helpers.PasswordHelpers.hash_password(password), interests)
-                dal.save_user(user)
+                user = struct.User.make_from_scratch(email, interests)
+                dal.save_user(user, helpers.PasswordHelpers.hash_password(password))
 
                 # Create an empty profile for the newly created user
                 features_set = dal.get_features(dal.REF_FEATURE_SET)

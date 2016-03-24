@@ -78,11 +78,11 @@ class ScrapAndLearnTests(unittest.TestCase):
     def test_scrap_and_learn(self):
         # I)setup database and mocks
         # I.1) user
-        user1 = struct.User.make_from_scratch("user1", "password1", "interests1")
-        dal.save_user(user1)
+        user1 = struct.User.make_from_scratch("user1", "interests1")
+        dal.save_user(user1, "password1")
         _save_dummy_profile_for_user(user1)
-        user2 = struct.User.make_from_scratch("user2", "password2", "interests2")
-        dal.save_user(user2)
+        user2 = struct.User.make_from_scratch("user2", "interests2")
+        dal.save_user(user2, "password2")
         _save_dummy_profile_for_user(user2)
         # I.2) doc
         doc1 = struct.Document.make_from_scratch("url1", 'title1', "sum1", self.dummy_feat_vec)

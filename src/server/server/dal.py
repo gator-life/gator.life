@@ -10,19 +10,18 @@ import frontendstructs as struct  # pylint: disable=relative-import
 
 
 def get_user(email):
-    db_user = db.User.get(email)
-    return _to_user(db_user) if db_user else None
+    (user, _) = get_user_and_password(email)
+    return user
 
-def get_user_by_checking_password(email, password):
-    user = get_user(email)
-    if user is not None and user.password == password:
-        return user
-    return None
+
+def get_user_and_password(email):
+    db_user = db.User.get(email)
+    return (_to_user(db_user), db_user.password) if db_user else (None, None)
+
 
 def _to_user(db_user):
     return struct.User.make_from_db(
         email=db_user.key.id(),
-        password=db_user.password,
         interests=db_user.interests,
         user_doc_set_db_key=db_user.user_document_set_key,
         user_computed_profile_db_key=db_user.user_computed_profile_key)
@@ -33,7 +32,7 @@ def get_all_users():
     return [_to_user(db_user) for db_user in all_users_query.iter()]
 
 
-def save_user(user):
+def save_user(user, password):
     """
     save a user into the database, if it's newly created, db_keys will be initialized
     """
@@ -44,13 +43,13 @@ def save_user(user):
         null_model_data = db.UserProfileModelData.make([], [], 0., 0.)
         profile_key = db.UserComputedProfile.make(null_feature_vector, null_model_data).put()
         user._user_computed_profile_db_key = profile_key  # pylint: disable=protected-access
-    db_user = _to_db_user(user)
+    db_user = _to_db_user(user, password)
     db_user.put()
 
 
-def _to_db_user(user):
+def _to_db_user(user, password):
     db_user = db.User.make(user_id=user.email,
-                           password=user.password,
+                           password=password,
                            interests=user.interests,
                            user_document_set_key=user._user_doc_set_db_key,  # pylint: disable=protected-access
                            user_computed_profile_key=user._user_computed_profile_db_key)  # pylint: disable=protected-access

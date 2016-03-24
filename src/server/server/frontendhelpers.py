@@ -11,5 +11,5 @@ class PasswordHelpers(object):
         return hashlib.sha512(password).hexdigest()
 
     @staticmethod
-    def is_password_valid_for_user(user, password):
-        return user.password == hashlib.sha512(password).hexdigest()
+    def is_password_valid_for_user(user_password, password):
+        return user_password == hashlib.sha512(password).hexdigest()
