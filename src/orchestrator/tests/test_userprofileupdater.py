@@ -19,8 +19,8 @@ class UserProfileBuilderTests(unittest.TestCase):
         self.testbed.deactivate()
 
     def test_update_all_user_profiles_in_database(self):
-        user1 = struct.User.make_from_scratch(email='user1-test_update_user_profiles_in_database', interests='interests1')
-        user2 = struct.User.make_from_scratch(email='user2-test_update_user_profiles_in_database', interests='interests2')
+        user1 = struct.User.make_from_scratch(email='user1-test_update_user_profiles_in_database', interests=['interests1'])
+        user2 = struct.User.make_from_scratch(email='user2-test_update_user_profiles_in_database', interests=['interests2'])
         dal.save_user(user1, 'password1')
         dal.save_user(user2, 'password2')
         feature_set_id = self._build_feature_set()

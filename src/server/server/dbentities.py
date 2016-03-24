@@ -98,7 +98,7 @@ class UserComputedProfile(ndb.Model):
 
 class User(ndb.Model):
     password = ndb.StringProperty(indexed=False, required=True)
-    interests = ndb.StringProperty(indexed=False, required=True)
+    interests = ndb.StringProperty(indexed=False, repeated=True)
     user_document_set_key = ndb.KeyProperty(UserDocumentSet, indexed=False, required=True)
     user_computed_profile_key = ndb.KeyProperty(UserComputedProfile, indexed=False, required=True)
 

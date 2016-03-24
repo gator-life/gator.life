@@ -83,7 +83,7 @@ class RegisterHandler(BaseHandler):
         if connected_user is None:
             email = self.request.get('email')
             password = self.request.get('password')
-            interests = self.request.get('interests')
+            interests = self.request.get('interests').splitlines()
 
             user = dal.get_user(email)
             if user is None:

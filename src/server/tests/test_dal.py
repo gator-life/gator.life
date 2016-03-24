@@ -33,7 +33,7 @@ class DalTests(unittest.TestCase):
     def test_save_then_get_user_should_be_equals(self):
         # ------ init database -----------
         password = 'password'
-        expected_user = struct.User.make_from_scratch(email='email', interests='interests')
+        expected_user = struct.User.make_from_scratch(email='email', interests=['interests'])
 
         # ------------- check save_user --------------
         self.assertIsNone(expected_user._user_computed_profile_db_key)
@@ -59,8 +59,8 @@ class DalTests(unittest.TestCase):
         self.assertEquals(expected_user._user_computed_profile_db_key, result_user._user_computed_profile_db_key)
 
     def test_get_all_users(self):
-        users_data = [('user1', 'interests1'), ('user2', 'interests2'),
-                      ('user3', 'interests3')]
+        users_data = [('user1', ['interests1']), ('user2', ['interests2']),
+                      ('user3', ['interests3'])]
         for (email, interests) in users_data:
             dal.save_user(struct.User.make_from_scratch(email, interests), 'password')
 
@@ -83,7 +83,7 @@ class DalTests(unittest.TestCase):
             struct.UserDocument.make_from_scratch(doc2, 0.2)]
 
         # create user and save it to init user_document_set_key field
-        user = struct.User.make_from_scratch("test_save_then_get_user_docs_should_be_equals", "interests1")
+        user = struct.User.make_from_scratch("test_save_then_get_user_docs_should_be_equals", ["interests1"])
         dal.save_user(user, "password1")
 
         dal.save_user_docs(user, expected_user_docs)
@@ -153,7 +153,7 @@ class DalTests(unittest.TestCase):
 
     def _build_profile(self, index):
         feature_set_id = self.build_dummy_db_feature_set().key.id()
-        user = struct.User.make_from_scratch(email='user' + str(index), interests='interests' + str(index))
+        user = struct.User.make_from_scratch(email='user' + str(index), interests=['interests' + str(index)])
         dal.save_user(user, 'password' + str(index))
         feature_vector = struct.FeatureVector.make_from_scratch(
             vector=[0.5 + index, 0.6 + index], feature_set_id=feature_set_id)
@@ -183,8 +183,8 @@ class DalTests(unittest.TestCase):
         dal.save_documents([doc1, doc2])
 
         # create user and save it to init user_document_set_key field
-        user1 = struct.User.make_from_scratch("test_get_users_docs1", "interests1")
-        user2 = struct.User.make_from_scratch("test_get_users_docs2", "interests2")
+        user1 = struct.User.make_from_scratch("test_get_users_docs1", ["interests1"])
+        user2 = struct.User.make_from_scratch("test_get_users_docs2", ["interests2"])
         dal.save_user(user1, "password1")
         dal.save_user(user2, "password2")
 
@@ -212,9 +212,9 @@ class DalTests(unittest.TestCase):
         doc1 = self.make_dummy_doc('test_save_then_get_user_actions_on_doc1')
         doc2 = self.make_dummy_doc('test_save_then_get_user_actions_on_doc2')
         dal.save_documents([doc1, doc2])
-        user1 = struct.User.make_from_scratch("test_save_then_get_user_actions_on_doc1", "interests1")
-        user2 = struct.User.make_from_scratch("test_save_then_get_user_actions_on_doc2", "interests2")
-        user3 = struct.User.make_from_scratch("test_save_then_get_user_actions_on_doc3", "interests3")
+        user1 = struct.User.make_from_scratch("test_save_then_get_user_actions_on_doc1", ["interests1"])
+        user2 = struct.User.make_from_scratch("test_save_then_get_user_actions_on_doc2", ["interests2"])
+        user3 = struct.User.make_from_scratch("test_save_then_get_user_actions_on_doc3", ["interests3"])
         dal.save_user(user1, "password1")
         dal.save_user(user2, "password2")
         dal.save_user(user3, "password3")
