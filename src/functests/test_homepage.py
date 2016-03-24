@@ -47,7 +47,7 @@ class NewVisitorTests(unittest.TestCase):
         self.assertEquals('Unknown email or invalid password', error_message)
 
     def test_login_with_invalid_password(self):
-        daltesthelpers.init_user_dummy('known_user@gator.com', '', [''])
+        daltesthelpers.create_user_dummy('known_user@gator.com', '', [''])
 
         self.browser.get('http://localhost:8080')
 
@@ -57,7 +57,10 @@ class NewVisitorTests(unittest.TestCase):
         self.assertEquals('Unknown email or invalid password', error_message)
 
     def test_register(self):
-        self.browser.get('http://localhost:8080/register')
+        self.browser.get('http://localhost:8080')
+
+        register_link = self.browser.find_element_by_link_text('Register')
+        register_link.click()
 
         interests_str = 'finance\npython\ncomputer science'
         self._register('register_then_login@gator.com', 'register_then_login', interests_str)
@@ -68,9 +71,13 @@ class NewVisitorTests(unittest.TestCase):
 
 
     def test_register_with_a_known_email(self):
-        daltesthelpers.init_user_dummy('test_register_with_a_known_email@gator.com', '', [''])
+        daltesthelpers.create_user_dummy('test_register_with_a_known_email@gator.com', '', [''])
 
-        self.browser.get('http://localhost:8080/register')
+        self.browser.get('http://localhost:8080')
+
+        register_link = self.browser.find_element_by_link_text('Register')
+        register_link.click()
+
         self._register('test_register_with_a_known_email@gator.com', 'password', 'interests')
 
         error_message = self.browser.find_element_by_name('error-message').text
@@ -84,8 +91,8 @@ class NewVisitorTests(unittest.TestCase):
         email = 'kevin@gator.com'
         password = 'kevintheboss'
 
-        user = daltesthelpers.init_user_dummy(email, PasswordHelpers.hash_password(password),
-                                              interests=['lol', 'xpdr', 'trop lol'])
+        user = daltesthelpers.create_user_dummy(email, PasswordHelpers.hash_password(password),
+                                                interests=['lol', 'xpdr', 'trop lol'])
 
         self.browser.get('http://localhost:8080')
 

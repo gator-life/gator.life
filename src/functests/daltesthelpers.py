@@ -5,7 +5,7 @@ import server.frontendstructs as struct
 import server.dal as dal
 
 
-def init_user_dummy(user_id, password, interests):
+def create_user_dummy(user_id, password, interests):
     dummy_doc1 = struct.Document.make_from_scratch(
         url='https://www.google.com', title='google.com', summary='we will buy you',
         feature_vector=struct.FeatureVector.make_from_scratch([], dal.REF_FEATURE_SET))
