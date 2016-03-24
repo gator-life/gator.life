@@ -19,6 +19,6 @@ class JsonDocLoader(object):
             try:
                 file_content = open(file_path).read()
                 yield jsonpickle.decode(file_content)
-            except Exception as exception:  # pylint: disable=broad-except
-                logging.error("Unable to JSON pickle file: " + file_path, exception)
+            except: # pylint: disable=bare-except
+                logging.exception("Unable to JSON pickle file: " + file_path)
                 continue
