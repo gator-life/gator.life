@@ -26,11 +26,12 @@ def _is_valid_link(link_element, invalid_paths_regex, invalid_extensions):
 class _HtmlExtractor(object):
 
     def __init__(self):
-        self._requests = requests  # field instead of static call for mocking 'requests' lib in some tests
+        # set field instead of direct static call to be able to mock/override imported 'requests' module in some tests
+        self._requests = requests
 
     def try_get_html(self, url):
         try:
-            data = self._requests.get(url, timeout=2)
+            data = self._requests.get(url, timeout=2)  # make the http request
 
             header_encoding = data.encoding
             if not header_encoding:
