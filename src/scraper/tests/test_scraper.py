@@ -36,33 +36,46 @@ class ScraperTests(unittest.TestCase):
 
     def test_html_extractor_try_get_html_with_long_html_return_none(self):
 
-        long_string = u"ボ" * 100001  # more than 1M char, chinese to force guessed_encoding to utf-8 (else it gives ASCII)
+        def get_valid_html_utf8_str(str_size):
+            # the 'é' char is a special character and count for 2 char when doing len(string). We don't want to do
+            # complex decoding just for this rough size check so we let it count for 2
+            # ie: we let é*499000 to pass and é*500000 to fail
+            utf8_size = str_size / 2
+            long_string = u"é" * utf8_size  # more than 1M char, 'é' to force guessed_encoding to utf-8 (else it gives ASCII)
+            html_doc = """
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <title>title</title>
+      </head>
+      <body>
+        <!""" + long_string.encode('utf-8') + """/>
+      </body>
+    </html>
+    """
+            return html_doc
 
-        html_doc = """
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>title</title>
-  </head>
-  <body>
-    <!""" + long_string + """/>
-  </body>
-</html>
-"""
+        ok_html_doc = get_valid_html_utf8_str(999000)  # take 1k margin because there is the html around
+        too_long_html_doc = get_valid_html_utf8_str(1000000)
+        ok_doc_url = 'ok_url'
+        too_long_doc_url = 'ko_url'
+
         # mock of requests lib
-
         class RequestsLongDocMock(object):
 
-            @classmethod
-            def get(cls):
+            # mock requests.get
+            def get(self, url, timeout):  # pylint: disable=unused-argument, no-self-use
                 # return a mock result result with same fields as result type from requests.get(url)
+                html_doc = ok_html_doc if url == ok_doc_url else too_long_html_doc
                 request_result = namedtuple('request_data', ['encoding', 'content', 'text'])
                 return request_result(encoding='utf-8', content=html_doc, text=html_doc)
 
         html_extractor = _HtmlExtractor()
         html_extractor._requests = RequestsLongDocMock()  # set mock requests lib
-        self.assertIsNone(html_extractor.try_get_html('url'))
+        # the 2 calls with only the size differing are here to ensure that is the reason too_long_doc_url fails
+        self.assertIsNotNone(html_extractor.try_get_html(ok_doc_url))
+        self.assertIsNone(html_extractor.try_get_html(too_long_doc_url))
 
     def test_get_doc_generator_return_docs_correctly_serializable_as_json(self):
         logging.disable('WARNING')  # this test raise logged exceptions, we disable it to not pollute console output
