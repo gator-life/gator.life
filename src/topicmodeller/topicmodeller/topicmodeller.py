@@ -31,13 +31,18 @@ class TopicModeller(object):
         :param documents: corpus used by the model to build the model, as a generator of string
         :param num_topics: number of topics to generate
         """
-        for_dict_generator = (self._tokenizer.tokenize(document_content) for document_content in documents)
-        self._initialize_dictionary(for_dict_generator)
+        self.initialize_dictionary(documents)
+        self.initialize_model(documents, num_topics)
+
+    def initialize_model(self, documents, num_topics):
         for_feed_generator = (self._tokenizer.tokenize(document_content) for document_content in documents)
         self._feed(for_feed_generator, num_topics)
-
-        self._cache_dictionary_words()
         self._cache_topics()
+
+    def initialize_dictionary(self, documents):
+        for_dict_generator = (self._tokenizer.tokenize(document_content) for document_content in documents)
+        self._initialize_dictionary(for_dict_generator)
+        self._cache_dictionary_words()
 
     def classify(self, html_document):
         """
@@ -58,28 +63,38 @@ class TopicModeller(object):
         Deserialize a previously saved model
         :param model_data_folder: folder where the model has been saved
         """
-        dictionary_file_path = self._dictionary_file_path(model_data_folder)
-        if os.path.isfile(dictionary_file_path):
-            self._dictionary = corpora.Dictionary.load(dictionary_file_path)
-        else:
-            raise IOError(u'Dictionary file does not exists : ' + dictionary_file_path)
+        self.load_dictionary(model_data_folder)
+        self.load_model(model_data_folder)
 
+    def load_model(self, model_data_folder):
         lda_file_path = self._lda_file_path(model_data_folder)
         if os.path.isfile(lda_file_path):
             self._lda = models.LdaModel.load(lda_file_path)
+            self._cache_topics()
         else:
             raise IOError(u'Lda model file does not exists : ' + lda_file_path)
 
-        self._cache_dictionary_words()
-        self._cache_topics()
+    def load_dictionary(self, model_data_folder):
+        dictionary_file_path = self._dictionary_file_path(model_data_folder)
+        if os.path.isfile(dictionary_file_path):
+            self._dictionary = corpora.Dictionary.load(dictionary_file_path)
+            self._cache_dictionary_words()
+        else:
+            raise IOError(u'Dictionary file does not exists : ' + dictionary_file_path)
 
     def save(self, model_data_folder):
         """
         Serialize the model previously calibrated by the initialize function
         :param model_data_folder: folder where to serialize the model
         """
-        self._dictionary.save(self._dictionary_file_path(model_data_folder))
+        self.save_dictionary(model_data_folder)
+        self.save_model(model_data_folder)
+
+    def save_model(self, model_data_folder):
         self._lda.save(self._lda_file_path(model_data_folder))
+
+    def save_dictionary(self, model_data_folder):
+        self._dictionary.save(self._dictionary_file_path(model_data_folder))
 
     @classmethod
     def _dictionary_file_path(cls, model_data_folder):
@@ -92,6 +107,8 @@ class TopicModeller(object):
     def _initialize_dictionary(self, tokenized_documents):
         self._dictionary = corpora.Dictionary()
         corpora.Dictionary.add_documents(self._dictionary, tokenized_documents)
+        # memory is O(size(_dictionary) * nb_topics), filter_extremes removes irrelevant words (too rare or too frequent)
+        self._dictionary.filter_extremes()
 
     def _feed(self, documents, num_topics):
         corpus = []
