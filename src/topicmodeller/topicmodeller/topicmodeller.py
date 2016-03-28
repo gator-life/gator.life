@@ -21,6 +21,7 @@ class TopicModeller(object):
         self._lda = None
         self.topics = None
         self._tokenizer = document_tokenizer
+        self._remove_optimizations = False  # can be set to 'True' for testing purpose
         np.random.seed(2406834896)  # to get reproductible results
         # nb: ideally gensim should allow to inject RandomState to not make side effects on other libs using numpy RNG
 
@@ -108,7 +109,8 @@ class TopicModeller(object):
         self._dictionary = corpora.Dictionary()
         corpora.Dictionary.add_documents(self._dictionary, tokenized_documents)
         # memory is O(size(_dictionary) * nb_topics), filter_extremes removes irrelevant words (too rare or too frequent)
-        self._dictionary.filter_extremes()
+        if not self._remove_optimizations:
+            self._dictionary.filter_extremes()
 
     def _feed(self, documents, num_topics):
         corpus = []
