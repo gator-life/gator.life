@@ -1,8 +1,7 @@
 import datetime
 import unittest
 from selenium import webdriver
-from server import dal as dal, frontendstructs as structs
-from server.frontendhelpers import PasswordHelpers
+from server import dal as dal, frontendstructs as structs, passwordhelpers as passwordhelpers
 from common.remote_api import initialize_remote_api
 import daltesthelpers as daltesthelpers
 
@@ -94,7 +93,7 @@ class NewVisitorTests(unittest.TestCase):
         email = 'kevin@gator.com'
         password = 'kevintheboss'
 
-        user = daltesthelpers.create_user_dummy(email, PasswordHelpers.hash_password(password),
+        user = daltesthelpers.create_user_dummy(email, passwordhelpers.hash_password(password),
                                                 interests=['lol', 'xpdr', 'trop lol'])
 
         self.browser.get('http://localhost:8080')

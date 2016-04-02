@@ -3,7 +3,7 @@ from webapp2_extras import sessions
 import dal  # pylint: disable=relative-import
 import jinjaenvironment  # pylint: disable=relative-import
 import frontendstructs as struct  # pylint: disable=relative-import
-import frontendhelpers as helpers  # pylint: disable=relative-import
+import passwordhelpers  # pylint: disable=relative-import
 
 
 class Link(object):
@@ -14,7 +14,7 @@ class Link(object):
 
 
 # How to use sessions :
-# http://stackoverflow.com/questions/14078054/gae-webapp2-session-the-correct-process-of-creating-and-checking-sessions
+# http://webapp-improved.appspot.com/api/webapp2_extras/sessions.html
 class BaseHandler(webapp2.RequestHandler):
 
     sessions_store = None
@@ -59,7 +59,7 @@ class LoginHandler(BaseHandler):
         password = self.request.get('password')
 
         (user, user_password) = dal.get_user_and_password(email)
-        if user is not None and helpers.PasswordHelpers.is_password_valid_for_user(user_password, password):
+        if user is not None and passwordhelpers.is_password_valid_for_user(user_password, password):
             self.set_connected_user(user)
             self.redirect('/')
         else:
@@ -88,7 +88,7 @@ class RegisterHandler(BaseHandler):
             user = dal.get_user(email)
             if user is None:
                 user = struct.User.make_from_scratch(email, interests)
-                dal.save_user(user, helpers.PasswordHelpers.hash_password(password))
+                dal.save_user(user, passwordhelpers.hash_password(password))
 
                 # Create an empty profile for the newly created user
                 features_set = dal.get_features(dal.REF_FEATURE_SET)
