@@ -124,10 +124,13 @@ class HomeHandler(BaseHandler):
             user_docs = dal.get_user_docs(user)
             links = [Link(key=user_doc.document._db_key.urlsafe(), # pylint: disable=protected-access
                           text=user_doc.document.title) for user_doc in user_docs]
-
+            actions_mapping = {'click_link': struct.UserActionTypeOnDoc.click_link,
+                               'up_vote': struct.UserActionTypeOnDoc.up_vote,
+                               'down_vote': struct.UserActionTypeOnDoc.down_vote}
             template_values = {
                 'email': user.email,
-                'links': links
+                'links': links,
+                'actions_mapping': actions_mapping
             }
 
             response = jinjaenvironment.render_template(html_file='index.html', attributes_dict=template_values)
@@ -139,12 +142,12 @@ class HomeHandler(BaseHandler):
 
 class LinkHandler(BaseHandler):
 
-    def get(self, action, document_key):
+    def get(self, action_type_str, document_key):
         user = self.get_connected_user()
         if user is not None:
-            action_type_on_doc = dal.to_user_action_type_on_doc(action)
-
             document = dal.get_doc_by_urlsafe_key(document_key)
+
+            action_type_on_doc = int(action_type_str)
 
             dal.save_user_action_on_doc(user, document, action_type_on_doc)
 

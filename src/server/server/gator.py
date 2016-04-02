@@ -1,7 +1,8 @@
 import os
 import webapp2
 
-import handlers  # pylint: disable=relative-import
+import frontendstructs as struct # pylint: disable=relative-import
+import handlers # pylint: disable=relative-import
 # problem (to solve) with app engine: server is not seen as a package by GAE
 # so you can't do proper relative import (from . import dal)
 
@@ -17,7 +18,8 @@ ROUTING = [
     ('/login', handlers.LoginHandler),
     ('/register', handlers.RegisterHandler),
     ('/disconnect', handlers.DisconnectHandler),
-    ('/link/(click_link|up_vote|down_vote)/(.*)', handlers.LinkHandler),
+    ('/link/(' + str(struct.UserActionTypeOnDoc.click_link) + '|' + str(struct.UserActionTypeOnDoc.up_vote)
+     + '|' + str(struct.UserActionTypeOnDoc.down_vote) + ')/(.*)', handlers.LinkHandler),
     ('/', handlers.HomeHandler),
 ]
 
