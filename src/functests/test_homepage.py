@@ -1,4 +1,5 @@
 import datetime
+import time
 import unittest
 from selenium import webdriver
 from server import dal as dal, frontendstructs as structs, passwordhelpers as passwordhelpers
@@ -61,10 +62,14 @@ class NewVisitorTests(unittest.TestCase):
         register_link = self.browser.find_element_by_link_text('Register')
         register_link.click()
 
-        interests_str = 'finance\npython\ncomputer science'
-        self._register('register_then_login@gator.com', 'register_then_login', interests_str)
+        # An unique email is generated at each run to avoid a failure of the test if it's launched twice on
+        # the same instance of GAE (it's launching twice on Travis).
+        email = 'register_' + str(int(time.time())) + '@gator.com'
 
-        user = dal.get_user('register_then_login@gator.com')
+        interests_str = 'finance\npython\ncomputer science'
+        self._register(email, 'password', interests_str)
+
+        user = dal.get_user(email)
         self.assertIsNotNone(user)
         self.assertItemsEqual(user.interests, interests_str.splitlines())
 
