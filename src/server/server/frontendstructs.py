@@ -5,8 +5,8 @@
 class Document(object):
 
     @staticmethod
-    def make_from_db(url, title, summary, datetime, db_key, feature_vector):
-        return Document(url, title, summary, datetime, db_key, feature_vector)
+    def make_from_db(url, title, summary, datetime, db_key, key_urlsafe, feature_vector):
+        return Document(url, title, summary, datetime, db_key, key_urlsafe, feature_vector)
 
     @staticmethod
     def make_from_scratch(url, title, summary, feature_vector):
@@ -17,12 +17,13 @@ class Document(object):
         :param feature_vector: frontendstructs.FeatureVector
         :return:
         """
-        return Document(url, title, summary, datetime=None, db_key=None, feature_vector=feature_vector)
+        return Document(url, title, summary, datetime=None, db_key=None, key_urlsafe=None, feature_vector=feature_vector)
 
-    def __init__(self, url, title, summary, datetime, db_key, feature_vector):
+    def __init__(self, url, title, summary, datetime, db_key, key_urlsafe, feature_vector): # pylint: disable=too-many-arguments
         self.url = url
         self.title = title
         self._db_key = db_key
+        self.key_urlsafe = key_urlsafe
         self.summary = summary
         self.datetime = datetime
         self.feature_vector = feature_vector

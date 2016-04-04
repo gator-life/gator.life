@@ -122,8 +122,7 @@ class HomeHandler(BaseHandler):
         user = self.get_connected_user()
         if user is not None:
             user_docs = dal.get_user_docs(user)
-            links = [Link(key=user_doc.document._db_key.urlsafe(), # pylint: disable=protected-access
-                          text=user_doc.document.title) for user_doc in user_docs]
+            links = [Link(key=user_doc.document.key_urlsafe, text=user_doc.document.title) for user_doc in user_docs]
             actions_mapping = {'click_link': struct.UserActionTypeOnDoc.click_link,
                                'up_vote': struct.UserActionTypeOnDoc.up_vote,
                                'down_vote': struct.UserActionTypeOnDoc.down_vote}

@@ -160,7 +160,7 @@ def _to_docs(db_doc_keys):
 def _to_doc(db_doc):
     return struct.Document.make_from_db(
         url=db_doc.url, title=db_doc.title, summary=db_doc.summary, datetime=db_doc.datetime, db_key=db_doc.key,
-        feature_vector=_to_feature_vector(db_doc.feature_vector))
+        key_urlsafe=db_doc.key.urlsafe(), feature_vector=_to_feature_vector(db_doc.feature_vector))
 
 
 def save_user_docs(user, user_docs):
