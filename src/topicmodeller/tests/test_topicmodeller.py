@@ -21,6 +21,7 @@ class TopicModellerTests(unittest.TestCase):
         docs = [doc1, doc2]
 
         topic_modeller = TopicModeller(self.MockTokenizer())
+        topic_modeller._remove_optimizations = True  # pylint: disable=protected-access
         topic_modeller.initialize(docs, num_topics=2)
 
         # check number of topics is expected

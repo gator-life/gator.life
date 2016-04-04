@@ -23,7 +23,8 @@ def _clean(words):
 
 
 def _remove_stop_words(words):
-    return [word for word in words if word not in stopwords.words('english')]
+    english_words = set(stopwords.words('english'))  # don't inline call in for loop: (long complex call)
+    return [word for word in words if word not in english_words]
 
 
 def _filter_latin_words(words):
