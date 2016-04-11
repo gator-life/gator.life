@@ -249,6 +249,20 @@ class DalTests(unittest.TestCase):
             if not enum_name.startswith("__"):
                 self.assertEquals(enum_value, dal._to_user_action_type_on_doc(dal._to_db_action_type_on_doc(enum_value)))
 
+    def test_get_doc_by_urlsafe_key_exist(self):
+        doc = self.make_dummy_doc('test_get_doc_by_urlsafe_key')
+        dal.save_documents([doc])
+
+        result_doc = dal.get_doc_by_urlsafe_key(doc._db_key.urlsafe())
+
+        self.assertEquals(doc.url, result_doc.url)
+        self.assertEquals(doc.title, result_doc.title)
+        self.assertEquals(doc._db_key, result_doc._db_key)
+        self.assertEquals(doc.key_urlsafe, result_doc.key_urlsafe)
+        self.assertEquals(doc.summary, result_doc.summary)
+        self.assertEquals(doc.feature_vector.vector, result_doc.feature_vector.vector)
+        self.assertEquals(doc.feature_vector.feature_set_id, result_doc.feature_vector.feature_set_id)
+
     @staticmethod
     def build_dummy_db_feature_set():
         feature2 = db.FeatureDescription.make('desc2')

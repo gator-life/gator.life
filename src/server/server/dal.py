@@ -222,6 +222,7 @@ def save_documents(documents):
     db_doc_keys = ndb.put_multi(db_docs)
     for (doc, key) in zip(docs_with_order, db_doc_keys):
         doc._db_key = key  # pylint: disable=protected-access
+        doc.key_urlsafe = key.urlsafe()
 
 
 def _to_db_doc(doc):
