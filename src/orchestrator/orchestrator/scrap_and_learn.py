@@ -71,7 +71,7 @@ def _build_user_docs_accumulator(users_docs, users_feature_vectors, user_docs_ma
 def _save_users_docs_current_state(users, user_docs_accumulator):
     lrn_users_docs = user_docs_accumulator.build_user_docs()
     user_to_user_docs = (
-        (user, [UserDocument(lrn_user_doc.doc_id, lrn_user_doc.grade) for lrn_user_doc in lrn_user_docs])
+        (user, [UserDocument.make_from_scratch(lrn_user_doc.doc_id, lrn_user_doc.grade) for lrn_user_doc in lrn_user_docs])
         for user, lrn_user_docs in zip(users, lrn_users_docs)
     )
     dal.save_users_docs(user_to_user_docs)

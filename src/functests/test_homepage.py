@@ -1,6 +1,8 @@
+import datetime
+import time
 import unittest
 from selenium import webdriver
-import server.dal as dal
+from server import dal as dal, frontendstructs as structs, passwordhelpers as passwordhelpers
 from common.remote_api import initialize_remote_api
 import daltesthelpers as daltesthelpers
 
@@ -18,52 +20,136 @@ class NewVisitorTests(unittest.TestCase):
     def tearDown(self):
         self.browser.quit()
 
-    def test_in_homepage_should_see_default_links(self):
+    def _login(self, email, password):
+        login_input_elt = self.browser.find_element_by_name('email')
+        login_input_elt.send_keys(email)
+        password_input_elt = self.browser.find_element_by_name('password')
+        password_input_elt.send_keys(password)
+        login_button = self.browser.find_element_by_name('login-button')
+        login_button.click()
 
-        self.test_login_kevin_should_go_to_homepage()
+    def _register(self, email, password, interests):
+        login_input_elt = self.browser.find_element_by_name('email')
+        login_input_elt.send_keys(email)
+        password_input_elt = self.browser.find_element_by_name('password')
+        password_input_elt.send_keys(password)
+        interests_input_elt = self.browser.find_element_by_name('interests')
+        interests_input_elt.send_keys(interests)
+        register_button = self.browser.find_element_by_name('register-button')
+        register_button.click()
 
-        # There is two links on the page : google.com, gator.life
+    def test_login_with_unknown_email(self):
+        self.browser.get('http://localhost:8080')
+
+        self._login('unknown@email.com', 'unknownpassword')
+
+        error_message = self.browser.find_element_by_name('error-message').text
+        self.assertEquals('Unknown email or invalid password', error_message)
+
+    def test_login_with_invalid_password(self):
+        daltesthelpers.create_user_dummy('known_user@gator.com', '', [''])
+
+        self.browser.get('http://localhost:8080')
+
+        self._login('known_user@gator.com', 'invalid_password')
+
+        error_message = self.browser.find_element_by_name('error-message').text
+        self.assertEquals('Unknown email or invalid password', error_message)
+
+    def test_register(self):
+        self.browser.get('http://localhost:8080')
+
+        register_link = self.browser.find_element_by_link_text('Register')
+        register_link.click()
+
+        # An unique email is generated at each run to avoid a failure of the test if it's launched twice on
+        # the same instance of GAE (it's launching twice on Travis).
+        email = 'register_' + str(int(time.time())) + '@gator.com'
+
+        interests_str = 'finance\npython\ncomputer science'
+        self._register(email, 'password', interests_str)
+
+        user = dal.get_user(email)
+        self.assertIsNotNone(user)
+        self.assertItemsEqual(user.interests, interests_str.splitlines())
+
+        # If the user as been successfully registered, it should be redirected to "Login" page
+        self.assertEqual('http://localhost:8080/login', self.browser.current_url)
+
+
+    def test_register_with_a_known_email(self):
+        daltesthelpers.create_user_dummy('test_register_with_a_known_email@gator.com', '', [''])
+
+        self.browser.get('http://localhost:8080')
+
+        register_link = self.browser.find_element_by_link_text('Register')
+        register_link.click()
+
+        self._register('test_register_with_a_known_email@gator.com', 'password', 'interests')
+
+        error_message = self.browser.find_element_by_name('error-message').text
+        self.assertEquals('This account already exists', error_message)
+
+    def test_login_and_do_actions(self):
+        # Retrieve actions done after the beginning of this test as it can be launched more than once on the same
+        # GAE instance. Use utcnow() instead now() because datastore timezone is UTC.
+        now = datetime.datetime.utcnow()
+
+        email = 'kevin@gator.com'
+        password = 'kevintheboss'
+
+        user = daltesthelpers.create_user_dummy(email, passwordhelpers.hash_password(password),
+                                                interests=['lol', 'xpdr', 'trop lol'])
+
+        self.browser.get('http://localhost:8080')
+
+        self._login(email, password)
+
+        self.assertEquals('Gator Life !', self.browser.title)
+
+        title = self.browser.find_element_by_name('title').text
+        subtitle = self.browser.find_element_by_name('subtitle').text
+
+        self.assertEquals('Gator.Life', title)
+        self.assertEquals('The best of the web just for you ' + email + ' !', subtitle)
+
+        disconnect_link = self.browser.find_elements_by_link_text('Disconnect')
+        self.assertEquals(1, len(disconnect_link))
+
+        # There is two links on the page and related up/down links : google.com, gator.life
         links = self.browser.find_elements_by_name('link')
         self.assertEqual(2, len(links))
         self.assertEqual('google.com', links[0].text)
         self.assertEqual('gator.life', links[1].text)
 
-        # kevin clicks on google.com and wait to go there, if it worked, 'google' is the tab title
+        # Click on up for first link & down for the second link
+        up_vote_links = self.browser.find_elements_by_name('up-vote')
+        self.assertEqual(2, len(up_vote_links))
+        up_link = up_vote_links[0]
+        up_link.click()
+
+        down_vote_links = self.browser.find_elements_by_name('down-vote')
+        self.assertEqual(2, len(down_vote_links))
+        down_link = down_vote_links[1]
+        down_link.click()
+
+        # Click on google.com and wait to go there, if it worked, 'google' is the tab title
+        # Note that an object referencing an element of the webpage (eg. a link) is not valid when a click is done,
+        # T hus we need to retrieve links to click on google.
+        links = self.browser.find_elements_by_name('link')
         google_link = links[0]
         google_link.click()
         self.assertEqual("Google", self.browser.title)
 
-    def test_save_features(self):
+        actions_by_user = dal.get_user_actions_on_docs([user], now)
+        actions = actions_by_user[0]
+        self.assertEqual(3, len(actions))
 
-        self.test_login_kevin_should_go_to_homepage()
+        actions_as_tuples = [(action.document.url, action.action_type) for action in actions]
 
-        # we want to become a Forex trader, he set 0.99 in trading category and save
-        trading_input_elt = self.browser.find_element_by_name('trading')
-        trading_input_elt.clear()
-        trading_input_elt.send_keys('0.99')
-        save_features_button = self.browser.find_element_by_name('save_features_button')
-        save_features_button.click()
-
-        trading_input_elt_after_save = self.browser.find_element_by_name('trading')
-        result_trading_feature_value = trading_input_elt_after_save.get_attribute('value')
-        self.assertEquals('0.99', result_trading_feature_value)
-
-    def test_login_kevin_should_go_to_homepage(self):
-        daltesthelpers.init_user_dummy('kevin@gator.com')
-
-        # Kevin connects to the site
-        self.browser.get('http://localhost:8080')
-        # The tab is called "Gator Life !"
-        self.assertEquals('Gator Life !', self.browser.title)
-        # he see a textbox to enter its email, then click
-        login_input_elt = self.browser.find_element_by_name('email')
-        login_input_elt.send_keys('kevin@gator.com')
-        login_button = self.browser.find_element_by_name('login_button')
-        login_button.click()
-
-        # The title of the page is 'Gator.Life, the best of the web just for you !'
-        tab_title = self.browser.find_element_by_name('title').text
-        self.assertEquals('Gator.Life, the best of the web just for you kevin@gator.com!', tab_title)
+        self.assertTrue(('https://www.google.com', structs.UserActionTypeOnDoc.up_vote) in actions_as_tuples)
+        self.assertTrue(('gator.life', structs.UserActionTypeOnDoc.down_vote) in actions_as_tuples)
+        self.assertTrue(('https://www.google.com', structs.UserActionTypeOnDoc.click_link) in actions_as_tuples)
 
 
 if __name__ == '__main__':

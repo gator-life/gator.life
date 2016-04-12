@@ -97,15 +97,17 @@ class UserComputedProfile(ndb.Model):
 # ----------- entities modified by frontend -----------
 
 class User(ndb.Model):
-    google_user_id = ndb.StringProperty(indexed=True, required=False)
+    password = ndb.StringProperty(indexed=False, required=True)
+    interests = ndb.StringProperty(indexed=False, repeated=True)
     user_document_set_key = ndb.KeyProperty(UserDocumentSet, indexed=False, required=True)
     user_computed_profile_key = ndb.KeyProperty(UserComputedProfile, indexed=False, required=True)
 
     @staticmethod
-    def make(user_id, google_user_id, user_document_set_key, user_computed_profile_key):
+    def make(user_id, password, interests, user_document_set_key, user_computed_profile_key):
         return User(
             id=user_id,
-            google_user_id=google_user_id,
+            password=password,
+            interests=interests,
             user_document_set_key=user_document_set_key,
             user_computed_profile_key=user_computed_profile_key)
 
