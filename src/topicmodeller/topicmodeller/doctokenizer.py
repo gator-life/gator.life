@@ -31,11 +31,18 @@ def _filter_latin_words(words):
     return [word for word in words if re.search(r'^[a-zA-Z]*$', word) is not None]
 
 
-class DocTokenizer(object):
+class DocTokenizerFromHtml(object):
 
     @classmethod
     def tokenize(cls, html_document):
-        word_tokenized_document = _word_tokenize(_readable_document(html_document))
+        return DocTokenizerFromRawText.tokenize(_readable_document(html_document))
+
+
+class DocTokenizerFromRawText(object):
+
+    @classmethod
+    def tokenize(cls, raw_text):
+        word_tokenized_document = _word_tokenize(raw_text)
         lowercase_document = [word.lower() for word in word_tokenized_document]
         document = _clean(lowercase_document)
         return document
