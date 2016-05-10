@@ -4,15 +4,19 @@
 import os
 import numpy as np
 from gensim import corpora, models
-from .doctokenizer import DocTokenizer
+from .doctokenizer import DocTokenizerFromRawText, DocTokenizerFromHtml
 
 
 class TopicModeller(object):
     corpus_batch_size = 250
 
     @classmethod
-    def make(cls):
-        return TopicModeller(DocTokenizer())
+    def make_with_html_tokenizer(cls):
+        return TopicModeller(DocTokenizerFromHtml())
+
+    @classmethod
+    def make_with_rawtext_tokenizer(cls):
+        return TopicModeller(DocTokenizerFromRawText())
 
     # constructor allowing injection of custom tokenizer
     def __init__(self, document_tokenizer):

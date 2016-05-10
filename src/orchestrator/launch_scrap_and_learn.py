@@ -35,7 +35,7 @@ def launch_scrap_and_learn(scraper, doc_saver, tm_data_folder, hashed_urls_file)
     user_docs_max_size = 30
     docs_chunk_size = 1000
 
-    topic_modeller = TopicModeller.make()
+    topic_modeller = TopicModeller.make_with_html_tokenizer()
     topic_modeller.load(tm_data_folder)
 
     url_unicity_checker = UrlUnicityChecker(hashed_urls_file)

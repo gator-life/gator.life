@@ -5,7 +5,7 @@ import os
 import unittest
 import jsonpickle
 from topicmodeller.doctokenizer import _filter_latin_words, _readable_document, _remove_stop_words, _word_tokenize, \
-    DocTokenizer
+    DocTokenizerFromHtml, DocTokenizerFromRawText
 
 
 class DocTokenizerTests(unittest.TestCase):
@@ -51,16 +51,28 @@ class DocTokenizerTests(unittest.TestCase):
 
         self.assertTrue(not _filter_latin_words([u'1000']))
 
-    def test_tokenize(self):
+    def test_tokenize_from_html(self):
         directory = os.path.dirname(os.path.abspath(__file__))
         file_content = open(os.path.join(directory, 'scraper_documents/2015-08-01 18:00:22.926317_8.json')).read()
         html_content = jsonpickle.decode(file_content).html_content
-        tokenizer = DocTokenizer()
+        tokenizer = DocTokenizerFromHtml()
         tokenized = tokenizer.tokenize(html_content)
 
         self.assertTrue(len(tokenized) > 200)
         self.assertTrue('a' not in tokenized)  # no too common english words
         self.assertTrue('as' not in tokenized)
+        self.assertTrue(word.lower() == word for word in tokenized)  # lower cases
+
+    def test_tokenize_from_rawtext(self):
+        tokenizer = DocTokenizerFromRawText()
+        tokenized = tokenizer.tokenize('This is raw text tokenizer')
+
+        # no too common english words
+        self.assertTrue('this' not in tokenized)
+        self.assertTrue('is' not in tokenized)
+        self.assertTrue('raw' in tokenized)
+        self.assertTrue('text' in tokenized)
+        self.assertTrue('tokenizer' in tokenized)
         self.assertTrue(word.lower() == word for word in tokenized)  # lower cases
 
 

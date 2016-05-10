@@ -27,13 +27,13 @@ def run_init_tm_and_db(documents_folder, tm_data_folder, num_topics):
 
     html_documents = RepeatableHtmlDocuments(documents_folder)
 
-    initialize_topicmodeller_and_db(TopicModeller.make(), html_documents, tm_data_folder, num_topics)
+    initialize_topicmodeller_and_db(TopicModeller.make_with_html_tokenizer(), html_documents, tm_data_folder, num_topics)
 
 
 def run_init_db(tm_data_folder):
     initialize_remote_api()
 
-    topic_modeller = TopicModeller.make()
+    topic_modeller = TopicModeller.make_with_html_tokenizer()
     topic_modeller.load(tm_data_folder)
     initialize_db(topic_modeller)
 
