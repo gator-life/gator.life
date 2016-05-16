@@ -94,3 +94,4 @@ cad à spot : lib/google_appengine lib/google_appengine/lib/fancy_urllib
 
 
 
+for memory profiling: guppy / heapy
