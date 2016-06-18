@@ -6,7 +6,6 @@ import logging
 from orchestrator.scrap_and_learn import scrap_and_learn
 from common.JsonDocLoader import JsonDocLoader
 from common.JsonDocSaver import JsonDocSaver
-from common.remote_api import initialize_remote_api
 from common.UrlUnicityChecker import UrlUnicityChecker
 from scraper.scraper import Scraper
 from topicmodeller.topicmodeller import TopicModeller
@@ -55,8 +54,6 @@ def launch_by_folder(scraper_documents_folder, tm_data_folder, hashed_urls_file)
     doc_saver = NoActionSaver()
     launch_scrap_and_learn(scraper, doc_saver, tm_data_folder, hashed_urls_file)
 
-
-initialize_remote_api()
 
 launch_by_folder('/home/mohamed/Development/Data/gator/Scraping_11-01-2016_Snapshot',
                  '/home/mohamed/Development/Data/gator/TopicModellerData',
