@@ -58,3 +58,5 @@ target/
 *.*~
 /get-pip.py
 /google_appengine_1.9.28.zip
+global_env/
+/appengine_env/
