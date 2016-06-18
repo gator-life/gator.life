@@ -1,9 +1,13 @@
-import webapp2
-from webapp2_extras import sessions
-import dal  # pylint: disable=relative-import
-import jinjaenvironment  # pylint: disable=relative-import
+from flask import Blueprint, render_template, redirect, session, request
+from dal import Dal, REF_FEATURE_SET  # pylint: disable=relative-import
 import frontendstructs as struct  # pylint: disable=relative-import
 import passwordhelpers  # pylint: disable=relative-import
+
+
+# keep low case name because it seems flask / blueprint standard
+handlers = Blueprint('handlers', __name__)  # pylint: disable=invalid-name
+
+DAL = Dal()
 
 
 class Link(object):
@@ -13,146 +17,107 @@ class Link(object):
         self.text = text
 
 
-# How to use sessions :
-# http://webapp-improved.appspot.com/api/webapp2_extras/sessions.html
-class BaseHandler(webapp2.RequestHandler):
-
-    sessions_store = None
-
-    def dispatch(self):
-        self.sessions_store = sessions.get_store(request=self.request)
-
-        try:
-            webapp2.RequestHandler.dispatch(self)
-        finally:
-            self.sessions_store.save_sessions(self.response)
-
-    @webapp2.cached_property
-    def session(self):
-        return self.sessions_store.get_session()
-
-    def set_connected_user(self, user):
-        self.session['email'] = user.email
-
-    def unset_connected_user(self):
-        self.session['email'] = None
-
-    def get_connected_user(self):
-        email = self.session.get('email')
-        if email is not None:
-            return dal.get_user(email)
-        return None
+def set_connected_user(user):
+    session['email'] = user.email
 
 
-class LoginHandler(BaseHandler):
+def unset_connected_user():
+    session.pop('email', None)
 
-    def get(self):
-        user = self.get_connected_user()
-        if user is None:
-            response = jinjaenvironment.render_template(html_file='login.html', attributes_dict={})
-            self.response.write(response)
-        else:
-            self.redirect('/')
 
-    def post(self):
-        email = self.request.get('email')
-        password = self.request.get('password')
+def get_connected_user():
+    if 'email' in session:
+        return DAL.get_user(session['email'])
+    return None
 
-        (user, user_password) = dal.get_user_and_password(email)
+
+@handlers.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        (user, user_password) = DAL.get_user_and_password(email)
         if user is not None and passwordhelpers.is_password_valid_for_user(user_password, password):
-            self.set_connected_user(user)
-            self.redirect('/')
+            set_connected_user(user)
+            return redirect('/')
         else:
-            template_value = {'error_message': 'Unknown email or invalid password'}
-            response = jinjaenvironment.render_template(html_file='login.html', attributes_dict=template_value)
-            self.response.write(response)
-
-
-class RegisterHandler(BaseHandler):
-
-    def get(self):
-        user = self.get_connected_user()
+            return render_template('login.html', error_message='Unknown email or invalid password')
+    else:
+        user = get_connected_user()
         if user is None:
-            response = jinjaenvironment.render_template(html_file='register.html', attributes_dict={})
-            self.response.write(response)
+            return render_template('login.html')
         else:
-            self.redirect('/')
+            return redirect('/')
 
-    def post(self):
-        connected_user = self.get_connected_user()
+
+@handlers.route('/')
+def home():
+    user = get_connected_user()
+    if user is not None:
+        user_docs = DAL.get_user_docs(user)
+        links = [Link(key=user_doc.document.key_urlsafe, text=user_doc.document.title) for user_doc in user_docs]
+        actions_mapping = {'click_link': struct.UserActionTypeOnDoc.click_link,
+                           'up_vote': struct.UserActionTypeOnDoc.up_vote,
+                           'down_vote': struct.UserActionTypeOnDoc.down_vote}
+
+        return render_template('index.html', email=user.email, links=links, actions_mapping=actions_mapping)
+    else:
+        return redirect('/login')
+
+
+@handlers.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        connected_user = get_connected_user()
         if connected_user is None:
-            email = self.request.get('email')
-            password = self.request.get('password')
-            interests = self.request.get('interests').splitlines()
+            email = request.form['email']
+            password = request.form['password']
+            interests = request.form['interests'].splitlines()
 
-            user = dal.get_user(email)
+            user = DAL.get_user(email)
             if user is None:
                 user = struct.User.make_from_scratch(email, interests)
-                dal.save_user(user, passwordhelpers.hash_password(password))
+                DAL.save_user(user, passwordhelpers.hash_password(password))
 
                 # Create an empty profile for the newly created user
-                features_set = dal.get_features(dal.REF_FEATURE_SET)
-                feature_vector = struct.FeatureVector.make_from_scratch([1]*len(features_set), dal.REF_FEATURE_SET)
+                features_set = DAL.get_features(REF_FEATURE_SET)
+                feature_vector = struct.FeatureVector.make_from_scratch([1] * len(features_set), REF_FEATURE_SET)
                 model_data = struct.UserProfileModelData.make_empty(len(features_set))
                 profile = struct.UserComputedProfile.make_from_scratch(feature_vector, model_data)
 
-                dal.save_computed_user_profiles([(user, profile)])
+                DAL.save_computed_user_profiles([(user, profile)])
 
-                self.redirect('/login')
+                return redirect('/login')
             else:
-                template_value = {'error_message': 'This account already exists'}
-                response = jinjaenvironment.render_template(html_file='register.html', attributes_dict=template_value)
-                self.response.write(response)
+                return render_template('register.html', error_message='This account already exists')
         else:
-            self.redirect('/')
-
-
-class DisconnectHandler(BaseHandler):
-
-    def get(self):
-        user = self.get_connected_user()
-        if user is not None:
-            self.unset_connected_user()
-        self.redirect('/login')
-
-
-class HomeHandler(BaseHandler):
-
-    def get(self):
-        user = self.get_connected_user()
-        if user is not None:
-            user_docs = dal.get_user_docs(user)
-            links = [Link(key=user_doc.document.key_urlsafe, text=user_doc.document.title) for user_doc in user_docs]
-            actions_mapping = {'click_link': struct.UserActionTypeOnDoc.click_link,
-                               'up_vote': struct.UserActionTypeOnDoc.up_vote,
-                               'down_vote': struct.UserActionTypeOnDoc.down_vote}
-            template_values = {
-                'email': user.email,
-                'links': links,
-                'actions_mapping': actions_mapping
-            }
-
-            response = jinjaenvironment.render_template(html_file='index.html', attributes_dict=template_values)
-
-            self.response.write(response)
+            return redirect('/')
+    else:
+        user = get_connected_user()
+        if user is None:
+            return render_template('register.html')
         else:
-            self.redirect('/login')
+            return redirect('/')
 
 
-class LinkHandler(BaseHandler):
+@handlers.route('/disconnect')
+def disconnect():
+    user = get_connected_user()
+    if user is not None:
+        unset_connected_user()
+    return redirect('/login')
 
-    def get(self, action_type_str, document_key):
-        user = self.get_connected_user()
-        if user is not None:
-            document = dal.get_doc_by_urlsafe_key(document_key)
 
-            action_type_on_doc = int(action_type_str)
-
-            dal.save_user_action_on_doc(user, document, action_type_on_doc)
-
-            if action_type_on_doc == struct.UserActionTypeOnDoc.click_link:
-                self.redirect(document.url.encode('utf-8'))
-            else:
-                self.redirect('/')
+@handlers.route('/link/<int:action_type_on_doc>/<document_key>')
+def link(action_type_on_doc, document_key):
+    user = get_connected_user()
+    if user is not None:
+        document = DAL.get_doc_by_urlsafe_key(document_key)
+        DAL.save_user_action_on_doc(user, document, action_type_on_doc)
+        if action_type_on_doc == struct.UserActionTypeOnDoc.click_link:
+            return redirect(document.url.encode('utf-8'))
         else:
-            self.redirect('/login')
+            return redirect('/')
+    else:
+        return redirect('/login')
