@@ -33,3 +33,8 @@ While running unit tests I had the error "AttributeError: 'NoneType' object has 
 While launching orchestrate.py script I had the error "AttributeError: 'module' object has no attribute 'code_pb2'". I dit not exported PYTHONPATH variable with "lib/google_appengine:lib/google_appengine/lib/fancy_urllib".
 - export PYTHONPATH=lib/google_appengine:lib/google_appengine/lib/fancy_urllib
 
+pip install -e inside virtualenv was failing silently because  fodlers {package}.egg-info was readonly. I had to do sudo rm -rf on each of those folder before pip install -e
+
+
+makes all .sh files executable in a directory
+find ./ -name "*.sh" -exec chmod +x {} \;
