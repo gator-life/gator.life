@@ -93,4 +93,9 @@ Il faut ajouter das pycharm les mêmes paths que ce que l'on a besoin dans pytes
 cad à spot : lib/google_appengine lib/google_appengine/lib/fancy_urllib
 
 
+Set environment variable for pycharm configurations:
+list of start script -> "Edit configurations" -> Default -> Python -> Environment variables
+set DATASTORE_HOST and GCLOUD_PROJECT
 
+Choose virtual env inside pycharm: 
+File -> Settings -> Project: sources -> Python interpreter -> Add Local -> REPO/global_env/bin/python2.7
