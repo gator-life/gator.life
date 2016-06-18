@@ -1,21 +1,24 @@
-import datetime
 import time
 import unittest
 from selenium import webdriver
-from server import dal as dal, frontendstructs as structs, passwordhelpers as passwordhelpers
-from common.remote_api import initialize_remote_api
-import daltesthelpers as daltesthelpers
+from server import frontendstructs as structs, passwordhelpers as passwordhelpers
+from server.dal import Dal, REF_FEATURE_SET
+from common.datehelper import utcnow
+import daltesthelpers
 
 
 class NewVisitorTests(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        daltesthelpers.init_features_dummy(REF_FEATURE_SET)
+
+
     def setUp(self):
         self.browser = webdriver.PhantomJS()
-        self.browser.implicitly_wait(5)
-
-        initialize_remote_api()
-
-        daltesthelpers.init_features_dummy(dal.REF_FEATURE_SET)
+        self.browser.implicitly_wait(3)
+        self.browser.set_page_load_timeout(60)
+        self.dal = Dal()
 
     def tearDown(self):
         self.browser.quit()
@@ -69,13 +72,13 @@ class NewVisitorTests(unittest.TestCase):
         interests_str = 'finance\npython\ncomputer science'
         self._register(email, 'password', interests_str)
 
-        user = dal.get_user(email)
+        user = self.dal.get_user(email)
         self.assertIsNotNone(user)
+        self.assertItemsEqual(user.interests, interests_str.splitlines())
         self.assertItemsEqual(user.interests, interests_str.splitlines())
 
         # If the user as been successfully registered, it should be redirected to "Login" page
         self.assertEqual('http://localhost:8080/login', self.browser.current_url)
-
 
     def test_register_with_a_known_email(self):
         daltesthelpers.create_user_dummy('test_register_with_a_known_email@gator.com', '', [''])
@@ -91,9 +94,7 @@ class NewVisitorTests(unittest.TestCase):
         self.assertEquals('This account already exists', error_message)
 
     def test_login_and_do_actions(self):
-        # Retrieve actions done after the beginning of this test as it can be launched more than once on the same
-        # GAE instance. Use utcnow() instead now() because datastore timezone is UTC.
-        now = datetime.datetime.utcnow()
+        now = utcnow()
 
         email = 'kevin@gator.com'
         password = 'kevintheboss'
@@ -141,7 +142,7 @@ class NewVisitorTests(unittest.TestCase):
         google_link.click()
         self.assertEqual("Google", self.browser.title)
 
-        actions_by_user = dal.get_user_actions_on_docs([user], now)
+        actions_by_user = self.dal.get_user_actions_on_docs([user], now)
         actions = actions_by_user[0]
         self.assertEqual(3, len(actions))
 

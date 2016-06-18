@@ -1,11 +1,9 @@
 # coding=utf-8
 
 import unittest
-from google.appengine.ext import ndb
 from orchestrator.scrap_and_learn import scrap_and_learn
 import scraper.scraperstructs as scrap
-from common.testhelpers import make_gae_testbed
-import server.dal as dal
+from server.dal import Dal, NULL_FEATURE_SET, REF_FEATURE_SET
 import server.frontendstructs as struct
 
 
@@ -68,39 +66,35 @@ class MockUrlUnicityChecker(object):
 class ScrapAndLearnTests(unittest.TestCase):
 
     def setUp(self):
-        self.testbed = make_gae_testbed()
-        ndb.get_context().clear_cache()
-        self.dummy_feat_vec = struct.FeatureVector.make_from_scratch([], dal.NULL_FEATURE_SET)
-
-    def tearDown(self):
-        self.testbed.deactivate()
+        self.dal = Dal()
+        self.dummy_feat_vec = struct.FeatureVector.make_from_scratch([], NULL_FEATURE_SET)
 
     def test_scrap_and_learn(self):
         # I)setup database and mocks
         # I.1) user
-        user1 = struct.User.make_from_scratch("user1", ["interests1"])
-        dal.save_user(user1, "password1")
-        _save_dummy_profile_for_user(user1)
-        user2 = struct.User.make_from_scratch("user2", ["interests2"])
-        dal.save_user(user2, "password2")
-        _save_dummy_profile_for_user(user2)
+        user1 = struct.User.make_from_scratch("test_scrap_and_learn_user1", ["interests1"])
+        self.dal.save_user(user1, "password1")
+        self._save_dummy_profile_for_user(user1)
+        user2 = struct.User.make_from_scratch("test_scrap_and_learn_user2", ["interests2"])
+        self.dal.save_user(user2, "password2")
+        self._save_dummy_profile_for_user(user2)
         # I.2) doc
         doc1 = struct.Document.make_from_scratch("url1", 'title1', "sum1", self.dummy_feat_vec)
         doc2 = struct.Document.make_from_scratch("url2", 'title2', "sum2", self.dummy_feat_vec)
-        dal.save_documents([doc1, doc2])
+        self.dal.save_documents([doc1, doc2])
         # I.3) userDoc
         user1_user_docs = [
             struct.UserDocument.make_from_scratch(doc1, grade=0.0),  # this one should be removed
             struct.UserDocument.make_from_scratch(doc2, grade=1.0)]
-        dal.save_users_docs([(user1, user1_user_docs)])
+        self.dal.save_users_docs([(user1, user1_user_docs)])
         # II) Orchestrate
         mock_saver = MockSaver()
         mock_url_unicity_checker = MockUrlUnicityChecker()
-        scrap_and_learn(MockScraper(), mock_saver, MockTopicModeller(), mock_url_unicity_checker,
-                        docs_chunk_size=2, user_docs_max_size=5)
+        scrap_and_learn(MockScraper(), mock_saver, MockTopicModeller(), mock_url_unicity_checker, docs_chunk_size=2,
+                        user_docs_max_size=5, skip_user_func=lambda u: 'test_scrap_and_learn' not in u.email)
 
         # III) check database and mocks
-        result_users_docs = dal.get_users_docs([user1, user2])
+        result_users_docs = self.dal.get_users_docs([user1, user2])
         result_user1_docs = result_users_docs[0]
         result_user2_docs = result_users_docs[1]
         self.assertEquals(5, len(result_user1_docs))  # 5 because of user_docs_max_size=5
@@ -111,18 +105,17 @@ class ScrapAndLearnTests(unittest.TestCase):
         self.assertEquals(4, len(mock_saver.saved_docs))  # MockScraper generate 4 docs
         for doc in mock_saver.saved_docs:
             # currently, model versioning is not managed, all is set to ref
-            self.assertEquals(dal.REF_FEATURE_SET, doc.feature_vector.feature_set_id)
+            self.assertEquals(REF_FEATURE_SET, doc.feature_vector.feature_set_id)
             self.assertEquals(MockTopicModeller.feature_vector, doc.feature_vector.vector)
         # is_unique() should be called for each document
         self.assertEqual(mock_url_unicity_checker.is_unique_count, 5)
         # save() should be called at 'docs_chunk_size' frequency and 1 time at the end of the loop.
         self.assertEqual(mock_url_unicity_checker.saved_count, 3)
 
-
-def _save_dummy_profile_for_user(user):
-    feature_vector = struct.FeatureVector.make_from_scratch([1.0], "featureSetId-test_scrap_learn")
-    model_data = struct.UserProfileModelData.make_empty(1)
-    dal.save_computed_user_profile(user, struct.UserComputedProfile.make_from_scratch(feature_vector, model_data))
+    def _save_dummy_profile_for_user(self, user):
+        feature_vector = struct.FeatureVector.make_from_scratch([1.0], "featureSetId-test_scrap_learn")
+        model_data = struct.UserProfileModelData.make_empty(1)
+        self.dal.save_computed_user_profile(user, struct.UserComputedProfile.make_from_scratch(feature_vector, model_data))
 
 
 if __name__ == '__main__':

@@ -2,16 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import server.frontendstructs as struct
-import server.dal as dal
+from server.dal import Dal, REF_FEATURE_SET
 
 
 def create_user_dummy(user_id, password, interests):
+    dal = Dal()
     dummy_doc1 = struct.Document.make_from_scratch(
         url='https://www.google.com', title='google.com', summary='we will buy you',
-        feature_vector=struct.FeatureVector.make_from_scratch([], dal.REF_FEATURE_SET))
+        feature_vector=struct.FeatureVector.make_from_scratch([], REF_FEATURE_SET))
     dummy_doc2 = struct.Document.make_from_scratch(
         url='gator.life', title='gator.life', summary='YGNI',
-        feature_vector=struct.FeatureVector.make_from_scratch([], dal.REF_FEATURE_SET))
+        feature_vector=struct.FeatureVector.make_from_scratch([], REF_FEATURE_SET))
     dal.save_documents([dummy_doc1, dummy_doc2])
 
     new_user = struct.User.make_from_scratch(email=user_id, interests=interests)
@@ -24,6 +25,7 @@ def create_user_dummy(user_id, password, interests):
 
 
 def init_features_dummy(feature_set_id):
+    dal = Dal()
     dal.save_features(feature_set_id, feature_names=['sport', 'trading', 'bmw', 'c++'])
 
 

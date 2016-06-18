@@ -6,14 +6,20 @@ from time import sleep
 
 import learner.learner as lrn
 from server.frontendstructs import Document, UserDocument, FeatureVector
-import server.dal as dal
+from server.dal import Dal, REF_FEATURE_SET
 
 
-def scrap_and_learn(scraper, scraper_doc_saver, topic_modeller, url_unicity_checker, docs_chunk_size, user_docs_max_size):
-    #pylint: disable=too-many-locals
-    users = dal.get_all_users()
+def scrap_and_learn(
+        scraper, scraper_doc_saver, topic_modeller, url_unicity_checker,
+        docs_chunk_size, user_docs_max_size,
+        skip_user_func=lambda u: False):
+    # pylint: disable=too-many-locals
+    dal = Dal()
+    all_users = dal.get_all_users()
+    users = [user for user in all_users if not skip_user_func(user)]  # to filter in tests
     users_docs = dal.get_users_docs(users)
     users_feature_vectors = dal.get_users_feature_vectors(users)
+
     user_docs_accumulator = _build_user_docs_accumulator(users_docs, users_feature_vectors, user_docs_max_size)
     doc_chunk = [None] * docs_chunk_size
     index_in_docs_chunk = 0
@@ -31,7 +37,7 @@ def scrap_and_learn(scraper, scraper_doc_saver, topic_modeller, url_unicity_chec
                 topic_feature_vector = topic_modeller.classify(scraper_document.html_content)
                 doc = Document.make_from_scratch(
                     scraper_document.link_element.url, scraper_document.link_element.origin_info.title, summary=None,
-                    feature_vector=FeatureVector.make_from_scratch(topic_feature_vector, dal.REF_FEATURE_SET))
+                    feature_vector=FeatureVector.make_from_scratch(topic_feature_vector, REF_FEATURE_SET))
                 scraper_doc_saver.save(doc)
                 doc_chunk[index_in_docs_chunk] = doc
 
@@ -41,14 +47,14 @@ def scrap_and_learn(scraper, scraper_doc_saver, topic_modeller, url_unicity_chec
                 if index_in_docs_chunk == docs_chunk_size:
                     url_unicity_checker.save()
                     dal.save_documents(doc_chunk)
-                    _save_users_docs_current_state(users, user_docs_accumulator)
+                    _save_users_docs_current_state(dal, users, user_docs_accumulator)
                     doc_chunk = [None] * docs_chunk_size
                     index_in_docs_chunk = 0
 
             # exit function if scraper generator exited without error
             url_unicity_checker.save()
             dal.save_documents(doc_chunk[:index_in_docs_chunk])
-            _save_users_docs_current_state(users, user_docs_accumulator)
+            _save_users_docs_current_state(dal, users, user_docs_accumulator)
             return
         except Exception as exception:  # pylint: disable=broad-except
             logging.error("The orchestrator crashed! Starting it over ...")
@@ -68,7 +74,7 @@ def _build_user_docs_accumulator(users_docs, users_feature_vectors, user_docs_ma
     return user_docs_accumulator
 
 
-def _save_users_docs_current_state(users, user_docs_accumulator):
+def _save_users_docs_current_state(dal, users, user_docs_accumulator):
     lrn_users_docs = user_docs_accumulator.build_user_docs()
     user_to_user_docs = (
         (user, [UserDocument.make_from_scratch(lrn_user_doc.doc_id, lrn_user_doc.grade) for lrn_user_doc in lrn_user_docs])

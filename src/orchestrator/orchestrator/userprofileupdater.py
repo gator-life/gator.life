@@ -1,30 +1,32 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
+from common.datehelper import utcnow
 from learner.userprofiler import UserProfiler, ActionOnDoc
 import server.frontendstructs as struct
-import server.dal as dal
+from server.dal import Dal
+
+DAL = Dal()
 
 
 def update_profiles_in_database():
     """
     This method update profile in database of all users from their new actions since last model update
     """
-    _update_profiles_in_database(dal.get_all_users(), UserProfiler(), datetime.utcnow())
+    _update_profiles_in_database(DAL.get_all_users(), UserProfiler(), utcnow())
 
 
 def _update_profiles_in_database(users, profiler, now):
-    old_profiles = dal.get_user_computed_profiles(users)
+    old_profiles = DAL.get_user_computed_profiles(users)
     actions_by_user = _get_new_actions(users, old_profiles)
     new_profiles = _build_updated_profiles(profiler, zip(old_profiles, actions_by_user), now)
-    dal.save_computed_user_profiles(zip(users, new_profiles))
+    DAL.save_computed_user_profiles(zip(users, new_profiles))
 
 
 def _get_new_actions(users, old_profiles):
     # min requests date is unique for all users, we need to request all from this date
     min_datetime_request = min(old_profiles, key=lambda item: item.datetime).datetime
-    return dal.get_user_actions_on_docs(users, min_datetime_request)
+    return DAL.get_user_actions_on_docs(users, min_datetime_request)
 
 
 def _build_updated_profiles(profiler, old_profile_to_actions_list, now):
