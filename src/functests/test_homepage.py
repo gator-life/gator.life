@@ -1,6 +1,7 @@
 import time
 import unittest
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from server import frontendstructs as structs, passwordhelpers as passwordhelpers
 from server.dal import Dal, REF_FEATURE_SET
 from common.datehelper import utcnow
@@ -8,6 +9,16 @@ import daltesthelpers
 
 
 class NewVisitorTests(unittest.TestCase):
+
+    def get_webpage(self):
+        for _ in range(3):
+            try:
+                self.browser.get('http://localhost:8080')
+                break
+            except TimeoutException:
+                pass
+        else:
+            raise TimeoutException
 
     @classmethod
     def setUpClass(cls):
@@ -53,7 +64,7 @@ class NewVisitorTests(unittest.TestCase):
 
     def test_login_with_unknown_email(self):
         print "TRACE TEST test_login_with_unknown_email start"
-        self.browser.get('http://localhost:8080')
+        self.get_webpage()
         print "TRACE TEST test_login_with_unknown_email browser.get"
         self._login('unknown@email.com', 'unknownpassword')
         print "TRACE TEST test_login_with_unknown_email _login"
@@ -65,7 +76,7 @@ class NewVisitorTests(unittest.TestCase):
         print "TRACE TEST test_login_with_invalid_password start"
         daltesthelpers.create_user_dummy('known_user@gator.com', '', [''])
         print "TRACE TEST test_login_with_invalid_password create_user"
-        self.browser.get('http://localhost:8080')
+        self.get_webpage()
         print "TRACE TEST test_login_with_invalid_password get"
         self._login('known_user@gator.com', 'invalid_password')
         print "TRACE TEST test_login_with_invalid_password _login"
@@ -74,7 +85,7 @@ class NewVisitorTests(unittest.TestCase):
 
     def test_register(self):
         print "TRACE TEST test_register start"
-        self.browser.get('http://localhost:8080')
+        self.get_webpage()
         print "TRACE TEST test_register get"
         register_link = self.browser.find_element_by_link_text('Register')
         print "TRACE TEST test_register register_link"
@@ -99,7 +110,7 @@ class NewVisitorTests(unittest.TestCase):
     def test_register_with_a_known_email(self):
         daltesthelpers.create_user_dummy('test_register_with_a_known_email@gator.com', '', [''])
 
-        self.browser.get('http://localhost:8080')
+        self.get_webpage()
 
         register_link = self.browser.find_element_by_link_text('Register')
         register_link.click()
@@ -120,7 +131,7 @@ class NewVisitorTests(unittest.TestCase):
                                                 interests=['lol', 'xpdr', 'trop lol'])
         print "TRACE TEST test_login_and_do_actions 3"
 
-        self.browser.get('http://localhost:8080')
+        self.get_webpage()
         print "TRACE TEST test_login_and_do_actions 4"
 
         self._login(email, password)
@@ -132,14 +143,12 @@ class NewVisitorTests(unittest.TestCase):
         title = self.browser.find_element_by_name('title').text
         print "TRACE TEST test_login_and_do_actions 7"
         subtitle = self.browser.find_element_by_name('subtitle').text
-        print "TRACE TEST test_login_and_do_actions 8"
 
         self.assertEquals('Gator.Life', title)
         self.assertEquals('The best of the web just for you ' + email + ' !', subtitle)
-        print "TRACE TEST test_login_and_do_actions 9"
+
         disconnect_link = self.browser.find_elements_by_link_text('Disconnect')
         self.assertEquals(1, len(disconnect_link))
-        print "TRACE TEST test_login_and_do_actions 10"
 
         # There is two links on the page and related up/down links : google.com, gator.life
         links = self.browser.find_elements_by_name('link')
@@ -156,7 +165,7 @@ class NewVisitorTests(unittest.TestCase):
         up_link.click()
 
         down_vote_links = self.browser.find_elements_by_name('down-vote')
-        print "TRACE TEST test_login_and_do_actions 13"
+
         self.assertEqual(2, len(down_vote_links))
         down_link = down_vote_links[1]
         down_link.click()
@@ -165,13 +174,13 @@ class NewVisitorTests(unittest.TestCase):
         # Note that an object referencing an element of the webpage (eg. a link) is not valid when a click is done,
         # T hus we need to retrieve links to click on google.
         links = self.browser.find_elements_by_name('link')
-        print "TRACE TEST test_login_and_do_actions 14"
+
         google_link = links[0]
         google_link.click()
         self.assertEqual("Google", self.browser.title)
 
         actions_by_user = self.dal.get_user_actions_on_docs([user], now)
-        print "TRACE TEST test_login_and_do_actions 15"
+
         actions = actions_by_user[0]
         self.assertEqual(3, len(actions))
 
