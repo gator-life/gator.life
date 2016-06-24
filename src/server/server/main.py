@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     # to not risk to pollute database
     if not IS_TEST_ENV:
-        raise Exception("IS_TEST_ENV environment variable should be set for testing")
+        raise Exception("TEST_ENV environment variable should be set for testing")
     if os.environ["DATASTORE_HOST"] != "http://localhost:33001":
         raise Exception("DATASTORE_HOST environment variable should be set to http://localhost:33001 for testing")
 
