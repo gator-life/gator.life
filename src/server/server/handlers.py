@@ -26,8 +26,11 @@ def unset_connected_user():
 
 
 def get_connected_user():
+    print "TRACE get_connected_user()::start"
     if 'email' in session:
+        print "TRACE get_connected_user()::email in session"
         return DAL.get_user(session['email'])
+    print "TRACE get_connected_user()::email not in session"
     return None
 
 
