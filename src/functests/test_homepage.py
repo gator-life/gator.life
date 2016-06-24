@@ -11,8 +11,9 @@ import daltesthelpers
 class NewVisitorTests(unittest.TestCase):
 
     def get_webpage(self):
-        for _ in range(3):
+        for i in range(5):
             try:
+                print "try " + str(i)
                 self.browser.get('http://localhost:8080')
                 break
             except TimeoutException:
