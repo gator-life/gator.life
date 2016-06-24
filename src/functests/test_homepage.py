@@ -11,7 +11,7 @@ import daltesthelpers
 class NewVisitorTests(unittest.TestCase):
 
     def get_webpage(self):
-        for i in range(5):
+        for i in range(3):
             try:
                 print "try " + str(i)
                 self.browser.get('http://localhost:8080')
