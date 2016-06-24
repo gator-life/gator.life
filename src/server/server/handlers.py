@@ -56,7 +56,7 @@ def login():
         user = get_connected_user()
         if user is None:
             print "TRACE login()::GET::render_template"
-            return render_template('login.html')
+            return render_template('login.html', error_message='')
         else:
             print "TRACE login()::GET::redirect"
             return redirect('/')
