@@ -16,7 +16,7 @@ class NewVisitorTests(unittest.TestCase):
                 print "try " + str(i)
                 self.browser.get('http://localhost:8080')
                 break
-            except TimeoutException:
+            except:  # pylint: disable=bare-except
                 pass
         else:
             raise TimeoutException
