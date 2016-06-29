@@ -1,25 +1,32 @@
+from _socket import timeout
 import time
 import unittest
 from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
+#from selenium.common.exceptions import TimeoutException
 from server import frontendstructs as structs, passwordhelpers as passwordhelpers
 from server.dal import Dal, REF_FEATURE_SET
 from common.datehelper import utcnow
 import daltesthelpers
 
 
+def with_retry(action):
+    for i in range(3):
+        try:
+            action()
+            break
+        except timeout:
+            pass
+    else:
+        raise timeout
+
+
 class NewVisitorTests(unittest.TestCase):
 
     def get_webpage(self):
-        for i in range(3):
-            try:
-                print "try " + str(i)
-                self.browser.get('http://localhost:8080')
-                break
-            except:  # pylint: disable=bare-except
-                pass
-        else:
-            raise TimeoutException
+        with_retry(lambda: self.browser.get('http://localhost:8080'))
+
+    def _click(self, element):
+        with_retry(element.click)
 
     @classmethod
     def setUpClass(cls):
@@ -48,7 +55,7 @@ class NewVisitorTests(unittest.TestCase):
         password_input_elt = self.browser.find_element_by_name('password')
         password_input_elt.send_keys(password)
         login_button = self.browser.find_element_by_name('login-button')
-        login_button.click()
+        self._click(login_button)
         print "TRACE TEST _login() end"
 
     def _register(self, email, password, interests):
@@ -60,7 +67,7 @@ class NewVisitorTests(unittest.TestCase):
         interests_input_elt = self.browser.find_element_by_name('interests')
         interests_input_elt.send_keys(interests)
         register_button = self.browser.find_element_by_name('register-button')
-        register_button.click()
+        self._click(register_button)
         print "TRACE TEST _register end"
 
     def test_login_with_unknown_email(self):
@@ -90,7 +97,7 @@ class NewVisitorTests(unittest.TestCase):
         print "TRACE TEST test_register get"
         register_link = self.browser.find_element_by_link_text('Register')
         print "TRACE TEST test_register register_link"
-        register_link.click()
+        self._click(register_link)
         print "TRACE TEST test_register register_link click"
 
         # An unique email is generated at each run to avoid a failure of the test if it's launched twice on
@@ -114,7 +121,7 @@ class NewVisitorTests(unittest.TestCase):
         self.get_webpage()
 
         register_link = self.browser.find_element_by_link_text('Register')
-        register_link.click()
+        self._click(register_link)
 
         self._register('test_register_with_a_known_email@gator.com', 'password', 'interests')
 
@@ -163,13 +170,13 @@ class NewVisitorTests(unittest.TestCase):
         print "TRACE TEST test_login_and_do_actions 12"
         self.assertEqual(2, len(up_vote_links))
         up_link = up_vote_links[0]
-        up_link.click()
+        self._click(up_link)
 
         down_vote_links = self.browser.find_elements_by_name('down-vote')
 
         self.assertEqual(2, len(down_vote_links))
         down_link = down_vote_links[1]
-        down_link.click()
+        self._click(down_link)
 
         # Click on google.com and wait to go there, if it worked, 'google' is the tab title
         # Note that an object referencing an element of the webpage (eg. a link) is not valid when a click is done,
@@ -177,7 +184,7 @@ class NewVisitorTests(unittest.TestCase):
         links = self.browser.find_elements_by_name('link')
 
         google_link = links[0]
-        google_link.click()
+        self._click(google_link)
         self.assertEqual("Google", self.browser.title)
 
         actions_by_user = self.dal.get_user_actions_on_docs([user], now)
