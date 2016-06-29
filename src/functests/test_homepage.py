@@ -2,7 +2,6 @@ from _socket import timeout
 import time
 import unittest
 from selenium import webdriver
-#from selenium.common.exceptions import TimeoutException
 from server import frontendstructs as structs, passwordhelpers as passwordhelpers
 from server.dal import Dal, REF_FEATURE_SET
 from common.datehelper import utcnow
@@ -10,7 +9,7 @@ import daltesthelpers
 
 
 def with_retry(action):
-    for i in range(3):
+    for _ in range(3):
         try:
             action()
             break
@@ -22,10 +21,11 @@ def with_retry(action):
 
 class NewVisitorTests(unittest.TestCase):
 
-    def get_webpage(self):
+    def _get_webpage(self):
         with_retry(lambda: self.browser.get('http://localhost:8080'))
 
-    def _click(self, element):
+    @staticmethod
+    def _click(element):
         with_retry(element.click)
 
     @classmethod
@@ -72,7 +72,7 @@ class NewVisitorTests(unittest.TestCase):
 
     def test_login_with_unknown_email(self):
         print "TRACE TEST test_login_with_unknown_email start"
-        self.get_webpage()
+        self._get_webpage()
         print "TRACE TEST test_login_with_unknown_email browser.get"
         self._login('unknown@email.com', 'unknownpassword')
         print "TRACE TEST test_login_with_unknown_email _login"
@@ -84,7 +84,7 @@ class NewVisitorTests(unittest.TestCase):
         print "TRACE TEST test_login_with_invalid_password start"
         daltesthelpers.create_user_dummy('known_user@gator.com', '', [''])
         print "TRACE TEST test_login_with_invalid_password create_user"
-        self.get_webpage()
+        self._get_webpage()
         print "TRACE TEST test_login_with_invalid_password get"
         self._login('known_user@gator.com', 'invalid_password')
         print "TRACE TEST test_login_with_invalid_password _login"
@@ -93,7 +93,7 @@ class NewVisitorTests(unittest.TestCase):
 
     def test_register(self):
         print "TRACE TEST test_register start"
-        self.get_webpage()
+        self._get_webpage()
         print "TRACE TEST test_register get"
         register_link = self.browser.find_element_by_link_text('Register')
         print "TRACE TEST test_register register_link"
@@ -118,7 +118,7 @@ class NewVisitorTests(unittest.TestCase):
     def test_register_with_a_known_email(self):
         daltesthelpers.create_user_dummy('test_register_with_a_known_email@gator.com', '', [''])
 
-        self.get_webpage()
+        self._get_webpage()
 
         register_link = self.browser.find_element_by_link_text('Register')
         self._click(register_link)
@@ -139,7 +139,7 @@ class NewVisitorTests(unittest.TestCase):
                                                 interests=['lol', 'xpdr', 'trop lol'])
         print "TRACE TEST test_login_and_do_actions 3"
 
-        self.get_webpage()
+        self._get_webpage()
         print "TRACE TEST test_login_and_do_actions 4"
 
         self._login(email, password)
