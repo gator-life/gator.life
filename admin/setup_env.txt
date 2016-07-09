@@ -99,3 +99,7 @@ set DATASTORE_HOST and GCLOUD_PROJECT
 
 Choose virtual env inside pycharm: 
 File -> Settings -> Project: sources -> Python interpreter -> Add Local -> REPO/global_env/bin/python2.7
+
+build docker image
+docker build -f docker_images/gator_deps/Dockerfile -t gator_deps .
+docker build -f docker_images/scrap_and_learn/Dockerfile -t scrap_and_learn .
