@@ -7,8 +7,23 @@ from gensim import corpora, models
 from .doctokenizer import DocTokenizerFromRawText, DocTokenizerFromHtml
 
 
+class _MultiIterator(object):
+    """
+    map an iterator to another iterator, applying mapper function to each element
+    LdaModel need to iterate several times on all the documents, so a generator can do the job (need to be restartable)
+    and an array cannot be load the whole corpus in memory
+    """
+
+    def __init__(self, input_iterator, mapper):
+        self.input_iterator = input_iterator
+        self.mapper = mapper
+
+    def __iter__(self):
+        for elt in self.input_iterator:
+            yield self.mapper(elt)
+
+
 class TopicModeller(object):
-    corpus_batch_size = 250
 
     @classmethod
     def make_with_html_tokenizer(cls):
@@ -40,8 +55,7 @@ class TopicModeller(object):
         self.initialize_model(documents, num_topics)
 
     def initialize_model(self, documents, num_topics):
-        for_feed_generator = (self._tokenizer.tokenize(document_content) for document_content in documents)
-        self._feed(for_feed_generator, num_topics)
+        self._create_lda_model(documents, num_topics)
         self._cache_topics()
 
     def initialize_dictionary(self, documents):
@@ -97,6 +111,7 @@ class TopicModeller(object):
 
     def save_model(self, model_data_folder):
         self._lda.save(self._lda_file_path(model_data_folder))
+        self._lda.print_topics(num_topics=-1, num_words=50)  # print topics in logs
 
     def save_dictionary(self, model_data_folder):
         self._dictionary.save(self._dictionary_file_path(model_data_folder))
@@ -114,25 +129,21 @@ class TopicModeller(object):
         corpora.Dictionary.add_documents(self._dictionary, tokenized_documents)
         # memory is O(size(_dictionary) * nb_topics), filter_extremes removes irrelevant words (too rare or too frequent)
         if not self._remove_optimizations:
-            self._dictionary.filter_extremes()
+            self._dictionary.filter_extremes(no_below=10, no_above=0.20, keep_n=100000)
 
-    def _feed(self, documents, num_topics):
-        corpus = []
-        for document in documents:
-            # Construct the Corpus : Transform each document to a vector [(word_id, word_count) | word_count > 0]
-            corpus.append(self._dictionary.doc2bow(document))
-            if len(corpus) == self.corpus_batch_size:
-                self._update_model(corpus, num_topics)
-                corpus = []
+    def _create_lda_model(self, documents, num_topics):
 
-        if len(corpus) != 0:
-            self._update_model(corpus, num_topics)
+        tokenized_corpus = _MultiIterator(documents, self._tokenizer.tokenize)
+        # 'Bag Of Words' format for ldaModel
+        bow_corpus = _MultiIterator(tokenized_corpus, self._dictionary.doc2bow)
 
-    def _update_model(self, new_corpus, num_topics):
-        if self._lda is None:
-            self._lda = models.LdaModel(new_corpus, id2word=self._dictionary, num_topics=num_topics)
-        else:
-            self._lda.update(new_corpus)
+        self._lda = models.LdaModel(
+            bow_corpus,
+            id2word=self._dictionary,
+            num_topics=num_topics,
+            chunksize=5000,
+            update_every=10,
+            passes=3)
 
     def _filter_document(self, document):
         # We want to keep only known words (those on our dictionary)
