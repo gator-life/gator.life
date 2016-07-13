@@ -1,3 +1,4 @@
+#!/bin/bash
 # script must be executed from root git directory
 
 # kill previous instance of flask server and free port if needed
@@ -10,5 +11,5 @@ source appengine_env/bin/activate
 python src/server/server/main.py &
 deactivate
 tools/start_gcloud_and_exit.sh
-# start Flask server and datastore in in parallel, no need to wait for the first one
+# start Flask server and datastore in parallel, no need to wait for the first one
 # because it's always faster to start that datastore
