@@ -1,3 +1,4 @@
+#!/bin/bash
 # script must be executed from root git directory
 
 export DATASTORE_HOST='http://localhost:33001'

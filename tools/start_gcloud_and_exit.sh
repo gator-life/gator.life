@@ -1,3 +1,4 @@
+#!/bin/bash
 # script must be executed from root git directory
 
 # start_gcoud.sh is blocking. This script wraps it to exit as soon
