@@ -42,3 +42,5 @@ find ./ -name "*.sh" -exec chmod +x {} \;
 probleme timeout in tavis
 https://github.com/travis-ci/travis-ci/issues/3251
 https://github.com/spacetelescope/asv/pull/290
+
+if we want faster blas lapack: see process here: https://github.com/ogrisel/docker-sklearn-openblas

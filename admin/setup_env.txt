@@ -103,3 +103,7 @@ File -> Settings -> Project: sources -> Python interpreter -> Add Local -> REPO/
 build docker image
 docker build -f docker_images/gator_deps/Dockerfile -t gator_deps .
 docker build -f docker_images/scrap_and_learn/Dockerfile -t scrap_and_learn .
+
+
+install git-lfs
+https://git-lfs.github.com/
