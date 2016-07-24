@@ -67,7 +67,7 @@ def _to_user_profile_model_data(db_user_profile_model_data):
 def _to_user(db_user):
     return struct.User.make_from_db(
         db_key=db_user.key,
-        email=db_user['name'],
+        email=db_user['email'],
         interests=db_user.get('interests', []),
         user_doc_set_db_key=db_user['user_document_set_key'],
         user_computed_profile_db_key=db_user['user_computed_profile_key'])
@@ -128,14 +128,14 @@ def _datastore_client():
 class Dal(object):
     # Dal is a class rather than plain module functions to enable init logic in the future,
     # but datastore client is slow to initialize, so we share it between Dal instances
-    ds_client = _datastore_client()
+    _ds_client = _datastore_client()
 
     def _make_entity(self, entity_type, not_indexed):
-        key = self.ds_client.key(entity_type)
+        key = self._ds_client.key(entity_type)
         return datastore.entity.Entity(key, exclude_from_indexes=not_indexed)
 
     def _make_named_entity(self, entity_type, key_name, not_indexed):
-        key = self.ds_client.key(entity_type, key_name)
+        key = self._ds_client.key(entity_type, key_name)
         return datastore.entity.Entity(key, exclude_from_indexes=not_indexed)
 
     def get_user(self, email):
@@ -147,15 +147,15 @@ class Dal(object):
         :param email:
         :return: A tuple (Struct.User, encoded password)
         """
-        key = self.ds_client.key('User', email)
-        db_user = self.ds_client.get(key)
+        key = self._ds_client.key('User', email)
+        db_user = self._ds_client.get(key)
         return (_to_user(db_user), _to_user_password(db_user)) if db_user else (None, None)
 
     def get_all_users(self):
         """
         :return: A list of struct.User of all users in database
         """
-        all_users_query = self.ds_client.query(kind='User').fetch()
+        all_users_query = self._ds_client.query(kind='User').fetch()
         return [_to_user(db_user) for db_user in all_users_query]
 
     def save_user(self, user, password):
@@ -165,7 +165,7 @@ class Dal(object):
         if user._user_doc_set_db_key is None:  # pylint: disable=protected-access
             user_doc_set_db = self._make_entity('UserDocumentSet', not_indexed=('user_documents',))
             user_doc_set_db['user_documents'] = []
-            self.ds_client.put(user_doc_set_db)
+            self._ds_client.put(user_doc_set_db)
             user._user_doc_set_db_key = user_doc_set_db.key  # pylint: disable=protected-access
         if user._user_computed_profile_db_key is None:  # pylint: disable=protected-access
 
@@ -173,17 +173,17 @@ class Dal(object):
                 struct.FeatureVector.make_from_scratch([], NULL_FEATURE_SET),
                 struct.UserProfileModelData.make_from_scratch([], [], 0.0, 0.0))
             db_user_computed_profile = self._to_db_computed_user_profile(user_computed_profile)
-            self.ds_client.put(db_user_computed_profile)
+            self._ds_client.put(db_user_computed_profile)
             user._user_computed_profile_db_key = db_user_computed_profile.key  # pylint: disable=protected-access
 
         db_user = self._to_db_user(user, password)
-        self.ds_client.put(db_user)
+        self._ds_client.put(db_user)
         user._db_key = db_user.key  # pylint: disable=protected-access
 
     def _to_db_user(self, user, password):
         not_indexed = ('password', 'interests', 'user_document_set_key', 'user_computed_profile_key')
         db_user = self._make_named_entity('User', user.email, not_indexed)
-        db_user['name'] = user.email
+        db_user['email'] = user.email
         db_user['password'] = password
         db_user['interests'] = user.interests
         db_user['user_document_set_key'] = user._user_doc_set_db_key  # pylint: disable=protected-access
@@ -196,14 +196,14 @@ class Dal(object):
         :return: a list of string of feature labels of the feature_set_id. This list matches the order of the elements
         in the feature vectors associated to this feature_set_id.
         """
-        db_feature_set_key = self.ds_client.key(u'FeatureSet', feature_set_id)
-        db_feature_set = self.ds_client.get(db_feature_set_key)
+        db_feature_set_key = self._ds_client.key(u'FeatureSet', feature_set_id)
+        db_feature_set = self._ds_client.get(db_feature_set_key)
         return db_feature_set.get('features', [])
 
     def save_features(self, feature_set_id, feature_names):
         db_feature_set = self._make_named_entity(u'FeatureSet', feature_set_id, not_indexed=('features',))
         db_feature_set['features'] = feature_names
-        self.ds_client.put(db_feature_set)
+        self._ds_client.put(db_feature_set)
 
     def _to_db_user_profile_model_data(self, user_profile_model_data):
         not_indexed = ('positive_feedback_vector', 'negative_feedback_vector',
@@ -226,7 +226,7 @@ class Dal(object):
 
     def _to_db_feature_vector(self, feature_vector):
         db_feature_vector = self._make_entity(u'FeatureVector', not_indexed=('vector',))
-        db_feature_vector['feature_set_key'] = self.ds_client.key(u'FeatureSet', feature_vector.feature_set_id)
+        db_feature_vector['feature_set_key'] = self._ds_client.key(u'FeatureSet', feature_vector.feature_set_id)
         db_feature_vector['vector'] = feature_vector.vector
         return db_feature_vector
 
@@ -244,11 +244,11 @@ class Dal(object):
             # by setting as key the key previously referenced by the user, we will overwrite the previous profile in db
             db_profile.key = user._user_computed_profile_db_key  # pylint: disable=protected-access
             db_profiles.append(db_profile)
-        self.ds_client.put_multi(db_profiles)
+        self._ds_client.put_multi(db_profiles)
 
     def get_user_computed_profiles(self, users):
         keys = [user._user_computed_profile_db_key for user in users]  # pylint: disable=protected-access
-        db_profiles = self.ds_client.get_multi(keys)
+        db_profiles = self._ds_client.get_multi(keys)
         profiles = [_to_user_computed_profile(db_profile) for db_profile in db_profiles]
         return profiles
 
@@ -270,16 +270,16 @@ class Dal(object):
         return user_docs
 
     def _to_docs(self, db_doc_keys):
-        db_docs = self.ds_client.get_multi(db_doc_keys)
+        db_docs = self._ds_client.get_multi(db_doc_keys)
         docs = [_to_doc(db_doc) for db_doc in db_docs]
         return docs
 
     def save_user_docs(self, user, user_docs):
         user_doc_set_db_key = user._user_doc_set_db_key  # pylint: disable=protected-access
-        db_user_doc_set = self.ds_client.get(user_doc_set_db_key)
+        db_user_doc_set = self._ds_client.get(user_doc_set_db_key)
         db_user_docs = self._to_db_user_docs(user_docs)
         db_user_doc_set['user_documents'] = db_user_docs
-        self.ds_client.put(db_user_doc_set)
+        self._ds_client.put(db_user_doc_set)
 
     def _to_db_user_docs(self, user_docs):
         db_user_docs = [self._to_db_user_doc(user_doc) for user_doc in user_docs]
@@ -301,13 +301,13 @@ class Dal(object):
         for user, user_docs in user_to_user_docs_list:
             user_set_db_keys.append(user._user_doc_set_db_key)  # pylint: disable=protected-access
             users_docs.append(user_docs)
-        db_user_sets = self.ds_client.get_multi(user_set_db_keys)
+        db_user_sets = self._ds_client.get_multi(user_set_db_keys)
         for (db_user_set, user_docs) in zip(db_user_sets, users_docs):  # zip is ok because ndb.get_multi() maintains order
             db_user_set['user_documents'] = self._to_db_user_docs(user_docs)
-        self.ds_client.put_multi(db_user_sets)
+        self._ds_client.put_multi(db_user_sets)
 
     def get_user_docs(self, user):
-        user_doc_set = self.ds_client.get(user._user_doc_set_db_key)  # pylint: disable=protected-access
+        user_doc_set = self._ds_client.get(user._user_doc_set_db_key)  # pylint: disable=protected-access
         return self._to_user_docs(user_doc_set)
 
     def get_users_docs(self, users):
@@ -322,7 +322,7 @@ class Dal(object):
             return db_user_doc_set.get('user_documents', [])
 
         user_doc_set_db_keys = [user._user_doc_set_db_key for user in users]  # pylint: disable=protected-access
-        db_user_doc_sets = self.ds_client.get_multi(user_doc_set_db_keys)
+        db_user_doc_sets = self._ds_client.get_multi(user_doc_set_db_keys)
         doc_keys_set = {user_doc['document_key'] for user_doc_set in db_user_doc_sets for user_doc in db_docs(user_doc_set)}
         doc_keys_list = list(doc_keys_set)
         docs = self._to_docs(doc_keys_list)
@@ -333,7 +333,7 @@ class Dal(object):
     def save_documents(self, documents):
         docs_with_order = [doc for doc in documents]
         db_docs = [self._to_db_doc(doc) for doc in docs_with_order]
-        self.ds_client.put_multi(db_docs)
+        self._ds_client.put_multi(db_docs)
         db_doc_keys = [db_doc.key for db_doc in db_docs]
         for (doc, key) in zip(docs_with_order, db_doc_keys):
             doc._db_key = key  # pylint: disable=protected-access
@@ -351,7 +351,7 @@ class Dal(object):
 
     def get_doc_by_urlsafe_key(self, key):
         db_key = _to_key(urlsafe=key)
-        db_doc = self.ds_client.get(db_key)
+        db_doc = self._ds_client.get(db_key)
         return _to_doc(db_doc)
 
     def save_user_action_on_doc(self, user, document, action_on_doc):
@@ -361,7 +361,7 @@ class Dal(object):
         :param action_on_doc: frontendstructs.UserActionTypeOnDoc
         """
         db_action = self._to_db_user_action_on_doc(user, document, action_on_doc)
-        self.ds_client.put(db_action)
+        self._ds_client.put(db_action)
 
     def _to_db_user_action_on_doc(self, user, document, action_on_doc):
         db_action = self._make_entity('UserActionOnDoc', not_indexed=())
@@ -379,7 +379,7 @@ class Dal(object):
          for this user inserted after 'from_datetime'
         """
         # 1) retrieve actions from database
-        actions_query = self.ds_client.query(kind='UserActionOnDoc')
+        actions_query = self._ds_client.query(kind='UserActionOnDoc')
         actions_query.add_filter('datetime', '>', from_datetime)
         db_actions = list(actions_query.fetch())
         # NB: we only filter on datetime (and not the users) on the query because you can't mix
