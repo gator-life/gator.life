@@ -15,10 +15,18 @@ NULL_FEATURE_SET = u"null_feature_set"
 
 
 def _to_urlsafe(key):
+    """
+    Encode a key to a string that can be passed as an url parameter
+    Be careful, this is only encoded, not encrypted.
+    """
+    # encode call transform key to a string, then b64encode to a base64 format that can be passed in an url
     return jsonpickle.util.b64encode(jsonpickle.encode(key))
 
 
 def _to_key(urlsafe):
+    """
+    Decode back to a key than has been encoded with _to_urlsafe(key)
+    """
     return jsonpickle.decode(jsonpickle.util.b64decode(urlsafe))
 
 
