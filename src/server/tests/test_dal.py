@@ -33,10 +33,12 @@ class DalTests(unittest.TestCase):
         # ------------- check save_user --------------
         self.assertIsNone(expected_user._user_computed_profile_db_key)
         self.assertIsNone(expected_user._user_doc_set_db_key)
+        self.assertIsNone(expected_user._db_key)
         self.dal.save_user(expected_user, password)
         # save should init db keys
         self.assertIsNotNone(expected_user._user_doc_set_db_key)
         self.assertIsNotNone(expected_user._user_computed_profile_db_key)
+        self.assertIsNotNone(expected_user._db_key)
 
         # ------------- check get_user --------------
         result_user = self.dal.get_user('email')
@@ -52,6 +54,7 @@ class DalTests(unittest.TestCase):
         self.assertEquals(expected_user.interests, result_user.interests)
         self.assertEquals(expected_user._user_doc_set_db_key, result_user._user_doc_set_db_key)
         self.assertEquals(expected_user._user_computed_profile_db_key, result_user._user_computed_profile_db_key)
+        self.assertEquals(expected_user._db_key, result_user._db_key)
 
     def test_get_all_users(self):
         users_data = [('test_get_all_users_user1', ['interests1']),
