@@ -139,13 +139,17 @@ class Dal(object):
         return datastore.entity.Entity(key, exclude_from_indexes=not_indexed)
 
     def get_user(self, email):
+        """
+        :param email:
+        :return: Struct.User if user found, else None
+        """
         (user, _) = self.get_user_and_password(email)
         return user
 
     def get_user_and_password(self, email):
         """
         :param email:
-        :return: A tuple (Struct.User, encoded password)
+        :return: A tuple (Struct.User, encoded password) if user found, else (None, None)
         """
         key = self._ds_client.key('User', email)
         db_user = self._ds_client.get(key)
@@ -201,6 +205,12 @@ class Dal(object):
         return db_feature_set.get('features', [])
 
     def save_features(self, feature_set_id, feature_names):
+        """
+        Save features names associated to a feature set
+        :param feature_set_id: string, id of the feature_set
+        :param feature_names: list of string
+        :return:
+        """
         db_feature_set = self._make_named_entity(u'FeatureSet', feature_set_id, not_indexed=('features',))
         db_feature_set['features'] = feature_names
         self._ds_client.put(db_feature_set)
@@ -236,7 +246,6 @@ class Dal(object):
     def save_computed_user_profiles(self, user_profile_list):
         """
         :param user_profile_list: list of tuples (struct.User, struct.UserComputedProfile)
-        :return:
         """
         db_profiles = []
         for user, computed_user_profile in user_profile_list:
@@ -247,15 +256,27 @@ class Dal(object):
         self._ds_client.put_multi(db_profiles)
 
     def get_user_computed_profiles(self, users):
+        """
+        :param users: list of Struct.User
+        :return: list of struct.UserComputedProfile matching 'users' list
+        """
         keys = [user._user_computed_profile_db_key for user in users]  # pylint: disable=protected-access
         db_profiles = self._ds_client.get_multi(keys)
         profiles = [_to_user_computed_profile(db_profile) for db_profile in db_profiles]
         return profiles
 
     def get_user_feature_vector(self, user):
+        """
+        :param user: struct.User
+        :return: struct.FeatureVector
+        """
         return self.get_users_feature_vectors([user])[0]
 
     def get_users_feature_vectors(self, users):
+        """
+        :param users: list of struct.User
+        :return: list of struct.FeatureVector matching 'users' list
+        """
         # NB: this could be probably optimized by projection query if we need, but it would require to index vector property.
         profiles = self.get_user_computed_profiles(users)
         return [profile.feature_vector for profile in profiles]
@@ -275,6 +296,11 @@ class Dal(object):
         return docs
 
     def save_user_docs(self, user, user_docs):
+        """
+        :param user: struct.user
+        :param user_docs: list of struct.UserDocument
+        :return:
+        """
         user_doc_set_db_key = user._user_doc_set_db_key  # pylint: disable=protected-access
         db_user_doc_set = self._ds_client.get(user_doc_set_db_key)
         db_user_docs = self._to_db_user_docs(user_docs)
@@ -307,10 +333,18 @@ class Dal(object):
         self._ds_client.put_multi(db_user_sets)
 
     def get_user_docs(self, user):
+        """
+        :param user: struct.User
+        :return: list of struct.UserDocument
+        """
         user_doc_set = self._ds_client.get(user._user_doc_set_db_key)  # pylint: disable=protected-access
         return self._to_user_docs(user_doc_set)
 
     def get_users_docs(self, users):
+        """
+        :param users: list of struct.User
+        :return: list matching 'users' list, each list being a list of struct.UserDocument
+        """
         def to_user_doc(db_user_doc):
             return _to_user_doc(keys_to_docs[db_user_doc['document_key']], db_user_doc)
 
@@ -331,6 +365,9 @@ class Dal(object):
         return [db_set_to_user_doc_list(db_user_doc_set) for db_user_doc_set in db_user_doc_sets]
 
     def save_documents(self, documents):
+        """
+        :param documents: list of struct.Document
+        """
         docs_with_order = [doc for doc in documents]
         db_docs = [self._to_db_doc(doc) for doc in docs_with_order]
         self._ds_client.put_multi(db_docs)
@@ -350,6 +387,10 @@ class Dal(object):
         return db_doc
 
     def get_doc_by_urlsafe_key(self, key):
+        """
+        :param key: key corresponding to the field 'key_urlsafe' of a struct.Document
+        :return: struct.Document
+        """
         db_key = _to_key(urlsafe=key)
         db_doc = self._ds_client.get(db_key)
         return _to_doc(db_doc)
