@@ -2,7 +2,8 @@
 # script must be executed from root git directory
 
 # kill previous instance of flask server and free port if needed
-pkill -f main.py
+# cf. http://stackoverflow.com/questions/3510673/find-and-kill-a-process-in-one-line-using-bash-and-regex 
+kill $(ps aux | grep '[p]ython src/server/server/main.py' | awk '{print $2}')
 fuser -k 8080/tcp
 # activate specific appengine virtual env to ensure that flask server
 # only uses python libs available, that is the ones defined in requirements.txt

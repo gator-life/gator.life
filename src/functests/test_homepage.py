@@ -1,6 +1,6 @@
-from _socket import timeout
 import time
 import unittest
+from _socket import timeout
 from selenium import webdriver
 from server import frontendstructs as structs, passwordhelpers as passwordhelpers
 from server.dal import Dal, REF_FEATURE_SET
