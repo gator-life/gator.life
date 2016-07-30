@@ -1,6 +1,7 @@
 """
 DAL (Data Access Layer) module
-abstract database scheme and datastore API to communicate with the rest of the package through pure (not ndb) Python objects
+abstract database scheme and datastore API to communicate with the rest of the packages
+through objects uncoupled from gcloud datastore API
 """
 import datetime
 import httplib2
@@ -138,6 +139,17 @@ class Dal(object):
         key = self._ds_client.key(entity_type, key_name)
         return datastore.entity.Entity(key, exclude_from_indexes=not_indexed)
 
+    def _get_multi(self, keys):
+        """
+        Wrapper around get_multi datastore function that ensure matching of indexes between keys and retrieved entities.
+        It seems to works natively at least with test gcloud server but it's not clearly specified.
+        :param keys: list of gcloud.datastore.entity.key
+        :return: list of gcloud.datastore.entity
+        """
+        entities = self._ds_client.get_multi(keys)
+        key_to_entity = dict((entity.key, entity) for entity in entities)
+        return [key_to_entity[key] for key in keys]
+
     def get_user(self, email):
         """
         :param email:
@@ -261,7 +273,7 @@ class Dal(object):
         :return: list of struct.UserComputedProfile matching 'users' list
         """
         keys = [user._user_computed_profile_db_key for user in users]  # pylint: disable=protected-access
-        db_profiles = self._ds_client.get_multi(keys)
+        db_profiles = self._get_multi(keys)
         profiles = [_to_user_computed_profile(db_profile) for db_profile in db_profiles]
         return profiles
 
@@ -291,7 +303,7 @@ class Dal(object):
         return user_docs
 
     def _to_docs(self, db_doc_keys):
-        db_docs = self._ds_client.get_multi(db_doc_keys)
+        db_docs = self._get_multi(db_doc_keys)
         docs = [_to_doc(db_doc) for db_doc in db_docs]
         return docs
 
@@ -327,8 +339,8 @@ class Dal(object):
         for user, user_docs in user_to_user_docs_list:
             user_set_db_keys.append(user._user_doc_set_db_key)  # pylint: disable=protected-access
             users_docs.append(user_docs)
-        db_user_sets = self._ds_client.get_multi(user_set_db_keys)
-        for (db_user_set, user_docs) in zip(db_user_sets, users_docs):  # zip is ok because ndb.get_multi() maintains order
+        db_user_sets = self._get_multi(user_set_db_keys)
+        for (db_user_set, user_docs) in zip(db_user_sets, users_docs):
             db_user_set['user_documents'] = self._to_db_user_docs(user_docs)
         self._ds_client.put_multi(db_user_sets)
 
@@ -356,7 +368,7 @@ class Dal(object):
             return db_user_doc_set.get('user_documents', [])
 
         user_doc_set_db_keys = [user._user_doc_set_db_key for user in users]  # pylint: disable=protected-access
-        db_user_doc_sets = self._ds_client.get_multi(user_doc_set_db_keys)
+        db_user_doc_sets = self._get_multi(user_doc_set_db_keys)
         doc_keys_set = {user_doc['document_key'] for user_doc_set in db_user_doc_sets for user_doc in db_docs(user_doc_set)}
         doc_keys_list = list(doc_keys_set)
         docs = self._to_docs(doc_keys_list)
