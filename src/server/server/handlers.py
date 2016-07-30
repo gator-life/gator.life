@@ -87,8 +87,8 @@ def register():
                 profile = struct.UserComputedProfile.make_from_scratch(feature_vector, model_data)
 
                 DAL.save_computed_user_profiles([(user, profile)])
-
-                return redirect('/login')
+                set_connected_user(user)
+                return redirect('/')
             else:
                 return render_template('register.html', error_message='This account already exists')
         else:

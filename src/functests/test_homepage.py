@@ -95,8 +95,8 @@ class NewVisitorTests(unittest.TestCase):
         self.assertItemsEqual(user.interests, interests_str.splitlines())
         self.assertItemsEqual(user.interests, interests_str.splitlines())
 
-        # If the user as been successfully registered, it should be redirected to "Login" page
-        self.assertEqual('http://localhost:8080/login', self.browser.current_url)
+        # If the user as been successfully registered, it should be redirected to home page
+        self.assertEqual('http://localhost:8080/', self.browser.current_url)
 
     def test_register_with_a_known_email(self):
         daltesthelpers.create_user_dummy('test_register_with_a_known_email@gator.com', '', [''])

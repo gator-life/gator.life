@@ -17,13 +17,16 @@ class DalMock(object):
     def get_user(self, email):  # pylint: disable=unused-argument, no-self-use
         if email == 'mark':
             return struct.User.make_from_scratch(email, ['soccer', 'tuning'])
-        return None
+        return self.saved_user
 
     def get_user_docs(self, user):  # pylint: disable=unused-argument, no-self-use
         if user.email == 'mark':
             return \
                 [struct.UserDocument.make_from_scratch(struct.Document.make_from_scratch(None, 'title1', None, None), 0.0),
                  struct.UserDocument.make_from_scratch(struct.Document.make_from_scratch(None, 'title2', None, None), 0.0)]
+        if user.email == 'elon':
+            return [
+                struct.UserDocument.make_from_scratch(struct.Document.make_from_scratch(None, 'rocket', None, None), 0.0)]
         return None
 
     def save_user(self, user, password):
@@ -112,14 +115,14 @@ class HandlersTests(unittest.TestCase):
         self._assert_is_register(response)
         self.assertTrue('This account already exists' in response.data)
 
-    def test_register_post_with_new_email_save_profile_redirect_login(self):
-        post_data = dict(email='alan', password='alan', interests='rockets\r\ncars')
+    def test_register_post_with_new_email_save_profile_redirect_homepage(self):
+        post_data = dict(email='elon', password='elon', interests='rockets\r\ncars')
         response = self.app.post('/register', data=post_data, follow_redirects=True)
-        self.dal.saved_password = pswd.hash_password('alan')
-        self.assertEquals('alan', self.dal.saved_user.email)
+        self.assertEquals('elon', self.dal.saved_user.email)
         self.assertEquals(['rockets', 'cars'], self.dal.saved_user.interests)
         self.assertEquals(1, len(self.dal.computed_user_profiles))
-        self._assert_is_login(response)
+        self.assertEquals(pswd.hash_password('elon'), self.dal.saved_password)
+        self._assert_is_home_elon(response)
 
     def test_link_with_user_not_connected_redirect_login(self):
         response = self.app.get('/link/1/key', follow_redirects=True)
@@ -154,6 +157,11 @@ class HandlersTests(unittest.TestCase):
         self.assertEquals(200, response.status_code)
         self.assertTrue('Register' in response.data)
         self.assertTrue('interests' in response.data)
+
+    def _assert_is_home_elon(self, response):
+        self.assertEquals(200, response.status_code)
+        self.assertTrue('elon' in response.data)
+        self.assertTrue('rocket' in response.data)
 
     def _assert_is_home(self, response):
         self.assertEquals(200, response.status_code)
