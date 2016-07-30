@@ -10,9 +10,9 @@ before_install:
 - ./miniconda.sh -b -p ./lib/miniconda
 - export PATH=$(pwd)/lib/miniconda/bin:$PATH
 - conda update --yes conda
-- wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-113.0.0-linux-x86_64.tar.gz
+- wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-119.0.0-linux-x86_64.tar.gz
   -nv
-- tar zxvf google-cloud-sdk-113.0.0-linux-x86_64.tar.gz -C lib
+- tar zxvf google-cloud-sdk-119.0.0-linux-x86_64.tar.gz -C lib
 - export PATH=$(pwd)/lib/google-cloud-sdk/bin:$PATH
 install:
 - conda install --yes python=$TRAVIS_PYTHON_VERSION cryptography numpy scipy
