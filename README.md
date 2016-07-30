@@ -92,5 +92,5 @@ The project contains the following python packages:
 * `scraper`: scraping of the web to extract documents. Depends on `common` package only.
 * `topicmodeller`: classification of the extracted documents. Depends on `common` package only.
 * `learner`: machine learning algorithms to learn users preferences and match classified documents and users. Depends on `common` package only.
-* `orchestrator`: coordinatation of the pipeline from scraping to users/documents matching. Depends on `comon`, `scraper`, `topicmodeller`, `learner`. It currently depends also on `server` for database access, but this should be extracted in its own package.
+* `orchestrator`: coordinatation of the pipeline from scraping to users/documents matching. Depends on `common`, `scraper`, `topicmodeller`, `learner`. It currently depends also on `server` for database access, but this should be extracted in its own package.
 
