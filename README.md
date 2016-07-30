@@ -87,10 +87,10 @@ Thank you for your interest for the open source projet *Gator Life*. For now we 
 ## Architecture overview
 
 The project contains the following python packages:
-	* *common*: shared tools (serialization, testing helpers, logging...) between packages. Should be kept minimal. No internal dependency.
-	* *server*: **gator.life** website backend. Uses `Flask` framework and is deployed on `Google Cloud Platform`. No internal dependency.
-	* *scraper*: scraping of the web to extract documents. Depends on *common* package only.
-	* *topicmodeller*: classification of the extracted documents. Depends on *common* package only.
-	* *learner*: machine learning algorithms to learn users preferences and match classified documents and users. Depends on *common* package only.
-	* *orchestrator*: coordinatation of the pipeline from scraping to users/documents matching. Depends on *comon*, *scraper*, *topicmodeller, *learner*. It currently depends also on *server* for database access, but this should be extracted in its own package.
+* `common`: shared tools (serialization, testing helpers, logging...) between packages. Should be kept minimal. No internal dependency.
+* `server`: **gator.life** website backend. Uses `Flask` framework and is deployed on `Google Cloud Platform`. No internal dependency.
+* `scraper`: scraping of the web to extract documents. Depends on `common` package only.
+* `topicmodeller`: classification of the extracted documents. Depends on `common` package only.
+* `learner`: machine learning algorithms to learn users preferences and match classified documents and users. Depends on `common` package only.
+* `orchestrator`: coordinatation of the pipeline from scraping to users/documents matching. Depends on `comon`, `scraper`, `topicmodeller`, `learner`. It currently depends also on `server` for database access, but this should be extracted in its own package.
 
