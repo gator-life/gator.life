@@ -1,24 +1,16 @@
-version: 1
-runtime: python27
-api_version: 1
-threadsafe: true
+runtime: python
+vm: true
+entrypoint: gunicorn -b :$PORT main:app
 
-handlers:
-- url: /stylesheets
-  static_dir: stylesheets
+runtime_config:
+  python_version: 2
 
-- url: /images
-  static_dir: images
+#to get a f1-micro instance
+resources:
+  cpu: .5
+  memory_gb: .19
+  disk_size_gb: 10
 
-- url: /.*
-  script: gator.app
+env_variables:
+    GCLOUD_PROJECT: gator-01
 
-
-builtins:
-- remote_api: on
-
-libraries:
-- name: webapp2
-  version: latest
-- name: jinja2
-  version: latest

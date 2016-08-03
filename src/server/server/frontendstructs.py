@@ -19,7 +19,7 @@ class Document(object):
         """
         return Document(url, title, summary, datetime=None, db_key=None, key_urlsafe=None, feature_vector=feature_vector)
 
-    def __init__(self, url, title, summary, datetime, db_key, key_urlsafe, feature_vector): # pylint: disable=too-many-arguments
+    def __init__(self, url, title, summary, datetime, db_key, key_urlsafe, feature_vector):  # pylint: disable=too-many-arguments
         self.url = url
         self.title = title
         self._db_key = db_key
@@ -47,14 +47,15 @@ class UserDocument(object):
 class User(object):
 
     @staticmethod
-    def make_from_db(email, interests, user_doc_set_db_key, user_computed_profile_db_key):
-        return User(email, interests, user_doc_set_db_key, user_computed_profile_db_key)
+    def make_from_db(db_key, email, interests, user_doc_set_db_key, user_computed_profile_db_key):
+        return User(db_key, email, interests, user_doc_set_db_key, user_computed_profile_db_key)
 
     @staticmethod
     def make_from_scratch(email, interests):
-        return User(email, interests, None, None)
+        return User(None, email, interests, None, None)
 
-    def __init__(self, email, interests, user_doc_set_db_key, user_computed_profile_db_key):
+    def __init__(self, db_key, email, interests, user_doc_set_db_key, user_computed_profile_db_key):
+        self._db_key = db_key
         self.email = email
         self.interests = interests
         self._user_doc_set_db_key = user_doc_set_db_key
