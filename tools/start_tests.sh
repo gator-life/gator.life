@@ -1,8 +1,8 @@
 #!/bin/bash
 # script must be executed from root git directory
 
-export DATASTORE_HOST='http://localhost:33001'
-export TEST_ENV='True'
+. tools/set_env_vars.sh
+
 tools/start_server.sh
 
 if [ "$1" = "cover" ]; then
