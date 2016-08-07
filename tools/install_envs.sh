@@ -2,11 +2,12 @@
 
 # script must be executed from root git directory
 
-mkdir lib
+mkdir -p lib
 
+rm -rf lib/google-cloud-sdk
 wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-119.0.0-linux-x86_64.tar.gz -nv
 tar zxvf google-cloud-sdk-119.0.0-linux-x86_64.tar.gz -C lib
-export PATH=$(pwd)/lib/google-cloud-sdk/bin:$PATH
+rm google-cloud-sdk-119.0.0-linux-x86_64.tar.gz
 
 pip install -r requirements.txt
 pip install -r test_requirements.txt
