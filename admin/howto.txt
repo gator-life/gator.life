@@ -48,7 +48,7 @@ set DATASTORE_HOST and GCLOUD_PROJECT
 -Choose virtualenv inside pycharm
 File -> Settings -> Project: sources -> Python interpreter -> Add Local -> REPO/global_env/bin/python2.7
 
--pour lever un warning pycharm de perf:
+-To avoid a pycharm warning related to watches limit
 https://confluence.jetbrains.com/display/IDEADEV/Inotify+Watches+Limit
 
 -How to resolve imports between test and prod
