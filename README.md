@@ -31,15 +31,14 @@ You can judge if we are true to our mission. You can challenge every change and 
 
 ## Installation
 
+Tested on Ubuntu 14.04 and 16.04. For more details on how the setup was done on Ubuntu 14.04 and 16.04 see `admin/howto.txt`.
+
 1. Make sure you have installed the dependencies:
 
-	* `git`
-	* `python` 2.7
-	* `virtualenv`
-	* `pip`
+	* `python` 2.7, `pip` and `virtualenv`
 	* `docker`
-	* `google cloud` SDK
 	* `PhantomJS`
+	* `Java` 7+ JRE
 
 2. Clone this repository:
 
@@ -54,10 +53,16 @@ You can judge if we are true to our mission. You can challenge every change and 
 	$ source global_env/bin/activate
 	```
 
-3. Under repo root directory, run script:
+4. Under repo root directory, to install dependencies run :
 
 	```sh
 	$ tools/install_envs.sh
+	```
+
+5. Under repo root directory, launch unit tests to make sure all is ok by running :
+
+	```sh
+	$ tools/start_tests.sh
 	```
 
 ## Contributing
@@ -93,4 +98,3 @@ The project contains the following python packages:
 * `topicmodeller`: classification of the extracted documents. Depends on `common` package only.
 * `learner`: machine learning algorithms to learn users preferences and match classified documents and users. Depends on `common` package only.
 * `orchestrator`: coordinatation of the pipeline from scraping to users/documents matching. Depends on `common`, `scraper`, `topicmodeller`, `learner`. It currently depends also on `server` for database access, but this should be extracted in its own package.
-

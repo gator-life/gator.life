@@ -1,0 +1,65 @@
+######## Docker commands ########
+
+Sources: https://www.howtoforge.com/tutorial/docker-installation-and-usage-on-ubuntu-16.04/
+
+docker pull ubuntu
+
+docker create ubuntu:14.04
+docker create ubuntu:16.04
+
+- To start the docker engine:
+systemctl start docker
+
+- To have more details if an error is generated while starting docker engine :
+systemctl status docker.service
+
+- If the error 'could not delete the default bridge network: network bridge has active endpoints' is generate while trying to start docker engine:
+rm -rf /var/lib/docker/network/files
+
+- List all images:
+docker images
+
+- Remove an image:
+docker rmi gator.life:default
+
+- Remove all untagged images:
+docker rmi -f $(docker images | grep "^<none>" | awk '{print $3}')
+
+- Build an image from the Dockerfile of the current directory:
+docker build -t "gator.life:default" .
+
+docker history gator.life:default
+
+- Run an image
+docker run -i -t ubuntu:16.04 /bin/bash
+docker run -i -t gator.life:default
+
+
+######## Commands on base images ubuntu:14.04 and ubuntu:16.04 to setup the environment of gator.life and run unit tests ########
+
+apt-get update
+
+apt-get install wget
+
+apt-get install python-dev libssl-dev libffi-dev libopenblas-dev
+
+apt-get install git python-pip default-jre
+
+pip install virtualenv
+
+wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2
+tar xvfj phantomjs-2.1.1-linux-x86_64.tar.bz2
+export PATH=$(pwd)/phantomjs-2.1.1-linux-x86_64/bin:$PATH
+
+git clone https://github.com/gator-life/gator.life.git
+
+cd gator.life
+
+git checkout feature/Feature-EnvEnhs
+
+virtualenv global_env
+source global_env/bin/activate
+
+tools/install_envs.sh
+
+tools/start_tests.sh

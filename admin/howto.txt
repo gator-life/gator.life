@@ -1,0 +1,67 @@
+-Website URLs
+http://gator-01.appspot.com/
+http://gator.life/
+
+
+######## Installation ########
+
+-Add universe apt repository and update packages list
+sudo add-apt-repository universe
+sudo apt-get update
+
+-Prerequisites
+For cryptography/openssl : sudo apt-get install python-dev libssl-dev libffi-dev
+Before installing numpy/gensim, Install optimized blas/lapack implementation : apt-get install libopenblas-dev
+
+-Install git
+sudo apt-get install git
+
+-Install pip
+sudo apt-get install python-pip
+
+-Install virtualenv
+pip install virtualenv
+
+-Install Java 7+ JRE
+sudo apt-get install default-jre
+
+-Install phantomJS
+Download the binary package from http://phantomjs.org/download.html and add bin folder to PATH.
+wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2
+tar xvfj phantomjs-2.1.1-linux-x86_64.tar.bz2
+export PATH=$(pwd)/phantomjs-2.1.1-linux-x86_64/bin:$PATH
+
+-Install docker
+sudo apt-get install docker.io
+Follow instructions on https://www.howtoforge.com/tutorial/docker-installation-and-usage-on-ubuntu-16.04/
+
+
+######## Pycharm ########
+
+-How to run pylint in Pycharm
+http://blog.saturnlaboratories.co.za/archive/2012/09/10/running-pylint-pycharm
+
+-Set environment variable for pycharm configurations
+list of start script -> "Edit configurations" -> Default -> Python -> Environment variables
+set DATASTORE_HOST and GCLOUD_PROJECT
+
+-Choose virtualenv inside pycharm
+File -> Settings -> Project: sources -> Python interpreter -> Add Local -> REPO/global_env/bin/python2.7
+
+-To avoid a pycharm warning related to watches limit
+https://confluence.jetbrains.com/display/IDEADEV/Inotify+Watches+Limit
+
+-How to resolve imports between test and prod
+http://stackoverflow.com/questions/17969025/unresolved-reference-when-importing-from-sibling-sub-package-with
+
+
+######## Travis ########
+
+-How to generate an encrypted environment variable
+Create it using travis GUI
+
+
+######## Miscellaneous ########
+
+-For memory profiling
+guppy / heapy
