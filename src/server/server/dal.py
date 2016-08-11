@@ -95,9 +95,10 @@ def _to_feature_vector(db_feature_vector):
 
 def _to_user_computed_profile(db_user_computed_profile):
     model_data = _to_user_profile_model_data(db_user_computed_profile['model_data'])
+    initial_feature_vector = _to_feature_vector(db_user_computed_profile['initial_feature_vector'])
     feature_vector = _to_feature_vector(db_user_computed_profile['feature_vector'])
     update_datetime = db_user_computed_profile['datetime']
-    return struct.UserComputedProfile.make_from_db(feature_vector, model_data, update_datetime)
+    return struct.UserComputedProfile.make_from_db(initial_feature_vector, feature_vector, model_data, update_datetime)
 
 
 def _to_doc(db_doc):
@@ -187,6 +188,7 @@ class Dal(object):
 
             user_computed_profile = struct.UserComputedProfile.make_from_scratch(
                 struct.FeatureVector.make_from_scratch([], NULL_FEATURE_SET),
+                struct.FeatureVector.make_from_scratch([], NULL_FEATURE_SET),
                 struct.UserProfileModelData.make_from_scratch([], [], 0.0, 0.0))
             db_user_computed_profile = self._to_db_computed_user_profile(user_computed_profile)
             self._ds_client.put(db_user_computed_profile)
@@ -241,6 +243,8 @@ class Dal(object):
     def _to_db_computed_user_profile(self, user_computed_profile):
         not_indexed = ('feature_vector', 'model_data', 'datetime')
         db_computed_user_profile = self._make_entity(u'UserComputedProfile', not_indexed)
+        db_computed_user_profile['initial_feature_vector'] \
+            = self._to_db_feature_vector(user_computed_profile.initial_feature_vector)
         db_computed_user_profile['feature_vector'] = self._to_db_feature_vector(user_computed_profile.feature_vector)
         db_computed_user_profile['model_data'] = self._to_db_user_profile_model_data(user_computed_profile.model_data)
         db_computed_user_profile['datetime'] = datetime.datetime.utcnow()

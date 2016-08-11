@@ -113,9 +113,11 @@ class ScrapAndLearnTests(unittest.TestCase):
         self.assertEqual(mock_url_unicity_checker.saved_count, 3)
 
     def _save_dummy_profile_for_user(self, user):
+        initial_feature_vector = struct.FeatureVector.make_from_scratch([2.0], "featureSetId-test_scrap_learn")
         feature_vector = struct.FeatureVector.make_from_scratch([1.0], "featureSetId-test_scrap_learn")
         model_data = struct.UserProfileModelData.make_empty(1)
-        self.dal.save_computed_user_profile(user, struct.UserComputedProfile.make_from_scratch(feature_vector, model_data))
+        self.dal.save_computed_user_profile(user, struct.UserComputedProfile.make_from_scratch(initial_feature_vector,
+                                                                                               feature_vector, model_data))
 
 
 if __name__ == '__main__':

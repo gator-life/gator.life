@@ -82,9 +82,10 @@ def register():
 
                 # Create an empty profile for the newly created user
                 features_set = DAL.get_features(REF_FEATURE_SET)
+                initial_feature_vector = struct.FeatureVector.make_from_scratch([1] * len(features_set), REF_FEATURE_SET)
                 feature_vector = struct.FeatureVector.make_from_scratch([1] * len(features_set), REF_FEATURE_SET)
                 model_data = struct.UserProfileModelData.make_empty(len(features_set))
-                profile = struct.UserComputedProfile.make_from_scratch(feature_vector, model_data)
+                profile = struct.UserComputedProfile.make_from_scratch(initial_feature_vector, feature_vector, model_data)
 
                 DAL.save_computed_user_profiles([(user, profile)])
                 set_connected_user(user)
