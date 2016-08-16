@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import math
 from common.datehelper import utcnow
 from learner.userprofiler import UserProfiler, ActionOnDoc
 import server.frontendstructs as struct
@@ -10,11 +9,11 @@ from server.dal import Dal
 DAL = Dal()
 
 
-def update_profiles_in_database(user_profiler=UserProfiler()):
+def update_profiles_in_database():
     """
     This method update profile in database of all users from their new actions since last model update
     """
-    _update_profiles_in_database(DAL.get_all_users(), user_profiler, utcnow())
+    _update_profiles_in_database(DAL.get_all_users(), UserProfiler(), utcnow())
 
 
 def _update_profiles_in_database(users, profiler, now):
@@ -44,28 +43,8 @@ def _compute_new_user_profile(profiler, old_profile, user_actions, now):
     actions_profiler_format = (_to_action_in_profiler_format(action) for action in new_actions)
     new_profile = profiler.compute_user_profile(old_profile.model_data, old_profile.datetime, actions_profiler_format, now)
     feature_set_id = old_profile.feature_vector.feature_set_id
-    new_feature_vector = _compute_new_feature_vector(feature_set_id, old_profile.initial_feature_vector.vector,
-                                                     new_profile.feedback_vector)
-    return struct.UserComputedProfile.make_from_scratch(old_profile.initial_feature_vector, new_feature_vector,
-                                                        new_profile.model_data)
-
-
-def _compute_new_feature_vector(feature_set_id, initial_feature_vector, feedback_vector):
-    initial_feature_vec_norm = _compute_vector_norm(initial_feature_vector)
-    if initial_feature_vec_norm == 0:
-        initial_feature_vec_norm = 1
-    feedback_vec_norm = _compute_vector_norm(feedback_vector)
-    if feedback_vec_norm == 0:
-        feedback_vec_norm = 1
-
-    new_feature_vec = [(x / initial_feature_vec_norm + y / feedback_vec_norm) / 2
-                       for (x, y) in zip(initial_feature_vector, feedback_vector)]
-
-    return struct.FeatureVector.make_from_scratch(new_feature_vec, feature_set_id)
-
-
-def _compute_vector_norm(vector):
-    return math.sqrt(sum([x*x for x in vector]))
+    new_feature_vector = struct.FeatureVector.make_from_scratch(new_profile.feedback_vector, feature_set_id)
+    return struct.UserComputedProfile.make_from_scratch(new_feature_vector, new_profile.model_data)
 
 
 def _to_action_in_profiler_format(action):

@@ -24,10 +24,14 @@ class UserProfilerTests(unittest.TestCase):
             ActionOnDoc(doc_date2, [2.0, 1.0], UserActionTypeOnDoc.view_link),
         ]
 
-        init_model_data = UserProfileModelData.make_empty(2)
+        explicit_feedback_vec = [0.5, 2.0]
+        init_model_data = UserProfileModelData.make_from_scratch(explicit_feedback_vec, [0.0, 0.0], [0.0, 0.0], 0.0, 0.0)
         new_profile = profiler.compute_user_profile(init_model_data, previous_date, actions, new_date)
 
-        # --------1) test that profile computed from scratch gives the expected feature_vector
+        # Explicit feedback vector should not change
+        self.assertEquals(new_profile.model_data.explicit_feedback_vector, init_model_data.explicit_feedback_vector)
+
+        # --------1) test that profile computed from scratch gives the expected feature_vector angle
         # expected vector =
         # +pos_coeff*(up_doc*up_coeff/4 + click_doc*click_coeff/2)/(up_coeff/4+click_coeff/2)
         # -neg_coeff*(down_doc*down_coeff/4+view_doc*view_coeff/2)/(down_coeff/4+view_coeff/2)
@@ -35,9 +39,13 @@ class UserProfilerTests(unittest.TestCase):
         neg_factor = 0.2 / (10.0 / 4.0 + 1. / 2)
         pos_vec = [5. / 4 + 1. / 2, 5. / 4]
         neg_vec = [2. / 2, 10. / 4 + 1. / 2]
+        diff_pos_neg_vec = [pos_factor * pos_val - neg_factor * neg_val for pos_val, neg_val in zip(pos_vec, neg_vec)]
 
-        expected_vec = [pos_factor * pos_val - neg_factor * neg_val for pos_val, neg_val in zip(pos_vec, neg_vec)]
-        self.assert_list_almost_equals(expected_vec, new_profile.feedback_vector, places=3)
+        # The new feedback vector should be at the average angle of position-negative vector and the explicit feedback vector
+        expected_angle = (np.arctan2(explicit_feedback_vec[1], explicit_feedback_vec[0]) +
+                          np.arctan2(diff_pos_neg_vec[1], diff_pos_neg_vec[0])) / 2
+        new_angle = np.arctan2(new_profile.feedback_vector[1], new_profile.feedback_vector[0])
+        self.assertAlmostEquals(expected_angle, new_angle, 3)
 
         # --------2) test the streaming process: the status (feature_vector and intermediate variables) should not
         #            change depending on the intermediate steps of computation
@@ -57,7 +65,7 @@ class UserProfilerTests(unittest.TestCase):
         profiler = UserProfiler()
         pos_elt = _ElementProfile(np.asarray([3.0, 3.0]), 0)
         neg_elt = _ElementProfile(np.asarray([5.0, 1.0]), 1)
-        vector = profiler._compute_global_feedback_vector(neg_elt, pos_elt)
+        vector = profiler._compute_global_feedback_vector(np.asarray([0.0, 0.0]), neg_elt, pos_elt)
         self.assertEqual(5.0, vector[0] / vector[1])  # 'slope' of negative vector should be kept
 
     def test_compute_global_feedback_vector_with_no_negative_feedback_only_use_positive(self):
@@ -65,7 +73,7 @@ class UserProfilerTests(unittest.TestCase):
         profiler = UserProfiler()
         neg_elt = _ElementProfile(np.asarray([3.0, 3.0]), 0)
         pos_elt = _ElementProfile(np.asarray([5.0, 1.0]), 1)
-        vector = profiler._compute_global_feedback_vector(neg_elt, pos_elt)
+        vector = profiler._compute_global_feedback_vector(np.asarray([0.0, 0.0]), neg_elt, pos_elt)
         self.assertEqual(5.0, vector[0] / vector[1])
 
     def assert_profile_equals(self, expected, result):
@@ -75,6 +83,7 @@ class UserProfilerTests(unittest.TestCase):
     def assert_model_data_equals(self, expected, result):
         self.assertAlmostEquals(expected.positive_feedback_sum_coeff, result.positive_feedback_sum_coeff)
         self.assertAlmostEquals(expected.negative_feedback_sum_coeff, result.negative_feedback_sum_coeff)
+        self.assert_list_almost_equals(expected.explicit_feedback_vector, result.explicit_feedback_vector)
         self.assert_list_almost_equals(expected.positive_feedback_vector, result.positive_feedback_vector)
         self.assert_list_almost_equals(expected.negative_feedback_vector, result.negative_feedback_vector)
 

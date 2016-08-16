@@ -103,21 +103,19 @@ class UserComputedProfile(object):
     Represent the information about the user profile:
     """
     @staticmethod
-    def make_from_scratch(initial_feature_vector, feature_vector, model_data):
-        return UserComputedProfile(initial_feature_vector, feature_vector, model_data, datetime=None)
+    def make_from_scratch(feature_vector, model_data):
+        return UserComputedProfile(feature_vector, model_data, datetime=None)
 
     @staticmethod
-    def make_from_db(initial_feature_vector, feature_vector, model_data, datetime):
-        return UserComputedProfile(initial_feature_vector, feature_vector, model_data, datetime)
+    def make_from_db(feature_vector, model_data, datetime):
+        return UserComputedProfile(feature_vector, model_data, datetime)
 
-    def __init__(self, initial_feature_vector, feature_vector, model_data, datetime):
+    def __init__(self, feature_vector, model_data, datetime):
         """
-        :param initial_feature_vector: FeatureVector, associated to the user interests
         :param feature_vector: FeatureVector, to compute interests of the user for a document in a VSM (Vector Space Model)
         :param model_data: UserProfileModelData, intermediate data to compute this vector at each learning step in profiler
         :param datetime: datetime when the vector has been computed
         """
-        self.initial_feature_vector = initial_feature_vector
         self.feature_vector = feature_vector
         self.model_data = model_data
         self.datetime = datetime
@@ -127,25 +125,31 @@ class UserProfileModelData(object):
 
     @staticmethod
     def make_empty(size_vector):
-        return UserProfileModelData.make_from_scratch([0] * size_vector, [0] * size_vector, 0.0, 0.0)
+        return UserProfileModelData.make_from_scratch([0] * size_vector, [0] * size_vector, [0] * size_vector, 0.0, 0.0)
 
     @staticmethod
-    def make_from_scratch(
-            positive_feedback_vector, negative_feedback_vector, positive_feedback_sum_coeff, negative_feedback_sum_coeff):
-        return UserProfileModelData(
-            positive_feedback_vector, negative_feedback_vector, positive_feedback_sum_coeff, negative_feedback_sum_coeff
-        )
+    def make_from_scratch(explicit_feedback_vector, positive_feedback_vector, negative_feedback_vector,
+                          positive_feedback_sum_coeff, negative_feedback_sum_coeff):
+        return UserProfileModelData(explicit_feedback_vector, positive_feedback_vector, negative_feedback_vector,
+                                    positive_feedback_sum_coeff, negative_feedback_sum_coeff)
 
     @staticmethod
-    def make_from_db(
-            positive_feedback_vector, negative_feedback_vector, positive_feedback_sum_coeff, negative_feedback_sum_coeff):
-        return UserProfileModelData(
-            positive_feedback_vector, negative_feedback_vector, positive_feedback_sum_coeff, negative_feedback_sum_coeff
-        )
+    def make_from_db(explicit_feedback_vector, positive_feedback_vector, negative_feedback_vector,
+                     positive_feedback_sum_coeff, negative_feedback_sum_coeff):
+        return UserProfileModelData(explicit_feedback_vector, positive_feedback_vector, negative_feedback_vector,
+                                    positive_feedback_sum_coeff, negative_feedback_sum_coeff)
 
-    def __init__(self,
+    def __init__(self, explicit_feedback_vector,
                  positive_feedback_vector, negative_feedback_vector,
                  positive_feedback_sum_coeff, negative_feedback_sum_coeff):
+        """
+        :param explicit_feedback_vector: list, the vector associated to interests of the user
+        :param positive_feedback_vector: list, the vector associated to positive actions of the user
+        :param negative_feedback_vector: list, the vector associated to negative actions of the user
+        :param positive_feedback_sum_coeff: sum of the discounted positive actions of the user
+        :param negative_feedback_sum_coeff: sum of the discounted negative actions of the user
+        """
+        self.explicit_feedback_vector = explicit_feedback_vector
         self.positive_feedback_vector = positive_feedback_vector
         self.negative_feedback_vector = negative_feedback_vector
         self.positive_feedback_sum_coeff = positive_feedback_sum_coeff
