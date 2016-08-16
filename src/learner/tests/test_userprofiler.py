@@ -76,6 +76,15 @@ class UserProfilerTests(unittest.TestCase):
         vector = profiler._compute_global_feedback_vector(np.asarray([0.0, 0.0]), neg_elt, pos_elt)
         self.assertEqual(5.0, vector[0] / vector[1])
 
+    def test_compute_global_feedback_vector_with_only_explicit_vector(self):
+        profiler = UserProfiler()
+        neg_elt = _ElementProfile(np.asarray([0.0, 0.0]), 0)
+        pos_elt = _ElementProfile(np.asarray([0.0, 0.0]), 0)
+        vector = profiler._compute_global_feedback_vector(np.asarray([1.0, 1.5]), neg_elt, pos_elt)
+        # Here again, what matters is the direction of the vector which should be the same as the the direction of explicit
+        # feedback vector
+        self.assertEqual(1.0/1.5, vector[0]/vector[1])
+
     def assert_profile_equals(self, expected, result):
         self.assert_model_data_equals(expected.model_data, result.model_data)
         self.assert_list_almost_equals(expected.feedback_vector, result.feedback_vector)
