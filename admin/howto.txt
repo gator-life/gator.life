@@ -65,3 +65,30 @@ Create it using travis GUI
 
 -For memory profiling
 guppy / heapy
+
+
+######## How to debug gcloud app deploy failure ########
+
+Reference: https://github.com/GoogleCloudPlatform/python-runtime
+
+Docker need to be installed
+
+This procedure allow to generate the docker image used by google to run our app.
+
+- To generate a Dockerfile and a .dockerignore, run the bellow command in src/server/server 
+gcloud beta app gen-config --custom
+
+- Build the docker image using
+docker build -t "whatever_you_want:whatever_you_want" .
+
+- To be able to run the image locally, two more steps are needed
+    - create a service account and generate/download a private json key from : https://console.cloud.google.com/iam-admin/serviceaccounts/project?project=gator-01
+    - put the generate json key on src/server/server
+    - open the Dockerfile and add the line "ENV GOOGLE_APPLICATION_CREDENTIALS generate_key_name.json" before "CMD gunicorn -b :$PORT main:APP"
+    - IMPORTANT: After debugging, delete the generate key (locally and on google cloud console)
+
+- Run the image
+docker run -i -t whatever_you_want:whatever_you_want
+
+- The app is then accessible at
+http://localhost:8080/
