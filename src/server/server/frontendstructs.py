@@ -125,25 +125,31 @@ class UserProfileModelData(object):
 
     @staticmethod
     def make_empty(size_vector):
-        return UserProfileModelData.make_from_scratch([0] * size_vector, [0] * size_vector, 0.0, 0.0)
+        return UserProfileModelData.make_from_scratch([0] * size_vector, [0] * size_vector, [0] * size_vector, 0.0, 0.0)
 
     @staticmethod
-    def make_from_scratch(
-            positive_feedback_vector, negative_feedback_vector, positive_feedback_sum_coeff, negative_feedback_sum_coeff):
-        return UserProfileModelData(
-            positive_feedback_vector, negative_feedback_vector, positive_feedback_sum_coeff, negative_feedback_sum_coeff
-        )
+    def make_from_scratch(explicit_feedback_vector, positive_feedback_vector, negative_feedback_vector,
+                          positive_feedback_sum_coeff, negative_feedback_sum_coeff):
+        return UserProfileModelData(explicit_feedback_vector, positive_feedback_vector, negative_feedback_vector,
+                                    positive_feedback_sum_coeff, negative_feedback_sum_coeff)
 
     @staticmethod
-    def make_from_db(
-            positive_feedback_vector, negative_feedback_vector, positive_feedback_sum_coeff, negative_feedback_sum_coeff):
-        return UserProfileModelData(
-            positive_feedback_vector, negative_feedback_vector, positive_feedback_sum_coeff, negative_feedback_sum_coeff
-        )
+    def make_from_db(explicit_feedback_vector, positive_feedback_vector, negative_feedback_vector,
+                     positive_feedback_sum_coeff, negative_feedback_sum_coeff):
+        return UserProfileModelData(explicit_feedback_vector, positive_feedback_vector, negative_feedback_vector,
+                                    positive_feedback_sum_coeff, negative_feedback_sum_coeff)
 
-    def __init__(self,
+    def __init__(self, explicit_feedback_vector,
                  positive_feedback_vector, negative_feedback_vector,
                  positive_feedback_sum_coeff, negative_feedback_sum_coeff):
+        """
+        :param explicit_feedback_vector: list, the vector associated to interests of the user
+        :param positive_feedback_vector: list, the vector associated to positive actions of the user
+        :param negative_feedback_vector: list, the vector associated to negative actions of the user
+        :param positive_feedback_sum_coeff: sum of the discounted positive actions of the user
+        :param negative_feedback_sum_coeff: sum of the discounted negative actions of the user
+        """
+        self.explicit_feedback_vector = explicit_feedback_vector
         self.positive_feedback_vector = positive_feedback_vector
         self.negative_feedback_vector = negative_feedback_vector
         self.positive_feedback_sum_coeff = positive_feedback_sum_coeff

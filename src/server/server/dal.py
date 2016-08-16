@@ -58,6 +58,7 @@ def _to_db_action_type_on_doc(user_action_on_doc_enum):
 
 def _to_user_profile_model_data(db_user_profile_model_data):
     return struct.UserProfileModelData.make_from_db(
+        db_user_profile_model_data.get('explicit_feedback_vector', []),
         db_user_profile_model_data.get('positive_feedback_vector', []),
         db_user_profile_model_data.get('negative_feedback_vector', []),
         db_user_profile_model_data['positive_feedback_sum_coeff'],
@@ -187,7 +188,7 @@ class Dal(object):
 
             user_computed_profile = struct.UserComputedProfile.make_from_scratch(
                 struct.FeatureVector.make_from_scratch([], NULL_FEATURE_SET),
-                struct.UserProfileModelData.make_from_scratch([], [], 0.0, 0.0))
+                struct.UserProfileModelData.make_from_scratch([], [], [], 0.0, 0.0))
             db_user_computed_profile = self._to_db_computed_user_profile(user_computed_profile)
             self._ds_client.put(db_user_computed_profile)
             user._user_computed_profile_db_key = db_user_computed_profile.key  # pylint: disable=protected-access
@@ -228,9 +229,10 @@ class Dal(object):
         self._ds_client.put(db_feature_set)
 
     def _to_db_user_profile_model_data(self, user_profile_model_data):
-        not_indexed = ('positive_feedback_vector', 'negative_feedback_vector',
+        not_indexed = ('explicit_feedback_vector', 'positive_feedback_vector', 'negative_feedback_vector',
                        'positive_feedback_sum_coeff', 'negative_feedback_sum_coeff')
         db_user_profile_model_data = self._make_entity(u'UserProfileModelData', not_indexed)
+        db_user_profile_model_data['explicit_feedback_vector'] = user_profile_model_data.explicit_feedback_vector
         db_user_profile_model_data['positive_feedback_vector'] = user_profile_model_data.positive_feedback_vector
         db_user_profile_model_data['negative_feedback_vector'] = user_profile_model_data.negative_feedback_vector
         db_user_profile_model_data['positive_feedback_sum_coeff'] = user_profile_model_data.positive_feedback_sum_coeff

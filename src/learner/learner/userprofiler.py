@@ -65,6 +65,7 @@ class UserProfiler(object):
                          it uses e**(-rt) because only this form allows streaming algorithm
                          (no recomputing of all actions since the beginning)
             -coefficients among positive actions set or negative actions set: to give more relevance to up vote that click...
+        The result vector of the tweaked Rocchio algorithm is then angularly averaged with the explicit feedback vector.
         :param previous_model_data: previously UserProfileModelData by the profiler
         :param previous_datetime: datetime when previous_user_profile_model_data has been computed by the profiler
         :param actions_on_docs: list of action since previous computation of UserProfile
@@ -89,17 +90,29 @@ class UserProfiler(object):
             new_date=new_datetime,
             action_to_coeff=self._action_type_to_negative_coeff
         )
-        global_vec = self._compute_global_feedback_vector(neg_elt, pos_elt)
+        global_vec = self._compute_global_feedback_vector(np.asarray(previous_model_data.explicit_feedback_vector),
+                                                          neg_elt, pos_elt)
 
-        updated_model_data = UserProfileModelData.make_from_scratch(
-            pos_elt.sum_vec.tolist(), neg_elt.sum_vec.tolist(), pos_elt.sum_coeff, neg_elt.sum_coeff)
+        updated_model_data = UserProfileModelData.make_from_scratch(previous_model_data.explicit_feedback_vector,
+                                                                    pos_elt.sum_vec.tolist(), neg_elt.sum_vec.tolist(),
+                                                                    pos_elt.sum_coeff, neg_elt.sum_coeff)
 
         return UserProfile(updated_model_data, global_vec.tolist())
 
-    def _compute_global_feedback_vector(self, neg_elt, pos_elt):
+    def _compute_global_feedback_vector(self, explicit_feedback_vec, neg_elt, pos_elt):
         weighted_normalized_pos_vec = self._positive_feedback_coeff * self._compute_normalized_vector(pos_elt)
         weighted_normalized_neg_vec = self._negative_feedback_coeff * self._compute_normalized_vector(neg_elt)
-        global_vec = weighted_normalized_pos_vec - weighted_normalized_neg_vec
+        diff_pos_neg_vec = weighted_normalized_pos_vec - weighted_normalized_neg_vec
+
+        diff_pos_neg_vec_norm = np.linalg.norm(diff_pos_neg_vec)
+        if diff_pos_neg_vec_norm == 0:
+            diff_pos_neg_vec_norm = 1
+        explicit_feedback_norm = np.linalg.norm(explicit_feedback_vec)
+        if explicit_feedback_norm == 0:
+            explicit_feedback_norm = 1
+
+        global_vec = (diff_pos_neg_vec/diff_pos_neg_vec_norm + explicit_feedback_vec/explicit_feedback_norm) / 2
+
         return global_vec
 
     @staticmethod

@@ -131,7 +131,7 @@ class DalTests(unittest.TestCase):
         result_profile = self.dal.get_user_computed_profiles([user])[0]
         expected_profile = struct.UserComputedProfile.make_from_scratch(
             feature_vector=struct.FeatureVector.make_from_scratch([], sdal.NULL_FEATURE_SET),
-            model_data=struct.UserProfileModelData.make_from_scratch([], [], 0, 0)
+            model_data=struct.UserProfileModelData.make_from_scratch([], [], [], 0, 0)
         )
 
         self._assert_profiles_equals(expected_profile, result_profile)
@@ -166,7 +166,7 @@ class DalTests(unittest.TestCase):
         feature_vector = struct.FeatureVector.make_from_scratch(
             vector=[0.5 + index, 0.6 + index], feature_set_id=feature_set_id)
         model_data = struct.UserProfileModelData.make_from_scratch(
-            [0.3 + index, 0.4], [-1.0 + index, -2.0], 5.0 + index, 9.0 + index)
+            [0.7 + index, 0.8], [0.3 + index, 0.4], [-1.0 + index, -2.0], 5.0 + index, 9.0 + index)
         profile = struct.UserComputedProfile.make_from_scratch(feature_vector, model_data)
         return user, profile
 
@@ -179,6 +179,7 @@ class DalTests(unittest.TestCase):
         self.assertEquals(expected_feature_vector.feature_set_id, result_feature_vector.feature_set_id)
 
     def _assert_model_data_equals(self, expected_model_data, result_model_data):
+        self.assertEquals(expected_model_data.explicit_feedback_vector, result_model_data.explicit_feedback_vector)
         self.assertEquals(expected_model_data.positive_feedback_vector, result_model_data.positive_feedback_vector)
         self.assertEquals(expected_model_data.negative_feedback_vector, result_model_data.negative_feedback_vector)
         self.assertEquals(expected_model_data.positive_feedback_sum_coeff, result_model_data.positive_feedback_sum_coeff)
