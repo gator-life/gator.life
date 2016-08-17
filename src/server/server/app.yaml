@@ -1,5 +1,8 @@
 runtime: python
 vm: true
+# In the last parameter passed to gunicorn,
+# - main is the module name (the associated file is thus main.py) containing the web app
+# - APP is the variable name of the web app in the module
 entrypoint: gunicorn -b :$PORT main:APP
 
 runtime_config:
