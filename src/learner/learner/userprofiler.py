@@ -1,5 +1,5 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from math import e
 import numpy as np
 from server.frontendstructs import UserActionTypeOnDoc, UserProfileModelData
@@ -23,10 +23,12 @@ class ActionOnDoc(object):
 
 
 class UserProfile(object):
+    """
+    User profile computed by profiler
+    """
 
     def __init__(self, model_data, feedback_vector):
         """
-        User profile computed by profiler
         :param model_data: UserProfileModelData, intermediate variables needed by rocchio algorithm
         to compute feedback vector at each learning step in profiler
         :param feedback_vector: [float], computed feedback vector of the user

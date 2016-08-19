@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from flask import Blueprint, render_template, redirect, session, request
 from dal import Dal, REF_FEATURE_SET  # pylint: disable=relative-import
 import frontendstructs as struct  # pylint: disable=relative-import
@@ -86,7 +88,7 @@ def register():
                 model_data = struct.UserProfileModelData.make_empty(len(features_set))
                 profile = struct.UserComputedProfile.make_from_scratch(feature_vector, model_data)
 
-                DAL.save_computed_user_profiles([(user, profile)])
+                DAL.save_user_computed_profiles([(user, profile)])
                 set_connected_user(user)
                 return redirect('/')
             else:

@@ -1,5 +1,5 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import heapq
 from scipy.spatial import distance
 import numpy as np

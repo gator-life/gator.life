@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import praw
 import urllib3.contrib.pyopenssl
 from .scraperstructs import LinkElement, OriginInfo

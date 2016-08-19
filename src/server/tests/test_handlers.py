@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import unittest
 from server.dal import REF_FEATURE_SET
 import server.frontendstructs as struct
@@ -11,7 +14,7 @@ class DalMock(object):
     def __init__(self):
         self.saved_user = None
         self.saved_password = None
-        self.computed_user_profiles = None
+        self.user_computed_profiles = None
         self.saved_user_doc_action_tuple = None
 
     def get_user(self, email):  # pylint: disable=unused-argument, no-self-use
@@ -38,8 +41,8 @@ class DalMock(object):
             return ['label1']
         return None
 
-    def save_computed_user_profiles(self, user_profile_list):
-        self.computed_user_profiles = user_profile_list
+    def save_user_computed_profiles(self, user_profile_list):
+        self.user_computed_profiles = user_profile_list
 
     def get_user_and_password(self, email):  # pylint: disable=unused-argument, no-self-use
         if email == 'mark':
@@ -120,7 +123,7 @@ class HandlersTests(unittest.TestCase):
         response = self.app.post('/register', data=post_data, follow_redirects=True)
         self.assertEquals('elon', self.dal.saved_user.email)
         self.assertEquals(['rockets', 'cars'], self.dal.saved_user.interests)
-        self.assertEquals(1, len(self.dal.computed_user_profiles))
+        self.assertEquals(1, len(self.dal.user_computed_profiles))
         self.assertEquals(pswd.hash_password('elon'), self.dal.saved_password)
         self._assert_is_home_elon(response)
 
