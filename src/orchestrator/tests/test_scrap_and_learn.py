@@ -1,4 +1,5 @@
-# coding=utf-8
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import unittest
 from orchestrator.scrap_and_learn import scrap_and_learn
@@ -115,7 +116,7 @@ class ScrapAndLearnTests(unittest.TestCase):
     def _save_dummy_profile_for_user(self, user):
         feature_vector = struct.FeatureVector.make_from_scratch([1.0], "featureSetId-test_scrap_learn")
         model_data = struct.UserProfileModelData.make_empty(1)
-        self.dal.save_computed_user_profile(user, struct.UserComputedProfile.make_from_scratch(feature_vector, model_data))
+        self.dal.save_user_computed_profile(user, struct.UserComputedProfile.make_from_scratch(feature_vector, model_data))
 
 if __name__ == '__main__':
     unittest.main()

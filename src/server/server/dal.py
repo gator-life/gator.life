@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 DAL (Data Access Layer) module
 abstract database scheme and datastore API to communicate with the rest of the packages
@@ -71,7 +72,7 @@ def _to_user(db_user):
         db_key=db_user.key,
         email=db_user['email'],
         interests=db_user.get('interests', []),
-        user_doc_set_db_key=db_user['user_document_set_key'],
+        user_doc_set_db_key=db_user['user_doc_set_key'],
         user_computed_profile_db_key=db_user['user_computed_profile_key'])
 
 
@@ -189,7 +190,7 @@ class Dal(object):
             user_computed_profile = struct.UserComputedProfile.make_from_scratch(
                 struct.FeatureVector.make_from_scratch([], NULL_FEATURE_SET),
                 struct.UserProfileModelData.make_from_scratch([], [], [], 0.0, 0.0))
-            db_user_computed_profile = self._to_db_computed_user_profile(user_computed_profile)
+            db_user_computed_profile = self._to_db_user_computed_profile(user_computed_profile)
             self._ds_client.put(db_user_computed_profile)
             user._user_computed_profile_db_key = db_user_computed_profile.key  # pylint: disable=protected-access
 
@@ -198,12 +199,12 @@ class Dal(object):
         user._db_key = db_user.key  # pylint: disable=protected-access
 
     def _to_db_user(self, user, password):
-        not_indexed = ('password', 'interests', 'user_document_set_key', 'user_computed_profile_key')
+        not_indexed = ('password', 'interests', 'user_doc_set_key', 'user_computed_profile_key')
         db_user = self._make_named_entity('User', user.email, not_indexed)
         db_user['email'] = user.email
         db_user['password'] = password
         db_user['interests'] = user.interests
-        db_user['user_document_set_key'] = user._user_doc_set_db_key  # pylint: disable=protected-access
+        db_user['user_doc_set_key'] = user._user_doc_set_db_key  # pylint: disable=protected-access
         db_user['user_computed_profile_key'] = user._user_computed_profile_db_key  # pylint: disable=protected-access
         return db_user
 
@@ -240,13 +241,13 @@ class Dal(object):
 
         return db_user_profile_model_data
 
-    def _to_db_computed_user_profile(self, user_computed_profile):
+    def _to_db_user_computed_profile(self, user_computed_profile):
         not_indexed = ('feature_vector', 'model_data', 'datetime')
-        db_computed_user_profile = self._make_entity(u'UserComputedProfile', not_indexed)
-        db_computed_user_profile['feature_vector'] = self._to_db_feature_vector(user_computed_profile.feature_vector)
-        db_computed_user_profile['model_data'] = self._to_db_user_profile_model_data(user_computed_profile.model_data)
-        db_computed_user_profile['datetime'] = datetime.datetime.utcnow()
-        return db_computed_user_profile
+        db_user_computed_profile = self._make_entity(u'UserComputedProfile', not_indexed)
+        db_user_computed_profile['feature_vector'] = self._to_db_feature_vector(user_computed_profile.feature_vector)
+        db_user_computed_profile['model_data'] = self._to_db_user_profile_model_data(user_computed_profile.model_data)
+        db_user_computed_profile['datetime'] = datetime.datetime.utcnow()
+        return db_user_computed_profile
 
     def _to_db_feature_vector(self, feature_vector):
         db_feature_vector = self._make_entity(u'FeatureVector', not_indexed=('vector',))
@@ -254,16 +255,16 @@ class Dal(object):
         db_feature_vector['vector'] = feature_vector.vector
         return db_feature_vector
 
-    def save_computed_user_profile(self, user, user_computed_profile):
-        self.save_computed_user_profiles([(user, user_computed_profile)])
+    def save_user_computed_profile(self, user, user_computed_profile):
+        self.save_user_computed_profiles([(user, user_computed_profile)])
 
-    def save_computed_user_profiles(self, user_profile_list):
+    def save_user_computed_profiles(self, user_profile_list):
         """
         :param user_profile_list: list of tuples (struct.User, struct.UserComputedProfile)
         """
         db_profiles = []
-        for user, computed_user_profile in user_profile_list:
-            db_profile = self._to_db_computed_user_profile(computed_user_profile)
+        for user, user_computed_profile in user_profile_list:
+            db_profile = self._to_db_user_computed_profile(user_computed_profile)
             # by setting as key the key previously referenced by the user, we will overwrite the previous profile in db
             db_profile.key = user._user_computed_profile_db_key  # pylint: disable=protected-access
             db_profiles.append(db_profile)

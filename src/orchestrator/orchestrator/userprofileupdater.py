@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from common.datehelper import utcnow
@@ -20,7 +19,7 @@ def _update_profiles_in_database(users, profiler, now):
     old_profiles = DAL.get_user_computed_profiles(users)
     actions_by_user = _get_new_actions(users, old_profiles)
     new_profiles = _build_updated_profiles(profiler, zip(old_profiles, actions_by_user), now)
-    DAL.save_computed_user_profiles(zip(users, new_profiles))
+    DAL.save_user_computed_profiles(zip(users, new_profiles))
 
 
 def _get_new_actions(users, old_profiles):

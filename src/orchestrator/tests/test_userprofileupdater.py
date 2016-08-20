@@ -22,13 +22,13 @@ class UserProfileBuilderTests(unittest.TestCase):
         self.dal.save_documents([doc])
 
         profile1 = self._build_profile(feature_set_id)
-        self.dal.save_computed_user_profile(user1, profile1)
+        self.dal.save_user_computed_profile(user1, profile1)
 
         self.dal.save_user_action_on_doc(user1, doc, struct.UserActionTypeOnDoc.up_vote)  # should be used because after save
         self.dal.save_user_action_on_doc(user2, doc, struct.UserActionTypeOnDoc.up_vote)  # should not be used
 
         profile2 = self._build_profile(feature_set_id)
-        self.dal.save_computed_user_profile(user2, profile2)
+        self.dal.save_user_computed_profile(user2, profile2)
 
         # identical action
         self.dal.save_user_action_on_doc(user1, doc, struct.UserActionTypeOnDoc.down_vote)

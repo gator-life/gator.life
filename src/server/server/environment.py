@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 
 GCLOUD_PROJECT = 'gator-01'

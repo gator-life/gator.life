@@ -1,4 +1,6 @@
-# coding=utf-8
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import unittest
 import itertools
 import server.dal as sdal
@@ -83,7 +85,7 @@ class DalTests(unittest.TestCase):
             struct.UserDocument.make_from_scratch(doc1, 0.1),
             struct.UserDocument.make_from_scratch(doc2, 0.2)]
 
-        # create user and save it to init user_document_set_key field
+        # create user and save it to init user_doc_set_key field
         user = struct.User.make_from_scratch("test_save_then_get_user_docs_should_be_equals", ["interests1"])
         self.dal.save_user(user, "password1")
 
@@ -114,20 +116,20 @@ class DalTests(unittest.TestCase):
             self.assertEquals(expected_doc.summary, result_doc.summary)
             self.assertEquals(expected_doc.feature_vector.vector[0], result_doc.feature_vector.vector[0])
 
-    def test_save_then_get_computed_user_profiles(self):
+    def test_save_then_get_user_computed_profiles(self):
         user1, profile1 = self._build_profile(1)
         user2, profile2 = self._build_profile(2)
 
-        self.dal.save_computed_user_profiles([(user1, profile1), (user2, profile2)])
+        self.dal.save_user_computed_profiles([(user1, profile1), (user2, profile2)])
         result_profiles = self.dal.get_user_computed_profiles([user2, user1])
         self.assertEquals(2, len(result_profiles))
         self._assert_profiles_equals(profile1, result_profiles[1])
         self._assert_profiles_equals(profile2, result_profiles[0])
 
-    def test_get_empty_computed_user_profile(self):
+    def test_get_empty_user_computed_profile(self):
         user = struct.User.make_from_scratch(
-            email='test_get_empty_computed_user_profiles', interests=[])
-        self.dal.save_user(user, 'test_get_empty_computed_user_profiles_password')
+            email='test_get_empty_user_computed_profiles', interests=[])
+        self.dal.save_user(user, 'test_get_empty_user_computed_profiles_password')
         result_profile = self.dal.get_user_computed_profiles([user])[0]
         expected_profile = struct.UserComputedProfile.make_from_scratch(
             feature_vector=struct.FeatureVector.make_from_scratch([], sdal.NULL_FEATURE_SET),
@@ -136,16 +138,16 @@ class DalTests(unittest.TestCase):
 
         self._assert_profiles_equals(expected_profile, result_profile)
 
-    def test_save_computed_user_profile(self):
+    def test_save_user_computed_profile(self):
         user, profile = self._build_profile(3)
-        self.dal.save_computed_user_profile(user, profile)
+        self.dal.save_user_computed_profile(user, profile)
         result_profile = self.dal.get_user_computed_profiles([user])[0]
         self._assert_profiles_equals(profile, result_profile)
 
     def test_get_users_feature_vectors(self):
         user1, profile1 = self._build_profile(4)
         user2, profile2 = self._build_profile(5)
-        self.dal.save_computed_user_profiles([(user1, profile1), (user2, profile2)])
+        self.dal.save_user_computed_profiles([(user1, profile1), (user2, profile2)])
 
         vectors = self.dal.get_users_feature_vectors([user2, user1])
 
@@ -155,7 +157,7 @@ class DalTests(unittest.TestCase):
 
     def test_get_user_feature_vector(self):
         user, profile = self._build_profile(6)
-        self.dal.save_computed_user_profiles([(user, profile)])
+        self.dal.save_user_computed_profiles([(user, profile)])
         vector = self.dal.get_user_feature_vector(user)
         self._assert_feature_vector_equals(profile.feature_vector, vector)
 
@@ -191,7 +193,7 @@ class DalTests(unittest.TestCase):
         doc2 = self.make_dummy_doc('test_save_then_get_users_docs_should_be_equals2')
         self.dal.save_documents([doc1, doc2])
 
-        # create user and save it to init user_document_set_key field
+        # create user and save it to init user_doc_set_key field
         user1 = struct.User.make_from_scratch("test_get_users_docs1", ["interests1"])
         user2 = struct.User.make_from_scratch("test_get_users_docs2", ["interests2"])
         self.dal.save_user(user1, "password1")
