@@ -7,7 +7,8 @@ from flask import Flask
 from environment import IS_TEST_ENV  # pylint: disable=relative-import
 from handlers import handlers  # pylint: disable=relative-import
 
-
+# As this variable is referenced by gunicorn in entrypoint section of app.yaml file, if changed, the gunicorn command must
+# be updated accordingly
 APP = Flask(__name__)
 APP.register_blueprint(handlers)
 APP.secret_key = 'maybe_we_should_generate_a_random_key'
