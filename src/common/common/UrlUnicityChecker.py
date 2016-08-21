@@ -19,7 +19,7 @@ class UrlUnicityChecker(object):
         """
         prev_len = len(self._hashed_urls)
 
-        hashed_url = hashlib.md5(url).hexdigest()
+        hashed_url = hashlib.md5(url.encode()).hexdigest()
         self._hashed_urls.add(hashed_url)
 
         new_len = len(self._hashed_urls)
