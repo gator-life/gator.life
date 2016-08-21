@@ -42,8 +42,8 @@ class ScraperTests(unittest.TestCase):
             # the 'é' char is a special character and count for 2 char when doing len(string). We don't want to do
             # complex decoding just for this rough size check so we let it count for 2
             # ie: we let é*499000 to pass and é*500000 to fail
-            utf8_size = str_size / 2
-            long_string = u"é" * utf8_size  # more than 1M char, 'é' to force guessed_encoding to utf-8 (else it gives ASCII)
+            utf8_size = int(str_size / 2)
+            long_string = "é" * utf8_size  # more than 1M char, 'é' to force guessed_encoding to utf-8 (else it gives ASCII)
             html_doc = """
     <!DOCTYPE html>
     <html lang="en">
@@ -52,11 +52,11 @@ class ScraperTests(unittest.TestCase):
         <title>title</title>
       </head>
       <body>
-        <!""" + long_string.encode('utf-8') + """/>
+        <!""" + long_string + """/>
       </body>
     </html>
     """
-            return html_doc
+            return html_doc.encode()
 
         ok_html_doc = get_valid_html_utf8_str(999000)  # take 1k margin because there is the html around
         too_long_html_doc = get_valid_html_utf8_str(1000000)
@@ -80,8 +80,6 @@ class ScraperTests(unittest.TestCase):
         self.assertIsNone(html_extractor.try_get_html(too_long_doc_url))
 
     def test_get_doc_generator_return_docs_correctly_serializable_as_json(self):
-        logging.disable('WARNING')  # this test raise logged exceptions, we disable it to not pollute console output
-
         chinese = 'http://www.sina.com.cn/'
         jpg = 'https://scontent-dfw1-1.xx.fbcdn.net/hphotos-xat1/v/t1.0-9/11826008_10153591159909124_7497239512955988899_n.jpg?oh=026fe9cdf68e281f693c56f68f02a88b&oe=565454EE'  # pylint: disable=line-too-long
         pdf = 'http://www.math.stonybrook.edu/theses/thesis06-1/part1.pdf'
@@ -115,18 +113,17 @@ class ScraperTests(unittest.TestCase):
         json_docs = [jsonpickle.encode(d) for d in docs]
         decoded_docs = [jsonpickle.decode(d) for d in json_docs]
 
-        self.assertEquals(5, len(json_docs))
+        self.assertEqual(5, len(json_docs))
         for doc in decoded_docs:
             self.assertIsInstance(doc, Document)
             html_content = doc.html_content
-            self.assertIsInstance(html_content, unicode)
+            self.assertIsInstance(html_content, str)
 
-        self.assertTrue(u'Cimetière profané' in decoded_docs[0].html_content)
-        self.assertTrue(u'которого власти Китая' in decoded_docs[1].html_content)
-        self.assertTrue(u'Say goodbye to the weirdest' in decoded_docs[2].html_content)
-        self.assertTrue(u'A former Florida church worker is accused' in decoded_docs[3].html_content)
-        self.assertTrue(u'From bloodsucking cars to' in decoded_docs[4].html_content)
-
+        self.assertTrue('Cimetière profané' in decoded_docs[0].html_content)
+        self.assertTrue('которого власти Китая' in decoded_docs[1].html_content)
+        self.assertTrue('Say goodbye to the weirdest' in decoded_docs[2].html_content)
+        self.assertTrue('A former Florida church worker is accused' in decoded_docs[3].html_content)
+        self.assertTrue('From bloodsucking cars to' in decoded_docs[4].html_content)
 
 if __name__ == '__main__':
     unittest.main()
