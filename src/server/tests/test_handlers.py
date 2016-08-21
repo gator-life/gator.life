@@ -86,7 +86,7 @@ class HandlersTests(unittest.TestCase):
     def test_login_post_invalid_redirect_login(self):
         response = self.app.post('/login', data=dict(email='mark', password='JoIsNoOne'), follow_redirects=True)
         self._assert_is_login(response)
-        self.assertTrue('Unknown email or invalid password' in response.data)
+        self.assertTrue('Unknown email or invalid password' in response.data.decode())
 
     def test_disconnect_disconnect_and_redirect_login(self):
         self._login()
@@ -116,15 +116,15 @@ class HandlersTests(unittest.TestCase):
     def test_register_post_with_existing_email(self):
         response = self.app.post('/register', data=dict(email='mark', password='', interests=''), follow_redirects=True)
         self._assert_is_register(response)
-        self.assertTrue('This account already exists' in response.data)
+        self.assertTrue('This account already exists' in response.data.decode())
 
     def test_register_post_with_new_email_save_profile_redirect_homepage(self):
         post_data = dict(email='elon', password='elon', interests='rockets\r\ncars')
         response = self.app.post('/register', data=post_data, follow_redirects=True)
-        self.assertEquals('elon', self.dal.saved_user.email)
-        self.assertEquals(['rockets', 'cars'], self.dal.saved_user.interests)
-        self.assertEquals(1, len(self.dal.user_computed_profiles))
-        self.assertEquals(pswd.hash_password('elon'), self.dal.saved_password)
+        self.assertEqual('elon', self.dal.saved_user.email)
+        self.assertEqual(['rockets', 'cars'], self.dal.saved_user.interests)
+        self.assertEqual(1, len(self.dal.user_computed_profiles))
+        self.assertEqual(pswd.hash_password('elon'), self.dal.saved_password)
         self._assert_is_home_elon(response)
 
     def test_link_with_user_not_connected_redirect_login(self):
@@ -135,9 +135,9 @@ class HandlersTests(unittest.TestCase):
         self._login()
         response = self.app.get('/link/3/url_safe_key', follow_redirects=False)
         action = self.dal.saved_user_doc_action_tuple[2]
-        self.assertEquals(struct.UserActionTypeOnDoc.click_link, action)
-        self.assertTrue('redirected' in response.data)
-        self.assertTrue('url3' in response.data)
+        self.assertEqual(struct.UserActionTypeOnDoc.click_link, action)
+        self.assertTrue('redirected' in response.data.decode())
+        self.assertTrue('url3' in response.data.decode())
 
     def test_link_with_down_vote_link_save_action_stay_home(self):
         self._login()
@@ -147,9 +147,9 @@ class HandlersTests(unittest.TestCase):
         doc = self.dal.saved_user_doc_action_tuple[1]
         action = self.dal.saved_user_doc_action_tuple[2]
 
-        self.assertEquals('mark', user.email)
-        self.assertEquals('title3', doc.title)
-        self.assertEquals(struct.UserActionTypeOnDoc.down_vote, action)
+        self.assertEqual('mark', user.email)
+        self.assertEqual('title3', doc.title)
+        self.assertEqual(struct.UserActionTypeOnDoc.down_vote, action)
         self._assert_is_home(response)
 
     def _login(self):
@@ -157,26 +157,26 @@ class HandlersTests(unittest.TestCase):
             session['email'] = 'mark'
 
     def _assert_is_register(self, response):
-        self.assertEquals(200, response.status_code)
-        self.assertTrue('Register' in response.data)
-        self.assertTrue('interests' in response.data)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue('Register' in response.data.decode())
+        self.assertTrue('interests' in response.data.decode())
 
     def _assert_is_home_elon(self, response):
-        self.assertEquals(200, response.status_code)
-        self.assertTrue('elon' in response.data)
-        self.assertTrue('rocket' in response.data)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue('elon' in response.data.decode())
+        self.assertTrue('rocket' in response.data.decode())
 
     def _assert_is_home(self, response):
-        self.assertEquals(200, response.status_code)
-        self.assertTrue('mark' in response.data)
-        self.assertTrue('title1' in response.data)
-        self.assertTrue('title2' in response.data)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue('mark' in response.data.decode())
+        self.assertTrue('title1' in response.data.decode())
+        self.assertTrue('title2' in response.data.decode())
 
     def _assert_is_login(self, response):
-        self.assertEquals(200, response.status_code)
-        self.assertTrue('Login' in response.data)
-        self.assertTrue('email' in response.data)
-        self.assertTrue('password' in response.data)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue('Login' in response.data.decode())
+        self.assertTrue('email' in response.data.decode())
+        self.assertTrue('password' in response.data.decode())
 
 if __name__ == '__main__':
     unittest.main()
