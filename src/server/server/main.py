@@ -4,8 +4,8 @@
 import os
 
 from flask import Flask
-from environment import IS_TEST_ENV  # pylint: disable=relative-import
-from handlers import handlers  # pylint: disable=relative-import
+from .environment import IS_TEST_ENV
+from .handlers import handlers
 
 # As this variable is referenced by gunicorn in entrypoint section of app.yaml file, if changed, the gunicorn command must
 # be updated accordingly

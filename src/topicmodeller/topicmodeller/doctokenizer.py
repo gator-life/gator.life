@@ -8,7 +8,7 @@ from boilerpipe.extract import Extractor
 
 # Extract a readable document from HTML
 def _readable_document(html_document):
-    extractor = Extractor(extractor=u'ArticleExtractor', html=html_document)
+    extractor = Extractor(extractor='ArticleExtractor', html=html_document)
     text = extractor.getText()
     return text
 

@@ -32,7 +32,7 @@ class UserProfilerTests(unittest.TestCase):
         new_profile = profiler.compute_user_profile(init_model_data, previous_date, actions, new_date)
 
         # Explicit feedback vector should not change
-        self.assertEquals(new_profile.model_data.explicit_feedback_vector, init_model_data.explicit_feedback_vector)
+        self.assertEqual(new_profile.model_data.explicit_feedback_vector, init_model_data.explicit_feedback_vector)
 
         # --------1) test that profile computed from scratch gives the expected feature_vector angle
         # expected vector =
@@ -48,7 +48,7 @@ class UserProfilerTests(unittest.TestCase):
         expected_angle = (np.arctan2(explicit_feedback_vec[1], explicit_feedback_vec[0]) +
                           np.arctan2(diff_pos_neg_vec[1], diff_pos_neg_vec[0])) / 2
         new_angle = np.arctan2(new_profile.feedback_vector[1], new_profile.feedback_vector[0])
-        self.assertAlmostEquals(expected_angle, new_angle, 3)
+        self.assertAlmostEqual(expected_angle, new_angle, 3)
 
         # --------2) test the streaming process: the status (feature_vector and intermediate variables) should not
         #            change depending on the intermediate steps of computation
@@ -86,24 +86,24 @@ class UserProfilerTests(unittest.TestCase):
         vector = profiler._compute_global_feedback_vector(np.asarray([1.0, 1.5]), neg_elt, pos_elt)
         # Here again, what matters is the direction of the vector which should be the same as the the direction of explicit
         # feedback vector
-        self.assertEqual(1.0/1.5, vector[0]/vector[1])
+        self.assertEqual(1.0 / 1.5, vector[0] / vector[1])
 
     def assert_profile_equals(self, expected, result):
         self.assert_model_data_equals(expected.model_data, result.model_data)
         self.assert_list_almost_equals(expected.feedback_vector, result.feedback_vector)
 
     def assert_model_data_equals(self, expected, result):
-        self.assertAlmostEquals(expected.positive_feedback_sum_coeff, result.positive_feedback_sum_coeff)
-        self.assertAlmostEquals(expected.negative_feedback_sum_coeff, result.negative_feedback_sum_coeff)
+        self.assertAlmostEqual(expected.positive_feedback_sum_coeff, result.positive_feedback_sum_coeff)
+        self.assertAlmostEqual(expected.negative_feedback_sum_coeff, result.negative_feedback_sum_coeff)
         self.assert_list_almost_equals(expected.explicit_feedback_vector, result.explicit_feedback_vector)
         self.assert_list_almost_equals(expected.positive_feedback_vector, result.positive_feedback_vector)
         self.assert_list_almost_equals(expected.negative_feedback_vector, result.negative_feedback_vector)
 
     def assert_list_almost_equals(self, expected, result, places=7):
-        self.assertEquals(type(result), type([]))  # check result is a standard python list
-        self.assertEquals(len(expected), len(result))
+        self.assertEqual(type(result), type([]))  # check result is a standard python list
+        self.assertEqual(len(expected), len(result))
         for exp, res in zip(expected, result):
-            self.assertAlmostEquals(exp, res, places)
+            self.assertAlmostEqual(exp, res, places)
 
 
 if __name__ == '__main__':

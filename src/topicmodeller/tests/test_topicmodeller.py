@@ -16,8 +16,8 @@ class TopicModellerTests(unittest.TestCase):
             return [word for word in text.split() if word != 'is']
 
     def test_initialize_classify_save_load_classify_is_ok(self):
-        doc1 = u'I like orange, i really love orange orange is my favorite color, green sucks'
-        doc2 = u'Green is cool, green is nice, green is swag, orange not so much'
+        doc1 = 'I like orange, i really love orange orange is my favorite color, green sucks'
+        doc2 = 'Green is cool, green is nice, green is swag, orange not so much'
         docs = [doc1, doc2]
 
         topic_modeller = TopicModeller(self.MockTokenizer())
@@ -25,24 +25,24 @@ class TopicModellerTests(unittest.TestCase):
         topic_modeller.initialize(docs, num_topics=2)
 
         # check number of topics is expected
-        self.assertEquals(2, len(topic_modeller.topics))
+        self.assertEqual(2, len(topic_modeller.topics))
 
         # check most recurrent words are selected topics (green, orange)
         index_orange = -1
         index_green = -1
         for index, topic in topic_modeller.topics:
-            if topic[0] == u'orange':
+            if topic[0] == 'orange':
                 index_orange = index
-            if topic[0] == u'green':
+            if topic[0] == 'green':
                 index_green = index
-        self.assertNotEquals(-1, index_orange)
-        self.assertNotEquals(-1, index_green)
+        self.assertNotEqual(-1, index_orange)
+        self.assertNotEqual(-1, index_green)
 
         # check classification is logical between doc1 and doc2 with two axes:
         # -same doc, different topic
         # -same topic, different docs
         classification_after_init_doc1 = topic_modeller.classify(doc1)
-        self.assertEquals(len(topic_modeller.topics), len(classification_after_init_doc1))
+        self.assertEqual(len(topic_modeller.topics), len(classification_after_init_doc1))
         classification_after_init_doc2 = topic_modeller.classify(doc2)
         self.assertTrue(classification_after_init_doc1[index_orange] > classification_after_init_doc1[index_green])
         self.assertTrue(classification_after_init_doc2[index_orange] < classification_after_init_doc2[index_green])
@@ -57,7 +57,7 @@ class TopicModellerTests(unittest.TestCase):
         deserialized_topic_modeller.load(directory)
 
         classification_after_load_doc1 = deserialized_topic_modeller.classify(doc1)
-        self.assertEquals(len(topic_modeller.topics), len(classification_after_load_doc1))
+        self.assertEqual(len(topic_modeller.topics), len(classification_after_load_doc1))
         for after_init, after_load in zip(classification_after_init_doc1, classification_after_load_doc1):
             self.assertAlmostEqual(after_init, after_load, places=4)
 

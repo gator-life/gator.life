@@ -18,7 +18,7 @@ def run():
 
     log_file = folder + 'run_scraper-' + str(datetime.datetime.utcnow()) + '.log'
 
-    logging.basicConfig(format=u'%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO, filename=log_file)
+    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO, filename=log_file)
 
     while True:
         try:

@@ -7,7 +7,7 @@ from topicmodeller.topicmodeller import TopicModeller
 from orchestrator.initialize_topicmodeller import initialize_topicmodeller_and_db, initialize_db
 
 
-logging.basicConfig(format=u'%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO,
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO,
                     filename='initialize_model.log')
 
 

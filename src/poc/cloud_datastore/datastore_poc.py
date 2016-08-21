@@ -19,13 +19,13 @@ def main():  # pylint: disable=too-many-statements
     client.put(toy)
 
     # If we look it up by its key, we should find it...
-    print client.get(toy.key)
+    print(client.get(toy.key))
 
     # And we should be able to delete it...
     client.delete(toy.key)
 
     # Since we deleted it, if we do another lookup it shouldn't be there again:
-    print client.get(toy.key)
+    print(client.get(toy.key))
 
     # Now let's try a more advanced query.
     # First, let's create some entities.
@@ -48,16 +48,16 @@ def main():  # pylint: disable=too-many-statements
     query = client.query(kind='Thing')
 
     # Let's look at the first two.
-    print list(query.fetch(limit=2))
+    print(list(query.fetch(limit=2)))
 
     # Now let's check for Thing entities named 'Computer'
     query.add_filter('name', '=', 'Computer')
-    print list(query.fetch())
+    print(list(query.fetch()))
 
     # If you want to filter by multiple attributes,
     # you can call .add_filter multiple times on the query.
     query.add_filter('age', '=', 10)
-    print list(query.fetch())
+    print(list(query.fetch()))
 
     # Now delete them.
     client.delete_multi(sample_keys)
@@ -65,19 +65,19 @@ def main():  # pylint: disable=too-many-statements
     # You can also work inside a transaction.
     # (Check the official docs for explanations of what's happening here.)
     with client.transaction() as xact:
-        print 'Creating and saving an entity...'
+        print('Creating and saving an entity...')
         key = client.key('Thing', 'foo')
         thing = datastore.Entity(key)
         thing['age'] = 10
         xact.put(thing)
 
-        print 'Creating and saving another entity...'
+        print('Creating and saving another entity...')
         key2 = client.key('Thing', 'bar')
         thing2 = datastore.Entity(key2)
         thing2['age'] = 15
         xact.put(thing2)
 
-        print 'Committing the transaction...'
+        print('Committing the transaction...')
 
     # Now that the transaction is commited, let's delete the entities.
     client.delete_multi([key, key2])
@@ -91,7 +91,7 @@ def main():  # pylint: disable=too-many-statements
 
     # Let's check if the entity was actually created:
     created = client.get(key)
-    print 'yes' if created else 'no'
+    print(('yes' if created else 'no'))
 
     # Remember, a key won't be complete until the transaction is commited.
     # That is, while inside the transaction block, thing.key will be incomplete.
@@ -99,9 +99,9 @@ def main():  # pylint: disable=too-many-statements
         key = client.key('Thing')  # partial
         thing = datastore.Entity(key)
         xact.put(thing)
-        print thing.key  # This will still be partial
+        print((thing.key))  # This will still be partial
 
-    print thing.key  # This will be complete
+    print(thing.key)  # This will be complete
 
     # Now let's delete the entity.
     client.delete(thing.key)

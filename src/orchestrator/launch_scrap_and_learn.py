@@ -11,7 +11,7 @@ from scraper.scraper import Scraper
 from topicmodeller.topicmodeller import TopicModeller
 
 
-logging.basicConfig(format=u'%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO, filename='scrap_and_learn.log')
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO, filename='scrap_and_learn.log')
 
 
 class FileLoaderScraper(object):

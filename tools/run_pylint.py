@@ -27,7 +27,7 @@ def files_list(base_folder, for_tests):
 def run_pylint(command):
     print(command)
     try:
-        output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+        output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT).decode()
     except subprocess.CalledProcessError as e:
         output = e.output
         return 1, output
@@ -39,9 +39,9 @@ def run_pylint(command):
     return exitcode, output
 
 
-def add_file_paths(input):
+def add_file_paths(str_input):
     output = ''
-    for line in input.split('\n'):
+    for line in str_input.split('\n'):
         if FILE_NAME.match(line):
             output += '%s/%s' % (BASE_PATH, line)
         else:
@@ -53,21 +53,21 @@ def add_file_paths(input):
 def main():
     exitcode, output = run_pylint(COMMAND + ' ' + files_list(BASE_PATH, for_tests=False))
     output = add_file_paths(output)
-    print output
+    print(output)
 
     if exitcode != 0:
-        print 'FAIL...Try, try again'
+        print('FAIL...Try, try again')
         sys.exit(1)
 
     exitcode_test, output_test = run_pylint(TEST_COMMAND + ' ' + files_list(BASE_PATH, for_tests=True))
     output_test = add_file_paths(output_test)
-    print output_test
+    print(output_test)
 
     if exitcode_test == 0:
-        print 'You nailed it boy !'
+        print('You nailed it boy !')
         sys.exit(0)
 
-    print 'Fail (just the tests)'
+    print('Fail (just the tests)')
     sys.exit(1)
 
 

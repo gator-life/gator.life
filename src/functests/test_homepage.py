@@ -72,14 +72,14 @@ class NewVisitorTests(unittest.TestCase):
         self._get_webpage()
         self._login('unknown@email.com', 'unknownpassword')
         error_message = self.browser.find_element_by_name('error-message').text
-        self.assertEquals('Unknown email or invalid password', error_message)
+        self.assertEqual('Unknown email or invalid password', error_message)
 
     def test_login_with_invalid_password(self):
         daltesthelpers.create_user_dummy('known_user@gator.com', '', [''])
         self._get_webpage()
         self._login('known_user@gator.com', 'invalid_password')
         error_message = self.browser.find_element_by_name('error-message').text
-        self.assertEquals('Unknown email or invalid password', error_message)
+        self.assertEqual('Unknown email or invalid password', error_message)
 
     def test_register(self):
         self._get_webpage()
@@ -112,7 +112,7 @@ class NewVisitorTests(unittest.TestCase):
         self._register('test_register_with_a_known_email@gator.com', 'password', 'interests')
 
         error_message = self.browser.find_element_by_name('error-message').text
-        self.assertEquals('This account already exists', error_message)
+        self.assertEqual('This account already exists', error_message)
 
     def test_login_and_do_actions(self):
         now = utcnow()
@@ -126,16 +126,16 @@ class NewVisitorTests(unittest.TestCase):
 
         self._login(email, password)
 
-        self.assertEquals('Gator Life !', self.browser.title)
+        self.assertEqual('Gator Life !', self.browser.title)
 
         title = self.browser.find_element_by_name('title').text
         subtitle = self.browser.find_element_by_name('subtitle').text
 
-        self.assertEquals('Gator.Life', title)
-        self.assertEquals('The best of the web just for you ' + email + ' !', subtitle)
+        self.assertEqual('Gator.Life', title)
+        self.assertEqual('The best of the web just for you ' + email + ' !', subtitle)
 
         disconnect_link = self.browser.find_elements_by_link_text('Disconnect')
-        self.assertEquals(1, len(disconnect_link))
+        self.assertEqual(1, len(disconnect_link))
 
         # There is two links on the page and related up/down links : google.com, gator.life
         links = self.browser.find_elements_by_name('link')

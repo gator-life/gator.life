@@ -30,13 +30,13 @@ def _is_valid_submission(submission):
 
 
 def _make_link_element(submission):
-    url = submission.url.encode('utf8')
-    origin_name = u'reddit'
-    title = submission.title.encode('utf8')
-    category = submission.subreddit.display_name.encode('utf8')
-    origin_url = submission.permalink.encode('utf8')
-    origin_id = submission.id.encode('utf8')
-    category_id = submission.subreddit_id.encode('utf8')
+    url = submission.url
+    origin_name = 'reddit'
+    title = submission.title
+    category = submission.subreddit.display_name
+    origin_url = submission.permalink
+    origin_id = submission.id
+    category_id = submission.subreddit_id
     origin_info = OriginInfo(title, category, origin_url, origin_id, category_id)
     date_as_utc_timestamp = submission.created_utc
     link_elt = LinkElement(url, origin_name, origin_info, date_as_utc_timestamp)

@@ -47,7 +47,7 @@ class TopicModellerTests(unittest.TestCase):
         self.assertTrue(topic_modeller.saved)
 
         saved_features_names = self.dal.get_features(REF_FEATURE_SET)
-        self.assertEquals(saved_features_names, features_names)
+        self.assertEqual(saved_features_names, features_names)
 
 
 if __name__ == '__main__':

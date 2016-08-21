@@ -16,13 +16,13 @@ class DalTests(unittest.TestCase):
     def test_save_then_get_features(self):
         self.dal.save_features(feature_set_id='set', feature_names=['desc1', 'desc2'])
         feature_set = self.dal.get_features('set')
-        self.assertEquals('desc1', feature_set[0])
-        self.assertEquals('desc2', feature_set[1])
+        self.assertEqual('desc1', feature_set[0])
+        self.assertEqual('desc2', feature_set[1])
 
     def test_save_then_get_empty_features(self):
         self.dal.save_features(feature_set_id='test_save_then_get_empty_features_feature_set_id', feature_names=[])
         feature_set = self.dal.get_features('test_save_then_get_empty_features_feature_set_id')
-        self.assertEquals([], feature_set)
+        self.assertEqual([], feature_set)
 
     def test_get_user_with_unknown_user_should_return_none(self):
         self.assertIsNone(self.dal.get_user('missing_user'))
@@ -49,14 +49,14 @@ class DalTests(unittest.TestCase):
         # ------- check get_user_and_password -------
         (result_user, result_password) = self.dal.get_user_and_password('email')
         self.assert_users_equals(expected_user, result_user)
-        self.assertEquals(password, result_password)
+        self.assertEqual(password, result_password)
 
     def assert_users_equals(self, expected_user, result_user):
-        self.assertEquals(expected_user.email, result_user.email)
-        self.assertEquals(expected_user.interests, result_user.interests)
-        self.assertEquals(expected_user._user_doc_set_db_key, result_user._user_doc_set_db_key)
-        self.assertEquals(expected_user._user_computed_profile_db_key, result_user._user_computed_profile_db_key)
-        self.assertEquals(expected_user._db_key, result_user._db_key)
+        self.assertEqual(expected_user.email, result_user.email)
+        self.assertEqual(expected_user.interests, result_user.interests)
+        self.assertEqual(expected_user._user_doc_set_db_key, result_user._user_doc_set_db_key)
+        self.assertEqual(expected_user._user_computed_profile_db_key, result_user._user_computed_profile_db_key)
+        self.assertEqual(expected_user._db_key, result_user._db_key)
 
     def test_get_all_users(self):
         users_data = [('test_get_all_users_user1', ['interests1']),
@@ -68,12 +68,12 @@ class DalTests(unittest.TestCase):
         all_users = self.dal.get_all_users()
         all_users_this_test = [user for user in all_users if 'test_get_all_users' in user.email]
 
-        self.assertEquals(3, len(all_users_this_test))
+        self.assertEqual(3, len(all_users_this_test))
 
         result_users_data = sorted([(user.email, user.interests) for user in all_users_this_test],
                                    key=lambda user_data: user_data[0])
         for (expected, result) in zip(users_data, result_users_data):
-            self.assertEquals(expected, result)
+            self.assertEqual(expected, result)
 
     def test_save_then_get_user_docs_should_be_equals(self):
         # setup : init docs in database
@@ -91,11 +91,11 @@ class DalTests(unittest.TestCase):
 
         self.dal.save_user_docs(user, expected_user_docs)
         result_user_docs = self.dal.get_user_docs(user)
-        self.assertEquals(len(expected_user_docs), len(result_user_docs))
+        self.assertEqual(len(expected_user_docs), len(result_user_docs))
 
-        for (expected, result) in itertools.izip_longest(expected_user_docs, result_user_docs):
-            self.assertEquals(expected.grade, result.grade)
-            self.assertEquals(expected.document.title, result.document.title)
+        for (expected, result) in itertools.zip_longest(expected_user_docs, result_user_docs):
+            self.assertEqual(expected.grade, result.grade)
+            self.assertEqual(expected.document.title, result.document.title)
 
     def test_save_documents(self):
         feature_set_id = self.build_dummy_db_feature_set()
@@ -111,10 +111,10 @@ class DalTests(unittest.TestCase):
 
         for expected_doc in expected_docs:
             result_doc = self.dal.get_doc_by_urlsafe_key(expected_doc.key_urlsafe)
-            self.assertEquals(expected_doc.url, result_doc.url)
-            self.assertEquals(expected_doc.title, result_doc.title)
-            self.assertEquals(expected_doc.summary, result_doc.summary)
-            self.assertEquals(expected_doc.feature_vector.vector[0], result_doc.feature_vector.vector[0])
+            self.assertEqual(expected_doc.url, result_doc.url)
+            self.assertEqual(expected_doc.title, result_doc.title)
+            self.assertEqual(expected_doc.summary, result_doc.summary)
+            self.assertEqual(expected_doc.feature_vector.vector[0], result_doc.feature_vector.vector[0])
 
     def test_save_then_get_user_computed_profiles(self):
         user1, profile1 = self._build_profile(1)
@@ -122,7 +122,7 @@ class DalTests(unittest.TestCase):
 
         self.dal.save_user_computed_profiles([(user1, profile1), (user2, profile2)])
         result_profiles = self.dal.get_user_computed_profiles([user2, user1])
-        self.assertEquals(2, len(result_profiles))
+        self.assertEqual(2, len(result_profiles))
         self._assert_profiles_equals(profile1, result_profiles[1])
         self._assert_profiles_equals(profile2, result_profiles[0])
 
@@ -151,7 +151,7 @@ class DalTests(unittest.TestCase):
 
         vectors = self.dal.get_users_feature_vectors([user2, user1])
 
-        self.assertEquals(2, len(vectors))
+        self.assertEqual(2, len(vectors))
         self._assert_feature_vector_equals(profile1.feature_vector, vectors[1])
         self._assert_feature_vector_equals(profile2.feature_vector, vectors[0])
 
@@ -177,15 +177,15 @@ class DalTests(unittest.TestCase):
         self._assert_model_data_equals(expected_profile.model_data, result_profile.model_data)
 
     def _assert_feature_vector_equals(self, expected_feature_vector, result_feature_vector):
-        self.assertEquals(expected_feature_vector.vector, result_feature_vector.vector)
-        self.assertEquals(expected_feature_vector.feature_set_id, result_feature_vector.feature_set_id)
+        self.assertEqual(expected_feature_vector.vector, result_feature_vector.vector)
+        self.assertEqual(expected_feature_vector.feature_set_id, result_feature_vector.feature_set_id)
 
     def _assert_model_data_equals(self, expected_model_data, result_model_data):
-        self.assertEquals(expected_model_data.explicit_feedback_vector, result_model_data.explicit_feedback_vector)
-        self.assertEquals(expected_model_data.positive_feedback_vector, result_model_data.positive_feedback_vector)
-        self.assertEquals(expected_model_data.negative_feedback_vector, result_model_data.negative_feedback_vector)
-        self.assertEquals(expected_model_data.positive_feedback_sum_coeff, result_model_data.positive_feedback_sum_coeff)
-        self.assertEquals(expected_model_data.negative_feedback_sum_coeff, result_model_data.negative_feedback_sum_coeff)
+        self.assertEqual(expected_model_data.explicit_feedback_vector, result_model_data.explicit_feedback_vector)
+        self.assertEqual(expected_model_data.positive_feedback_vector, result_model_data.positive_feedback_vector)
+        self.assertEqual(expected_model_data.negative_feedback_vector, result_model_data.negative_feedback_vector)
+        self.assertEqual(expected_model_data.positive_feedback_sum_coeff, result_model_data.positive_feedback_sum_coeff)
+        self.assertEqual(expected_model_data.negative_feedback_sum_coeff, result_model_data.negative_feedback_sum_coeff)
 
     def test_save_then_get_users_docs_should_be_equals(self):
 
@@ -223,7 +223,7 @@ class DalTests(unittest.TestCase):
         user = struct.User.make_from_scratch("test_get_users_docs_zero_docs_user", ["interests1"])
         self.dal.save_user(user, "password")
         docs = self.dal.get_users_docs([user])[0]
-        self.assertEquals([], docs)
+        self.assertEqual([], docs)
 
     def test_get_user_no_interest(self):
         expected_user = struct.User.make_from_scratch("test_get_user_no_interest", [])
@@ -251,15 +251,15 @@ class DalTests(unittest.TestCase):
 
         result = self.dal.get_user_actions_on_docs([user2, user1], min_datetime)
 
-        self.assertEquals(2, len(result))
+        self.assertEqual(2, len(result))
         user2_actions = result[0]
         user1_actions = result[1]
-        self.assertEquals(1, len(user2_actions))
+        self.assertEqual(1, len(user2_actions))
         user2_action = user2_actions[0]
-        self.assertEquals(doc1.title, user2_action.document.title)
-        self.assertEquals(struct.UserActionTypeOnDoc.down_vote, user2_action.action_type)
+        self.assertEqual(doc1.title, user2_action.document.title)
+        self.assertEqual(struct.UserActionTypeOnDoc.down_vote, user2_action.action_type)
         self.assertTrue(min_datetime < user2_action.datetime)
-        self.assertEquals(2, len(user1_actions))
+        self.assertEqual(2, len(user1_actions))
 
     def make_dummy_doc(self, str_id):
         feature_set_id = self.build_dummy_db_feature_set()
@@ -269,9 +269,9 @@ class DalTests(unittest.TestCase):
 
     # for each static member of the class (remove special fields __***__), check we do a proper round-trip with database
     def test_action_type_on_doc_mapping_with_db(self):
-        for enum_name, enum_value in vars(struct.UserActionTypeOnDoc).iteritems():
+        for enum_name, enum_value in list(vars(struct.UserActionTypeOnDoc).items()):
             if not enum_name.startswith("__"):
-                self.assertEquals(enum_value, sdal._to_user_action_type_on_doc(sdal._to_db_action_type_on_doc(enum_value)))
+                self.assertEqual(enum_value, sdal._to_user_action_type_on_doc(sdal._to_db_action_type_on_doc(enum_value)))
 
     def test_get_doc_by_urlsafe_key_exist(self):
         doc = self.make_dummy_doc('test_get_doc_by_urlsafe_key')
@@ -279,13 +279,13 @@ class DalTests(unittest.TestCase):
 
         result_doc = self.dal.get_doc_by_urlsafe_key(doc.key_urlsafe)
 
-        self.assertEquals(doc.url, result_doc.url)
-        self.assertEquals(doc.title, result_doc.title)
-        self.assertEquals(doc._db_key, result_doc._db_key)
-        self.assertEquals(doc.key_urlsafe, result_doc.key_urlsafe)
-        self.assertEquals(doc.summary, result_doc.summary)
-        self.assertEquals(doc.feature_vector.vector, result_doc.feature_vector.vector)
-        self.assertEquals(doc.feature_vector.feature_set_id, result_doc.feature_vector.feature_set_id)
+        self.assertEqual(doc.url, result_doc.url)
+        self.assertEqual(doc.title, result_doc.title)
+        self.assertEqual(doc._db_key, result_doc._db_key)
+        self.assertEqual(doc.key_urlsafe, result_doc.key_urlsafe)
+        self.assertEqual(doc.summary, result_doc.summary)
+        self.assertEqual(doc.feature_vector.vector, result_doc.feature_vector.vector)
+        self.assertEqual(doc.feature_vector.feature_set_id, result_doc.feature_vector.feature_set_id)
 
     def build_dummy_db_feature_set(self):
         self.dal.save_features(feature_set_id='set', feature_names=['desc2', 'desc1'])

@@ -14,14 +14,14 @@ class RedditTests(unittest.TestCase):
 
         link_elt = reddit._make_link_element(submission)
 
-        self.assertEquals('my_url', link_elt.url)
-        self.assertEquals('my_title', link_elt.origin_info.title)
-        self.assertEquals('my_cat', link_elt.origin_info.category)
-        self.assertEquals('orig_url', link_elt.origin_info.url)
-        self.assertEquals('orig_id', link_elt.origin_info.unique_id)
-        self.assertEquals('cat_id', link_elt.origin_info.category_id)
-        self.assertEquals(123456, link_elt.date_utc_timestamp)
-        self.assertEquals('reddit', link_elt.origin)
+        self.assertEqual('my_url', link_elt.url)
+        self.assertEqual('my_title', link_elt.origin_info.title)
+        self.assertEqual('my_cat', link_elt.origin_info.category)
+        self.assertEqual('orig_url', link_elt.origin_info.url)
+        self.assertEqual('orig_id', link_elt.origin_info.unique_id)
+        self.assertEqual('cat_id', link_elt.origin_info.category_id)
+        self.assertEqual(123456, link_elt.date_utc_timestamp)
+        self.assertEqual('reddit', link_elt.origin)
 
     def test_is_valid_submission_with_is_self_return_false(self):
         submission = MagicMock(is_self=True, over_18=False)

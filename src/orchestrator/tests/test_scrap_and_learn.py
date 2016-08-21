@@ -98,16 +98,16 @@ class ScrapAndLearnTests(unittest.TestCase):
         result_users_docs = self.dal.get_users_docs([user1, user2])
         result_user1_docs = result_users_docs[0]
         result_user2_docs = result_users_docs[1]
-        self.assertEquals(5, len(result_user1_docs))  # 5 because of user_docs_max_size=5
-        self.assertEquals(4, len(result_user2_docs))
+        self.assertEqual(5, len(result_user1_docs))  # 5 because of user_docs_max_size=5
+        self.assertEqual(4, len(result_user2_docs))
         for user_doc in result_user1_docs:
             if user_doc.document.title == 'title1':  # doc1 should have been deleted because grade=0.0
                 self.fail()
-        self.assertEquals(4, len(mock_saver.saved_docs))  # MockScraper generate 4 docs
+        self.assertEqual(4, len(mock_saver.saved_docs))  # MockScraper generate 4 docs
         for doc in mock_saver.saved_docs:
             # currently, model versioning is not managed, all is set to ref
-            self.assertEquals(REF_FEATURE_SET, doc.feature_vector.feature_set_id)
-            self.assertEquals(MockTopicModeller.feature_vector, doc.feature_vector.vector)
+            self.assertEqual(REF_FEATURE_SET, doc.feature_vector.feature_set_id)
+            self.assertEqual(MockTopicModeller.feature_vector, doc.feature_vector.vector)
         # is_unique() should be called for each document
         self.assertEqual(mock_url_unicity_checker.is_unique_count, 5)
         # save() should be called at 'docs_chunk_size' frequency and 1 time at the end of the loop.
