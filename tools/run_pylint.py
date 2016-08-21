@@ -29,7 +29,7 @@ def run_pylint(command):
     try:
         output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT).decode()
     except subprocess.CalledProcessError as e:
-        output = e.output
+        output = e.output.decode()
         return 1, output
     match = CODE_RATING.search(output)
     if not match:
