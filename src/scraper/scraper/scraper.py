@@ -5,7 +5,7 @@ import os
 import socket
 import ssl
 import logging
-import urlparse
+import urllib.parse
 import cchardet
 import requests
 
@@ -15,7 +15,7 @@ from .scraperstructs import Document
 
 def _is_valid_link(link_element, invalid_paths_regex, invalid_extensions):
     url = link_element.url
-    path = urlparse.urlparse(url).path
+    path = urllib.parse.urlparse(url).path
     extension = os.path.splitext(path)[1]  # splitext split in two : path and extension
     if extension in invalid_extensions:
         return False
