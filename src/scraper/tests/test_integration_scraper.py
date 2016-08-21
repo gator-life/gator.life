@@ -22,7 +22,7 @@ class ScraperIntegrationTests(unittest.TestCase):
         with vcr.use_cassette(directory + '/vcr_cassettes/test_run_scraper.yaml', record_mode='none'):
             for doc in scraper.scrap():
                 self.assertIsNotNone(doc.html_content)  # we don't return unavailable pages
-                self.assertIsInstance(doc.html_content, unicode)  # 'str' sucks, must use unicode (python 3 str versions)
+                self.assertIsInstance(doc.html_content, str)
                 self.assertNotIn('.gif', doc.link_element.url)  # check extension filter
                 self.assertNotIn('youtu', doc.link_element.url)  # check regex filter
 
