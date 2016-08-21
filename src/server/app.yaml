@@ -17,3 +17,5 @@ resources:
 env_variables:
     GCLOUD_PROJECT: gator-01
 
+skip_files:
+    - ^tests$

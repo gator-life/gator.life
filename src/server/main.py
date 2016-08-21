@@ -4,8 +4,8 @@
 import os
 
 from flask import Flask
-from .environment import IS_TEST_ENV
-from .handlers import handlers
+from server.environment import IS_TEST_ENV
+from server.handlers import handlers
 
 # As this variable is referenced by gunicorn in entrypoint section of app.yaml file, if changed, the gunicorn command must
 # be updated accordingly
