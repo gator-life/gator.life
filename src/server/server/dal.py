@@ -8,12 +8,12 @@ import datetime
 import httplib2
 import jsonpickle
 from gcloud import datastore
-from environment import GCLOUD_PROJECT, IS_TEST_ENV   # pylint: disable=relative-import
-import frontendstructs as struct   # pylint: disable=relative-import
+from .environment import GCLOUD_PROJECT, IS_TEST_ENV
+from . import frontendstructs as struct
 
 
-REF_FEATURE_SET = u"ref_feature_set"
-NULL_FEATURE_SET = u"null_feature_set"
+REF_FEATURE_SET = "ref_feature_set"
+NULL_FEATURE_SET = "null_feature_set"
 
 
 def _to_urlsafe(key):
@@ -21,15 +21,16 @@ def _to_urlsafe(key):
     Encode a key to a string that can be passed as an url parameter
     Be careful, this is only encoded, not encrypted.
     """
-    # encode call transform key to a string, then b64encode to a base64 format that can be passed in an url
-    return jsonpickle.util.b64encode(jsonpickle.encode(key))
+    # encode call transform key to a string, then we encode it in unicode
+    # then b64encode to a base64 format that can be passed in an url
+    return jsonpickle.util.b64encode(jsonpickle.encode(key).encode())
 
 
 def _to_key(urlsafe):
     """
     Decode back to a key than has been encoded with _to_urlsafe(key)
     """
-    return jsonpickle.decode(jsonpickle.util.b64decode(urlsafe))
+    return jsonpickle.decode(jsonpickle.util.b64decode(urlsafe).decode())
 
 
 def _to_user_action_type_on_doc(user_action_on_doc_db_string):
@@ -214,7 +215,7 @@ class Dal(object):
         :return: a list of string of feature labels of the feature_set_id. This list matches the order of the elements
         in the feature vectors associated to this feature_set_id.
         """
-        db_feature_set_key = self._ds_client.key(u'FeatureSet', feature_set_id)
+        db_feature_set_key = self._ds_client.key('FeatureSet', feature_set_id)
         db_feature_set = self._ds_client.get(db_feature_set_key)
         return db_feature_set.get('features', [])
 
@@ -225,14 +226,14 @@ class Dal(object):
         :param feature_names: list of string
         :return:
         """
-        db_feature_set = self._make_named_entity(u'FeatureSet', feature_set_id, not_indexed=('features',))
+        db_feature_set = self._make_named_entity('FeatureSet', feature_set_id, not_indexed=('features',))
         db_feature_set['features'] = feature_names
         self._ds_client.put(db_feature_set)
 
     def _to_db_user_profile_model_data(self, user_profile_model_data):
         not_indexed = ('explicit_feedback_vector', 'positive_feedback_vector', 'negative_feedback_vector',
                        'positive_feedback_sum_coeff', 'negative_feedback_sum_coeff')
-        db_user_profile_model_data = self._make_entity(u'UserProfileModelData', not_indexed)
+        db_user_profile_model_data = self._make_entity('UserProfileModelData', not_indexed)
         db_user_profile_model_data['explicit_feedback_vector'] = user_profile_model_data.explicit_feedback_vector
         db_user_profile_model_data['positive_feedback_vector'] = user_profile_model_data.positive_feedback_vector
         db_user_profile_model_data['negative_feedback_vector'] = user_profile_model_data.negative_feedback_vector
@@ -243,15 +244,16 @@ class Dal(object):
 
     def _to_db_user_computed_profile(self, user_computed_profile):
         not_indexed = ('feature_vector', 'model_data', 'datetime')
-        db_user_computed_profile = self._make_entity(u'UserComputedProfile', not_indexed)
+        db_user_computed_profile = self._make_entity('UserComputedProfile', not_indexed)
         db_user_computed_profile['feature_vector'] = self._to_db_feature_vector(user_computed_profile.feature_vector)
         db_user_computed_profile['model_data'] = self._to_db_user_profile_model_data(user_computed_profile.model_data)
         db_user_computed_profile['datetime'] = datetime.datetime.utcnow()
         return db_user_computed_profile
 
+
     def _to_db_feature_vector(self, feature_vector):
-        db_feature_vector = self._make_entity(u'FeatureVector', not_indexed=('vector',))
-        db_feature_vector['feature_set_key'] = self._ds_client.key(u'FeatureSet', feature_vector.feature_set_id)
+        db_feature_vector = self._make_entity('FeatureVector', not_indexed=('vector',))
+        db_feature_vector['feature_set_key'] = self._ds_client.key('FeatureSet', feature_vector.feature_set_id)
         db_feature_vector['vector'] = feature_vector.vector
         return db_feature_vector
 
@@ -327,7 +329,7 @@ class Dal(object):
         return db_user_docs
 
     def _to_db_user_doc(self, user_doc):
-        db_user_doc = self._make_entity(u'UserDocument', not_indexed=())
+        db_user_doc = self._make_entity('UserDocument', not_indexed=())
         db_user_doc['document_key'] = user_doc.document._db_key  # pylint: disable=protected-access
         db_user_doc['grade'] = user_doc.grade
         return db_user_doc
