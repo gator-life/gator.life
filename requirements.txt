@@ -1,3 +1,4 @@
+boilerpipe-py3
 jsonpickle
 praw
 pyopenssl
@@ -9,6 +10,5 @@ requests
 cchardet
 gensim
 nltk
-boilerpipe
 gcloud
 pytz
