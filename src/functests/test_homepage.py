@@ -95,8 +95,8 @@ class NewVisitorTests(unittest.TestCase):
 
         user = self.dal.get_user(email)
         self.assertIsNotNone(user)
-        self.assertItemsEqual(user.interests, interests_str.splitlines())
-        self.assertItemsEqual(user.interests, interests_str.splitlines())
+        self.assertCountEqual(user.interests, interests_str.splitlines())
+        self.assertCountEqual(user.interests, interests_str.splitlines())
 
         # If the user as been successfully registered, it should be redirected to home page
         self.assertEqual('http://localhost:8080/', self.browser.current_url)
