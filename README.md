@@ -35,7 +35,7 @@ Tested on Ubuntu 14.04 and 16.04. For more details on how the setup was done on 
 
 1. Make sure you have installed the dependencies:
 
-	* `python` 2.7, `pip` and `virtualenv`
+	* `python` 3.4, `pip` and `venv`
 	* `docker`
 	* `PhantomJS`
 	* `Java` 7+ JRE
@@ -49,7 +49,7 @@ Tested on Ubuntu 14.04 and 16.04. For more details on how the setup was done on 
 3. Under repo root directory, create and activate virtualenv *global_env*
 
 	```sh
-	$ virtualenv global_env
+	$ python3 -m venv global_env
 	$ source global_env/bin/activate
 	```
 
