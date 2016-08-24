@@ -6,6 +6,8 @@ import unittest
 from learner.learner import UserDocumentsAccumulator, UserData, UserDoc, _similarity_by_row, _FixedSizeHeap
 
 # test implementation of L2 norm without re-using numpy code
+
+
 def norm(vec):
     return sqrt(sum(x * x for x in vec))
 
@@ -27,26 +29,33 @@ class LearnerTests(unittest.TestCase):
 class FixedSizeHeapTests(unittest.TestCase):
 
     def test_push(self):
+
+        def assert_equal(expected_key_value_tuple, heap_list_elt):
+            self.assertEqual(expected_key_value_tuple, (heap_list_elt[0], heap_list_elt[-1]))
+
+        def assert_in(expected_key_value_tuple, heap_list):
+            self.assertTrue(expected_key_value_tuple in ((elt[0], elt[-1])for elt in heap_list))
+
         # create generator to make sure heap does not rely on structure of input (double iteration, side-effect in input...)
         input_list = (pair for pair in [(0.5, "A"), (0.2, "minInit"), (0.9, "B")])
         heap = _FixedSizeHeap(input_list, 4)
         # below max size, all elements should be presents
-        self.assertEquals(3, len(heap.list))
-        self.assertEquals((0.2, "minInit"), heap.list[0])
+        self.assertEqual(3, len(heap.list))
+        assert_equal((0.2, "minInit"), heap.list[0])
         heap.push(0.8, "C")
-        self.assertEquals(4, len(heap.list))
-        self.assertEquals((0.2, "minInit"), heap.list[0])
+        self.assertEqual(4, len(heap.list))
+        assert_equal((0.2, "minInit"), heap.list[0])
         # we add a better value than 0.2, this should move "minInit" out of heap
         heap.push(0.21, "D")
-        self.assertEquals(4, len(heap.list))
-        self.assertEquals((0.21, "D"), heap.list[0])
+        self.assertEqual(4, len(heap.list))
+        assert_equal((0.21, "D"), heap.list[0])
         heap.push(0.20, "notAdded")
         # check final state, in an heap, first is always min but it's not sorted
-        self.assertEquals(4, len(heap.list))
-        self.assertEquals((0.21, "D"), heap.list[0])
-        self.assertTrue((0.5, "A") in heap.list)
-        self.assertTrue((0.9, "B") in heap.list)
-        self.assertTrue((0.8, "C") in heap.list)
+        self.assertEqual(4, len(heap.list))
+        assert_equal((0.21, "D"), heap.list[0])
+        assert_in((0.5, "A"), heap.list)
+        assert_in((0.9, "B"), heap.list)
+        assert_in((0.8, "C"), heap.list)
 
 
 class UserDocumentsAccumulatorTest(unittest.TestCase):
@@ -62,7 +71,7 @@ class UserDocumentsAccumulatorTest(unittest.TestCase):
         accumulator = UserDocumentsAccumulator(user_data_list, 2)
 
         def assert_user_docs(expected_list_docs, result_list_user_docs):
-            self.assertEquals(len(expected_list_docs), len(result_list_user_docs))
+            self.assertEqual(len(expected_list_docs), len(result_list_user_docs))
             for result in result_list_user_docs:
                 self.assertTrue(result.doc_id in expected_list_docs)
 
