@@ -19,4 +19,4 @@ deploy:
   keyfile: client-secret.json
   project: gator-01
   default: true
-  config: src/server/server/app.yaml
+  config: src/server/app.yaml

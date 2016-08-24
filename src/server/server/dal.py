@@ -8,9 +8,8 @@ import datetime
 import httplib2
 import jsonpickle
 from gcloud import datastore
-from environment import GCLOUD_PROJECT, IS_TEST_ENV   # pylint: disable=relative-import
-import frontendstructs as struct   # pylint: disable=relative-import
-
+from .environment import GCLOUD_PROJECT, IS_TEST_ENV
+from . import frontendstructs as struct
 
 REF_FEATURE_SET = u"ref_feature_set"
 NULL_FEATURE_SET = u"null_feature_set"
