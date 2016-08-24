@@ -19,4 +19,5 @@ python -m nltk.downloader stopwords punkt
 
 #appengine_env env is used to run flask server in same context as on appengine
 virtualenv appengine_env
+appengine_env/bin/pip install -U pip
 appengine_env/bin/pip install -r src/server/requirements.txt
