@@ -1,17 +1,11 @@
 language: python
+cache: pip
 python:
 - '2.7'
 before_install:
 - openssl aes-256-cbc -K $encrypted_411bc28b64b2_key -iv $encrypted_411bc28b64b2_iv
   -in client-secret.json.enc -out client-secret.json -d
-- mkdir lib_travis
-- wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-- chmod +x miniconda.sh
-- ./miniconda.sh -b -p ./lib_travis/miniconda
-- export PATH=$(pwd)/lib_travis/miniconda/bin:$PATH
-- conda update --yes conda
 install:
-- conda install --yes python=$TRAVIS_PYTHON_VERSION cryptography numpy scipy
 - tools/install_envs.sh
 - pip install coveralls
 script:

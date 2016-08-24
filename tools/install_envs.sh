@@ -6,9 +6,10 @@ mkdir -p lib
 
 rm -rf lib/google-cloud-sdk
 wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-119.0.0-linux-x86_64.tar.gz -nv
-tar zxvf google-cloud-sdk-119.0.0-linux-x86_64.tar.gz -C lib
+tar zxf google-cloud-sdk-119.0.0-linux-x86_64.tar.gz -C lib
 rm google-cloud-sdk-119.0.0-linux-x86_64.tar.gz
 
+pip install -U pip # we need a recent version of pip so that pip install scipy/numpy works
 pip install -r requirements.txt
 pip install -r test_requirements.txt
 # server unit tests are run in this "default" env so we need server requirements in it
