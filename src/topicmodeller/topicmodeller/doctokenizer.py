@@ -3,14 +3,17 @@
 import re
 import nltk
 from nltk.corpus import stopwords
-from boilerpipe.extract import Extractor
-
+from readability import Document
+import lxml
 
 # Extract a readable document from HTML
+
+
 def _readable_document(html_document):
-    extractor = Extractor(extractor=u'ArticleExtractor', html=html_document)
-    text = extractor.getText()
-    return text
+    readability_doc = Document(html_document)
+    text_without_useless_parts = readability_doc.summary()
+    text_without_html_markup = lxml.html.fromstring(text_without_useless_parts).text_content()
+    return text_without_html_markup
 
 
 def _word_tokenize(content):
