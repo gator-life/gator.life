@@ -46,24 +46,18 @@ Tested on Ubuntu 14.04 and 16.04. For more details on how the setup was done on 
 	$ git clone https://github.com/gator-life/gator.life.git
 	```
 
-3. Under repo root directory, create and activate virtualenv *global_env*
+3. Under repo root directory, run setup script:
 
 	```sh
-	$ virtualenv global_env
-	$ source global_env/bin/activate
+	$ tools/setup_local.sh
 	```
 
-4. Under repo root directory, to install dependencies run :
-
-	```sh
-	$ tools/install_envs.sh
-	```
-
-5. Under repo root directory, launch unit tests to make sure all is ok by running :
-
-	```sh
-	$ tools/start_tests.sh
-	```
+	This script will:
+	
+		* Clean the previous install if needed
+		* Create a virtual environment `global_env`
+		* Install all dependencies
+		* Run unit tests, functional tests and linter to ensure setup is ok
 
 ## Contributing
 

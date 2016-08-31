@@ -3,7 +3,7 @@
 
 # start_gcoud.sh is blocking. This script wraps it to exit as soon
 # as initialization is done (replace unreliable and slow wait call)
-rm start_gcloud.log
+rm -f start_gcloud.log
 touch start_gcloud.log
 (tools/start_gcloud.sh 2>&1 | tee start_gcloud.log) &
 { tail -n +1 -f start_gcloud.log &} | sed -n '/Dev App Server is now running/q'

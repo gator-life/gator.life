@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+from flask import Flask
 from server.dal import REF_FEATURE_SET
 import server.frontendstructs as struct
 import server.handlers as handlers
-import server.main as main
 import server.passwordhelpers as pswd
 
 
@@ -60,8 +60,11 @@ class DalMock(object):
 class HandlersTests(unittest.TestCase):
 
     def setUp(self):
-        self.app = main.APP.test_client()
-        main.APP.config['TESTING'] = True
+        test_app = Flask("HandlersTests_flask_app")
+        test_app.register_blueprint(handlers.handlers)
+        test_app.secret_key = 'HandlersTests_flask_secret_key'
+        self.app = test_app.test_client()
+        test_app.config['TESTING'] = True
         self.dal = DalMock()
         handlers.DAL = self.dal
 

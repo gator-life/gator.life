@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from flask import Blueprint, render_template, redirect, session, request
-from dal import Dal, REF_FEATURE_SET  # pylint: disable=relative-import
-import frontendstructs as struct  # pylint: disable=relative-import
-import passwordhelpers  # pylint: disable=relative-import
+from .dal import Dal, REF_FEATURE_SET
+from . import frontendstructs as struct
+from . import passwordhelpers
 
 
 # keep low case name because it seems flask / blueprint standard
-handlers = Blueprint('handlers', __name__)  # pylint: disable=invalid-name
+handlers = Blueprint('handlers', __name__, template_folder='templates')  # pylint: disable=invalid-name
 
 DAL = Dal()
 

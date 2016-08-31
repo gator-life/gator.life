@@ -68,7 +68,7 @@ class UserDocumentsAccumulator(object):
         Each element is the list of the top rated learner.UserDoc, of length <= user_docs_max_size.
         Those lists take in account all the documents added by the add_doc method
         """
-        return [[UserDoc(doc, grade) for (grade, doc) in heap.list] for heap in self._user_docs_heaps]
+        return [[UserDoc(doc, grade) for (grade, _, doc) in heap.list] for heap in self._user_docs_heaps]
 
 
 def _similarity_by_row(matrix, vector):
@@ -90,6 +90,7 @@ class _FixedSizeHeap(object):
     """
 
     def __init__(self, key_value_list, max_size):
+        self._counter = 0
         self._max_size = max_size
         self.list = []
         for (key, value) in key_value_list:
@@ -104,7 +105,9 @@ class _FixedSizeHeap(object):
         :param key: comparable value used to compare elements
         :param value: value associated to the key, can be anything
         """
+        self._counter += 1
         if len(self.list) < self._max_size:
-            heapq.heappush(self.list, (key, value))
+            heapq.heappush(self.list, (key, self._counter, value))
         else:
-            heapq.heappushpop(self.list, (key, value))  # emulate heappush then heappop but O(1) if key<min(list)
+            # emulate heappush then heappop but O(1) if key<min(list)
+            heapq.heappushpop(self.list, (key, self._counter, value))
