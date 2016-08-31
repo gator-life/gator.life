@@ -4,6 +4,7 @@
 import time
 import unittest
 from _socket import timeout
+from selenium.common.exceptions import TimeoutException
 from selenium import webdriver
 from server import frontendstructs as structs, passwordhelpers as passwordhelpers
 from server.dal import Dal, REF_FEATURE_SET
@@ -22,7 +23,7 @@ def with_retry(action):
         try:
             action()
             break
-        except timeout:
+        except (timeout, TimeoutException):
             pass
     else:
         raise timeout
