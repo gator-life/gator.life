@@ -5,10 +5,9 @@ from math import sqrt
 import unittest
 from learner.learner import UserDocumentsAccumulator, UserData, UserDoc, _similarity_by_row, _FixedSizeHeap
 
-# test implementation of L2 norm without re-using numpy code
-
 
 def norm(vec):
+    # test implementation of L2 norm without re-using numpy code
     return sqrt(sum(x * x for x in vec))
 
 

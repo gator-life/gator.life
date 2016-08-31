@@ -9,6 +9,3 @@ touch start_gcloud.log
 { tail -n +1 -f start_gcloud.log &} | sed -n '/Dev App Server is now running/q'
 # inspired by the trick explained here:
 # http://unix.stackexchange.com/questions/33018/have-bash-script-wait-for-status-message-before-continuing
-
-
-
