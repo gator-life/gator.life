@@ -7,7 +7,8 @@ from . import passwordhelpers
 
 
 # keep low case name because it seems flask / blueprint standard
-handlers = Blueprint('handlers', __name__, template_folder='templates')  # pylint: disable=invalid-name
+handlers = Blueprint('handlers', __name__, template_folder='templates',
+                     static_folder='static')  # pylint: disable=invalid-name
 
 DAL = Dal()
 
