@@ -75,7 +75,7 @@ Docker need to be installed
 
 This procedure allow to generate the docker image used by google to run our app.
 
-- To generate a Dockerfile and a .dockerignore, run the bellow command in src/server/server 
+- To generate a Dockerfile and a .dockerignore, run the bellow command in src/server
 gcloud beta app gen-config --custom
 
 - Build the docker image using
