@@ -3,12 +3,14 @@
 
 . tools/set_env_vars.sh
 
-# kill previous instance of flask server and free port if needed
-tools/kill_flask_server.sh
-# use appengine virtual env to ensure that flask server only uses python libs available, that is the ones 
+# kill previous instance of gunicorn server and free port if needed
+tools/kill_gunicorn.sh
+
+# use appengine virtual env to ensure that flask app only uses python libs available, that is the ones
 # defined in requirements.txt next to server python module.
-appengine_env/bin/python  src/server/main.py &
+# main:APP = a variable named APP (the web app) in main.py module.
+appengine_env/bin/gunicorn -b 127.0.0.1:8080 main:APP --chdir src/server &
 
 tools/start_gcloud_and_exit.sh
-# start Flask server and datastore in parallel, no need to wait for the first one
+# start gunicorn and datastore in parallel, no need to wait for the first one
 # because it's always faster to start that datastore

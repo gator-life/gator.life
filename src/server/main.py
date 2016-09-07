@@ -7,9 +7,11 @@ from flask import Flask
 from server.environment import IS_TEST_ENV
 from server.handlers import handlers
 
-# As this variable is referenced by gunicorn in entrypoint section of app.yaml file, if changed, the gunicorn command must
-# be updated accordingly
-APP = Flask(__name__)
+# This variable is referenced by gunicorn in
+#  - entrypoint section of app.yaml file,
+#  - tools/start_server.sh
+# if changed, gunicorn command must be updated accordingly.
+APP = Flask(__name__, static_folder='server/static')
 APP.register_blueprint(handlers)
 APP.secret_key = 'maybe_we_should_generate_a_random_key'
 
