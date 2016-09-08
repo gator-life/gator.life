@@ -2,15 +2,15 @@
 
 import logging
 from time import sleep
-
 import learner.learner as lrn
+import common.crypto as crypto
 from server.frontendstructs import Document, UserDocument, FeatureVector
 from server.dal import Dal, REF_FEATURE_SET
 
 
 def scrap_and_learn(
-        scraper, scraper_doc_saver, topic_modeller, url_unicity_checker,
-        docs_chunk_size, user_docs_max_size,
+        scraper, scraper_doc_saver, topic_modeller,
+        docs_chunk_size, user_docs_max_size, seen_urls_cache_start_date,
         skip_user_func=lambda u: False):
     # pylint: disable=too-many-locals
     dal = Dal()
@@ -18,6 +18,8 @@ def scrap_and_learn(
     users = [user for user in all_users if not skip_user_func(user)]  # to filter in tests
     users_docs = dal.get_users_docs(users)
     users_feature_vectors = dal.get_users_feature_vectors(users)
+
+    url_hashes = set(dal.get_recent_doc_url_hashes(seen_urls_cache_start_date))
 
     user_docs_accumulator = _build_user_docs_accumulator(users_docs, users_feature_vectors, user_docs_max_size)
     doc_chunk = [None] * docs_chunk_size
@@ -30,13 +32,16 @@ def scrap_and_learn(
     while True:
         try:
             for scraper_document in scraper.scrap():
-                if not url_unicity_checker.is_unique_and_add(scraper_document.link_element.url):
+                url_hash = crypto.hash_safe(scraper_document.link_element.url)
+                if url_hash in url_hashes:
                     continue
+
+                url_hashes.add(url_hash)
 
                 topic_feature_vector = topic_modeller.classify(scraper_document.html_content)
                 doc = Document.make_from_scratch(
-                    scraper_document.link_element.url, scraper_document.link_element.origin_info.title, summary=None,
-                    feature_vector=FeatureVector.make_from_scratch(topic_feature_vector, REF_FEATURE_SET))
+                    scraper_document.link_element.url, url_hash, scraper_document.link_element.origin_info.title,
+                    summary=None, feature_vector=FeatureVector.make_from_scratch(topic_feature_vector, REF_FEATURE_SET))
                 scraper_doc_saver.save(doc)
                 doc_chunk[index_in_docs_chunk] = doc
 
@@ -44,14 +49,12 @@ def scrap_and_learn(
 
                 index_in_docs_chunk += 1
                 if index_in_docs_chunk == docs_chunk_size:
-                    url_unicity_checker.save()
                     dal.save_documents(doc_chunk)
                     _save_users_docs_current_state(dal, users, user_docs_accumulator)
                     doc_chunk = [None] * docs_chunk_size
                     index_in_docs_chunk = 0
 
             # exit function if scraper generator exited without error
-            url_unicity_checker.save()
             dal.save_documents(doc_chunk[:index_in_docs_chunk])
             _save_users_docs_current_state(dal, users, user_docs_accumulator)
             return

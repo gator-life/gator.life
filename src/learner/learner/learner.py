@@ -45,7 +45,7 @@ class UserDocumentsAccumulator(object):
             user_feature_vectors.append(data.feature_vector)
         self._user_feature_vector_matrix = np.matrix(user_feature_vectors)
 
-    def add_doc(self, doc_id, feature_vector):
+    def add_doc(self, doc, feature_vector):
         """
         NB: The computational cost for each doc is:
         O(
@@ -55,12 +55,12 @@ class UserDocumentsAccumulator(object):
            +
            nb_user*nb_features --> matrix multiplication
         )
-        :param doc_id:
+        :param doc:
         :param feature_vector:
         """
         grade_vec = _similarity_by_row(self._user_feature_vector_matrix, feature_vector)
         for grade, user_docs_heap in zip(grade_vec, self._user_docs_heaps):
-            user_docs_heap.push(grade, doc_id)
+            user_docs_heap.push(grade, doc)
 
     def build_user_docs(self):
         """

@@ -3,6 +3,7 @@
 
 import unittest
 from orchestrator.scrap_and_learn import scrap_and_learn
+from common.datehelper import utcnow
 import scraper.scraperstructs as scrap
 from server.dal import Dal, NULL_FEATURE_SET, REF_FEATURE_SET
 import server.frontendstructs as struct
@@ -44,26 +45,6 @@ class MockTopicModeller(object):
             raise ValueError(doc_content)
 
 
-class MockUrlUnicityChecker(object):
-
-    def __init__(self):
-        self.urls_set = set()
-        self.is_unique_count = 0
-        self.saved_count = 0
-
-    def is_unique_and_add(self, url):
-        self.is_unique_count += 1
-
-        if url in self.urls_set:
-            return False
-
-        self.urls_set.add(url)
-        return True
-
-    def save(self):
-        self.saved_count += 1
-
-
 class ScrapAndLearnTests(unittest.TestCase):
 
     def setUp(self):
@@ -80,8 +61,8 @@ class ScrapAndLearnTests(unittest.TestCase):
         self.dal.save_user(user2, "password2")
         self._save_dummy_profile_for_user(user2)
         # I.2) doc
-        doc1 = struct.Document.make_from_scratch("url1", 'title1', "sum1", self.dummy_feat_vec)
-        doc2 = struct.Document.make_from_scratch("url2", 'title2', "sum2", self.dummy_feat_vec)
+        doc1 = struct.Document.make_from_scratch("url1", 'hash1', 'title1', "sum1", self.dummy_feat_vec)
+        doc2 = struct.Document.make_from_scratch("url2", 'hash2', 'title2', "sum2", self.dummy_feat_vec)
         self.dal.save_documents([doc1, doc2])
         # I.3) userDoc
         user1_user_docs = [
@@ -90,9 +71,9 @@ class ScrapAndLearnTests(unittest.TestCase):
         self.dal.save_users_docs([(user1, user1_user_docs)])
         # II) Orchestrate
         mock_saver = MockSaver()
-        mock_url_unicity_checker = MockUrlUnicityChecker()
-        scrap_and_learn(MockScraper(), mock_saver, MockTopicModeller(), mock_url_unicity_checker, docs_chunk_size=2,
-                        user_docs_max_size=5, skip_user_func=lambda u: 'test_scrap_and_learn' not in u.email)
+        scrap_and_learn(MockScraper(), mock_saver, MockTopicModeller(), docs_chunk_size=2,
+                        user_docs_max_size=5, seen_urls_cache_start_date=utcnow(),
+                        skip_user_func=lambda u: 'test_scrap_and_learn' not in u.email)
 
         # III) check database and mocks
         result_users_docs = self.dal.get_users_docs([user1, user2])
@@ -108,10 +89,6 @@ class ScrapAndLearnTests(unittest.TestCase):
             # currently, model versioning is not managed, all is set to ref
             self.assertEquals(REF_FEATURE_SET, doc.feature_vector.feature_set_id)
             self.assertEquals(MockTopicModeller.feature_vector, doc.feature_vector.vector)
-        # is_unique() should be called for each document
-        self.assertEqual(mock_url_unicity_checker.is_unique_count, 5)
-        # save() should be called at 'docs_chunk_size' frequency and 1 time at the end of the loop.
-        self.assertEqual(mock_url_unicity_checker.saved_count, 3)
 
     def _save_dummy_profile_for_user(self, user):
         feature_vector = struct.FeatureVector.make_from_scratch([1.0], "featureSetId-test_scrap_learn")
