@@ -103,18 +103,28 @@ class DalTests(unittest.TestCase):
         feat_vec2 = struct.FeatureVector.make_from_scratch(vector=[1.5, 0.6], feature_set_id=feature_set_id)
 
         expected_doc1 = struct.Document.make_from_scratch(
-            url='url1_test_save_documents', title='title1_test_save_documents', summary='s1', feature_vector=feat_vec1)
+            url='url1_test_save_documents', url_hash='url_hash1_test_save_documents',
+            title='title1_test_save_documents', summary='s1', feature_vector=feat_vec1)
         expected_doc2 = struct.Document.make_from_scratch(
-            url='url2_test_save_documents', title='title2_test_save_documents', summary='s2', feature_vector=feat_vec2)
+            url='url2_test_save_documents', url_hash='url_hash2_test_save_documents',
+            title='title2_test_save_documents', summary='s2', feature_vector=feat_vec2)
         expected_docs = [expected_doc1, expected_doc2]
         self.dal.save_documents(expected_docs)
 
         for expected_doc in expected_docs:
             result_doc = self.dal.get_doc_by_urlsafe_key(expected_doc.key_urlsafe)
-            self.assertEquals(expected_doc.url, result_doc.url)
-            self.assertEquals(expected_doc.title, result_doc.title)
-            self.assertEquals(expected_doc.summary, result_doc.summary)
-            self.assertEquals(expected_doc.feature_vector.vector[0], result_doc.feature_vector.vector[0])
+            self._assert_doc_equals(expected_doc, result_doc)
+
+    def test_save_two_docs_with_same_url_hash_override_first(self):
+        doc1 = self.make_dummy_doc('test_save_two_docs_with_same_url_hash_override_first_1')
+        doc2 = self.make_dummy_doc('test_save_two_docs_with_same_url_hash_override_first_2')
+        doc2.url_hash = doc1.url_hash
+
+        self.dal.save_documents([doc1])
+        self.dal.save_documents([doc2])
+
+        result_doc = self.dal.get_doc_by_urlsafe_key(doc1.key_urlsafe)
+        self._assert_doc_equals(doc2, result_doc)
 
     def test_save_then_get_user_computed_profiles(self):
         user1, profile1 = self._build_profile(1)
@@ -186,6 +196,16 @@ class DalTests(unittest.TestCase):
         self.assertEquals(expected_model_data.negative_feedback_vector, result_model_data.negative_feedback_vector)
         self.assertEquals(expected_model_data.positive_feedback_sum_coeff, result_model_data.positive_feedback_sum_coeff)
         self.assertEquals(expected_model_data.negative_feedback_sum_coeff, result_model_data.negative_feedback_sum_coeff)
+
+    def _assert_doc_equals(self, expected_doc, result_doc):
+        self.assertEquals(expected_doc.url, result_doc.url)
+        self.assertEquals(expected_doc.url_hash, result_doc.url_hash)
+        self.assertEquals(expected_doc.title, result_doc.title)
+        self.assertEquals(expected_doc._db_key, result_doc._db_key)
+        self.assertEquals(expected_doc.key_urlsafe, result_doc.key_urlsafe)
+        self.assertEquals(expected_doc.summary, result_doc.summary)
+        self.assertEquals(expected_doc.feature_vector.vector, result_doc.feature_vector.vector)
+        self.assertEquals(expected_doc.feature_vector.feature_set_id, result_doc.feature_vector.feature_set_id)
 
     def test_save_then_get_users_docs_should_be_equals(self):
 
@@ -265,7 +285,11 @@ class DalTests(unittest.TestCase):
         feature_set_id = self.build_dummy_db_feature_set()
         feat_vec = struct.FeatureVector.make_from_scratch(vector=[0.2], feature_set_id=feature_set_id)
         return struct.Document.make_from_scratch(
-            url='url_' + str_id, title='title' + str_id, summary='s_' + str_id, feature_vector=feat_vec)
+            url='url_' + str_id,
+            url_hash='url_hash_' + str_id,
+            title='title' + str_id,
+            summary='s_' + str_id,
+            feature_vector=feat_vec)
 
     # for each static member of the class (remove special fields __***__), check we do a proper round-trip with database
     def test_action_type_on_doc_mapping_with_db(self):
@@ -276,16 +300,22 @@ class DalTests(unittest.TestCase):
     def test_get_doc_by_urlsafe_key_exist(self):
         doc = self.make_dummy_doc('test_get_doc_by_urlsafe_key')
         self.dal.save_documents([doc])
-
         result_doc = self.dal.get_doc_by_urlsafe_key(doc.key_urlsafe)
+        self._assert_doc_equals(doc, result_doc)
 
-        self.assertEquals(doc.url, result_doc.url)
-        self.assertEquals(doc.title, result_doc.title)
-        self.assertEquals(doc._db_key, result_doc._db_key)
-        self.assertEquals(doc.key_urlsafe, result_doc.key_urlsafe)
-        self.assertEquals(doc.summary, result_doc.summary)
-        self.assertEquals(doc.feature_vector.vector, result_doc.feature_vector.vector)
-        self.assertEquals(doc.feature_vector.feature_set_id, result_doc.feature_vector.feature_set_id)
+    def test_get_recent_doc_url_hashes(self):
+
+        doc_before = self.make_dummy_doc('get_recent_doc_url_hashes_before')
+        doc1 = self.make_dummy_doc('get_recent_doc_url_hashes_1')
+        doc2 = self.make_dummy_doc('get_recent_doc_url_hashes_2')
+
+        self.dal.save_documents([doc_before])
+        min_datetime = utcnow()
+        self.dal.save_documents([doc1, doc2])
+        url_hashes = self.dal.get_recent_doc_url_hashes(min_datetime)
+        self.assertEquals(2, len(url_hashes))
+        self.assertTrue(doc1.url_hash in url_hashes)
+        self.assertTrue(doc2.url_hash in url_hashes)
 
     def build_dummy_db_feature_set(self):
         self.dal.save_features(feature_set_id='set', feature_names=['desc2', 'desc1'])

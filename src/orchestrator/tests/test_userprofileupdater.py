@@ -49,7 +49,7 @@ class UserProfileBuilderTests(unittest.TestCase):
     @staticmethod
     def _build_doc(feature_set_id):
         feature_vector = struct.FeatureVector.make_from_scratch([1.0], feature_set_id)
-        doc = struct.Document.make_from_scratch('u1', 't1', 's1', feature_vector)
+        doc = struct.Document.make_from_scratch('u1', 'h1', 't1', 's1', feature_vector)
         return doc
 
     @staticmethod

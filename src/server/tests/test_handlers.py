@@ -23,13 +23,19 @@ class DalMock(object):
         return self.saved_user
 
     def get_user_docs(self, user):  # pylint: disable=unused-argument, no-self-use
+
+        def build_user_doc(title):
+            return struct.UserDocument.make_from_scratch(
+                struct.Document.make_from_scratch(None, None, title, None, None),
+                0.0)
+
         if user.email == 'mark':
             return \
-                [struct.UserDocument.make_from_scratch(struct.Document.make_from_scratch(None, 'title1', None, None), 0.0),
-                 struct.UserDocument.make_from_scratch(struct.Document.make_from_scratch(None, 'title2', None, None), 0.0)]
+                [build_user_doc('title1'),
+                 build_user_doc('title2')]
         if user.email == 'elon':
             return [
-                struct.UserDocument.make_from_scratch(struct.Document.make_from_scratch(None, 'rocket', None, None), 0.0)]
+                build_user_doc('rocket')]
         return None
 
     def save_user(self, user, password):
@@ -50,7 +56,7 @@ class DalMock(object):
 
     def get_doc_by_urlsafe_key(self, url_safe_key):  # pylint: disable=unused-argument, no-self-use
         if url_safe_key == 'url_safe_key':
-            return struct.Document.make_from_scratch('url3', 'title3', None, None)
+            return struct.Document.make_from_scratch('url3', None, 'title3', None, None)
         return None
 
     def save_user_action_on_doc(self, user, document, action_on_doc):

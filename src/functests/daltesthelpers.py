@@ -7,10 +7,11 @@ from server.dal import Dal, REF_FEATURE_SET
 def create_user_dummy(user_id, password, interests):
     dal = Dal()
     dummy_doc1 = struct.Document.make_from_scratch(
-        url='https://www.google.com', title='google.com', summary='we will buy you',
+        url='https://www.google.com', url_hash='hash_create_user_dummy_1_' + user_id, title='google.com',
+        summary='we will buy you',
         feature_vector=struct.FeatureVector.make_from_scratch([], REF_FEATURE_SET))
     dummy_doc2 = struct.Document.make_from_scratch(
-        url='gator.life', title='gator.life', summary='YGNI',
+        url='gator.life', url_hash='hash_create_user_dummy_2_' + user_id, title='gator.life', summary='YGNI',
         feature_vector=struct.FeatureVector.make_from_scratch([], REF_FEATURE_SET))
     dal.save_documents([dummy_doc1, dummy_doc2])
 

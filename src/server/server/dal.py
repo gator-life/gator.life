@@ -103,7 +103,8 @@ def _to_user_computed_profile(db_user_computed_profile):
 
 def _to_doc(db_doc):
     return struct.Document.make_from_db(
-        url=db_doc['url'], title=db_doc['title'], summary=db_doc['summary'], datetime=db_doc['datetime'],
+        url=db_doc['url'], url_hash=db_doc.key.name, title=db_doc[
+            'title'], summary=db_doc['summary'], datetime=db_doc['datetime'],
         db_key=db_doc.key, key_urlsafe=_to_urlsafe(db_doc.key),
         feature_vector=_to_feature_vector(db_doc['feature_vector']))
 
@@ -392,7 +393,7 @@ class Dal(object):
 
     def _to_db_doc(self, doc):
         not_indexed = ('title', 'summary', 'feature_vector')
-        db_doc = self._make_entity('Document', not_indexed)
+        db_doc = self._make_named_entity('Document', doc.url_hash, not_indexed)
         db_doc['url'] = doc.url
         db_doc['title'] = doc.title
         db_doc['summary'] = doc.summary
@@ -408,6 +409,17 @@ class Dal(object):
         db_key = _to_key(urlsafe=key)
         db_doc = self._ds_client.get(db_key)
         return _to_doc(db_doc)
+
+    def get_recent_doc_url_hashes(self, from_datetime):
+        """
+        :param from_datetime: datetime
+        :return: the list of hashes of docs whose datetime is after from_datetime
+        """
+        query = self._ds_client.query(kind='Document')
+        query.keys_only()
+        query.add_filter('datetime', '>', from_datetime)
+        db_doc_entities = query.fetch()
+        return [entity.key.name for entity in db_doc_entities]
 
     def save_user_action_on_doc(self, user, document, action_on_doc):
         """
