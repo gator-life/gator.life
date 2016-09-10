@@ -3,14 +3,15 @@
 
 . tools/set_env_vars.sh
 
-# kill previous instance of gunicorn server and free port if needed
-tools/kill_gunicorn.sh
-
-# use appengine virtual env to ensure that flask app only uses python libs available, that is the ones
-# defined in requirements.txt next to server python module.
-# main:APP = a variable named APP (the web app) in main.py module.
-appengine_env/bin/gunicorn -b 127.0.0.1:8080 main:APP --chdir src/server &
-
 tools/start_gcloud_and_exit.sh
-# start gunicorn and datastore in parallel, no need to wait for the first one
-# because it's always faster to start that datastore
+
+# kill running instance of the docker container if needed
+tools/kill_docker_webapp.sh
+
+tools/gen_app_dockerfile.sh
+
+# Building and starting the app.
+docker build -t "gator.life:dev-webapp" src/server
+# -d option allow us to start the container in detached mode (detached from the console)
+docker run -p 8080:8080 -d gator.life:dev-webapp
+
