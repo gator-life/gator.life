@@ -35,8 +35,9 @@ Tested on Ubuntu 14.04 and 16.04. For more details on how the setup was done on 
 
 1. Make sure you have installed the dependencies:
 
-	* `python` 2.7, `pip` and `virtualenv`
-	* `docker`
+	* `Git LFS`
+	* `Python` 2.7, `pip` and `virtualenv`
+	* `Docker`
 	* `PhantomJS`
 	* `Java` 7+ JRE
 
