@@ -4,11 +4,11 @@
         <table>
             {% for elt in links %}
             <tr>
-                <td class="up-vote"><a name="up-vote" href="/link/{{ actions_mapping['up_vote'] }}/{{ elt.key }}">Up</a></td>
-                <td class="link" rowspan="2"><a name="link" href="/link/{{ actions_mapping['click_link'] }}/{{ elt.key }}">{{ elt.text }}</a></td>
+                <td class="up-vote"><a name="up-vote" href="/link/{{ actions_mapping['up_vote'] }}/{{ elt.url_hash }}">Up</a></td>
+                <td class="link" rowspan="2"><a name="link" href="/link/{{ actions_mapping['click_link'] }}/{{ elt.url_hash }}">{{ elt.text }}</a></td>
             </tr>
             <tr>
-                <td class="down-vote"><a name="down-vote" href="/link/{{ actions_mapping['down_vote'] }}/{{ elt.key }}">Down</a></td>
+                <td class="down-vote"><a name="down-vote" href="/link/{{ actions_mapping['down_vote'] }}/{{ elt.url_hash }}">Down</a></td>
             </tr>
             {% endfor %}
         </table>

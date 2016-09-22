@@ -14,8 +14,8 @@ DAL = Dal()
 
 class Link(object):
 
-    def __init__(self, key, text):
-        self.key = key
+    def __init__(self, url_hash, text):
+        self.url_hash = url_hash
         self.text = text
 
 
@@ -58,7 +58,7 @@ def home():
     user = get_connected_user()
     if user is not None:
         user_docs = DAL.get_user_docs(user)
-        links = [Link(key=user_doc.document.key_urlsafe, text=user_doc.document.title) for user_doc in user_docs]
+        links = [Link(url_hash=user_doc.document.url_hash, text=user_doc.document.title) for user_doc in user_docs]
         actions_mapping = {'click_link': struct.UserActionTypeOnDoc.click_link,
                            'up_vote': struct.UserActionTypeOnDoc.up_vote,
                            'down_vote': struct.UserActionTypeOnDoc.down_vote}
@@ -111,11 +111,11 @@ def disconnect():
     return redirect('/login')
 
 
-@handlers.route('/link/<int:action_type_on_doc>/<document_key>')
-def link(action_type_on_doc, document_key):
+@handlers.route('/link/<int:action_type_on_doc>/<url_hash>')
+def link(action_type_on_doc, url_hash):
     user = get_connected_user()
     if user is not None:
-        document = DAL.get_doc_by_urlsafe_key(document_key)
+        document = DAL.get_doc_by_url_hash(url_hash)
         DAL.save_user_action_on_doc(user, document, action_type_on_doc)
         if action_type_on_doc == struct.UserActionTypeOnDoc.click_link:
             return redirect(document.url.encode('utf-8'))
