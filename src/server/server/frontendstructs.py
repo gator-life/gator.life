@@ -4,27 +4,27 @@
 class Document(object):  # pylint: disable=too-many-instance-attributes
 
     @staticmethod
-    def make_from_db(url, url_hash, title, summary, datetime, db_key, key_urlsafe, feature_vector):  # pylint: disable=too-many-arguments
-        return Document(url, url_hash, title, summary, datetime, db_key, key_urlsafe, feature_vector)
+    def make_from_db(url, url_hash, title, summary, datetime, db_key, feature_vector):  # pylint: disable=too-many-arguments
+        return Document(url, url_hash, title, summary, datetime, db_key, feature_vector)
 
     @staticmethod
     def make_from_scratch(url, url_hash, title, summary, feature_vector):
         """
         :param url: string
+        :param url_hash: string
         :param title: string
         :param summary: string
         :param feature_vector: frontendstructs.FeatureVector
         :return:
         """
         return Document(
-            url, url_hash, title, summary, datetime=None, db_key=None, key_urlsafe=None, feature_vector=feature_vector)
+            url, url_hash, title, summary, datetime=None, db_key=None, feature_vector=feature_vector)
 
-    def __init__(self, url, url_hash, title, summary, datetime, db_key, key_urlsafe, feature_vector):  # pylint: disable=too-many-arguments
+    def __init__(self, url, url_hash, title, summary, datetime, db_key, feature_vector):  # pylint: disable=too-many-arguments
         self.url = url
         self.url_hash = url_hash
         self.title = title
         self._db_key = db_key
-        self.key_urlsafe = key_urlsafe
         self.summary = summary
         self.datetime = datetime
         self.feature_vector = feature_vector

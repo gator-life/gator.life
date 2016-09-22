@@ -112,7 +112,7 @@ class DalTests(unittest.TestCase):
         self.dal.save_documents(expected_docs)
 
         for expected_doc in expected_docs:
-            result_doc = self.dal.get_doc_by_urlsafe_key(expected_doc.key_urlsafe)
+            result_doc = self.dal.get_doc_by_url_hash(expected_doc.url_hash)
             self._assert_doc_equals(expected_doc, result_doc)
 
     def test_save_two_docs_with_same_url_hash_override_first(self):
@@ -123,7 +123,7 @@ class DalTests(unittest.TestCase):
         self.dal.save_documents([doc1])
         self.dal.save_documents([doc2])
 
-        result_doc = self.dal.get_doc_by_urlsafe_key(doc1.key_urlsafe)
+        result_doc = self.dal.get_doc_by_url_hash(doc1.url_hash)
         self._assert_doc_equals(doc2, result_doc)
 
     def test_save_then_get_user_computed_profiles(self):
@@ -202,7 +202,6 @@ class DalTests(unittest.TestCase):
         self.assertEquals(expected_doc.url_hash, result_doc.url_hash)
         self.assertEquals(expected_doc.title, result_doc.title)
         self.assertEquals(expected_doc._db_key, result_doc._db_key)
-        self.assertEquals(expected_doc.key_urlsafe, result_doc.key_urlsafe)
         self.assertEquals(expected_doc.summary, result_doc.summary)
         self.assertEquals(expected_doc.feature_vector.vector, result_doc.feature_vector.vector)
         self.assertEquals(expected_doc.feature_vector.feature_set_id, result_doc.feature_vector.feature_set_id)
@@ -297,10 +296,10 @@ class DalTests(unittest.TestCase):
             if not enum_name.startswith("__"):
                 self.assertEquals(enum_value, sdal._to_user_action_type_on_doc(sdal._to_db_action_type_on_doc(enum_value)))
 
-    def test_get_doc_by_urlsafe_key_exist(self):
-        doc = self.make_dummy_doc('test_get_doc_by_urlsafe_key')
+    def test_get_doc_by_url_hash(self):
+        doc = self.make_dummy_doc('test_get_doc_by_url_hash')
         self.dal.save_documents([doc])
-        result_doc = self.dal.get_doc_by_urlsafe_key(doc.key_urlsafe)
+        result_doc = self.dal.get_doc_by_url_hash(doc.url_hash)
         self._assert_doc_equals(doc, result_doc)
 
     def test_get_recent_doc_url_hashes(self):
