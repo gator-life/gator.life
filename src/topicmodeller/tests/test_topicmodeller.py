@@ -41,9 +41,11 @@ class TopicModellerTests(unittest.TestCase):
         # check classification is logical between doc1 and doc2 with two axes:
         # -same doc, different topic
         # -same topic, different docs
-        classification_after_init_doc1 = topic_modeller.classify(doc1)
+        (ok1, classification_after_init_doc1) = topic_modeller.classify(doc1)
+        self.assertTrue(ok1)
         self.assertEquals(len(topic_modeller.topics), len(classification_after_init_doc1))
-        classification_after_init_doc2 = topic_modeller.classify(doc2)
+        (ok2, classification_after_init_doc2) = topic_modeller.classify(doc2)
+        self.assertTrue(ok2)
         self.assertTrue(classification_after_init_doc1[index_orange] > classification_after_init_doc1[index_green])
         self.assertTrue(classification_after_init_doc2[index_orange] < classification_after_init_doc2[index_green])
         self.assertTrue(classification_after_init_doc1[index_orange] > classification_after_init_doc2[index_orange])
@@ -56,7 +58,8 @@ class TopicModellerTests(unittest.TestCase):
         deserialized_topic_modeller = TopicModeller(self.MockTokenizer())
         deserialized_topic_modeller.load(directory)
 
-        classification_after_load_doc1 = deserialized_topic_modeller.classify(doc1)
+        (ok1_reload, classification_after_load_doc1) = deserialized_topic_modeller.classify(doc1)
+        self.assertTrue(ok1_reload)
         self.assertEquals(len(topic_modeller.topics), len(classification_after_load_doc1))
         for after_init, after_load in zip(classification_after_init_doc1, classification_after_load_doc1):
             self.assertAlmostEqual(after_init, after_load, places=4)
