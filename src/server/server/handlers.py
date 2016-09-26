@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from flask import Blueprint, render_template, redirect, session, request
-from .dal import Dal, REF_FEATURE_SET
+from .dal import Dal
 from . import frontendstructs as struct
 from . import passwordhelpers
-
+from . import structinit
 
 # keep low case name because it seems flask / blueprint standard
 handlers = Blueprint('handlers', __name__, template_folder='templates')  # pylint: disable=invalid-name
@@ -76,19 +76,9 @@ def register():
             email = request.form['email']
             password = request.form['password']
             interests = request.form['interests'].splitlines()
-
             user = DAL.get_user(email)
             if user is None:
-                user = struct.User.make_from_scratch(email, interests)
-                DAL.save_user(user, passwordhelpers.hash_password(password))
-
-                # Create an empty profile for the newly created user
-                features_set = DAL.get_features(REF_FEATURE_SET)
-                feature_vector = struct.FeatureVector.make_from_scratch([1] * len(features_set), REF_FEATURE_SET)
-                model_data = struct.UserProfileModelData.make_empty(len(features_set))
-                profile = struct.UserComputedProfile.make_from_scratch(feature_vector, model_data)
-
-                DAL.save_user_computed_profiles([(user, profile)])
+                user = structinit.create_user_in_db(email, interests, password, DAL)
                 set_connected_user(user)
                 return redirect('/')
             else:
