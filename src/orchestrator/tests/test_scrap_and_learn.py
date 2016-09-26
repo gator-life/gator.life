@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from orchestrator.scrap_and_learn import scrap_and_learn
+from orchestrator.scrap_and_learn import _scrap_and_learn
 from common.datehelper import utcnow
 import scraper.scraperstructs as scrap
 from server.dal import Dal, NULL_FEATURE_SET, REF_FEATURE_SET
@@ -13,16 +13,16 @@ class MockScraper(object):
 
     @staticmethod
     def scrap():
-        def scrap_doc(index):
+        def scrap_doc(index, content='html'):
             str_index = str(index)
             return scrap.Document(
                 scrap.LinkElement(
-                    "url" + str_index, None, scrap.OriginInfo("title" + str_index, None, None, None, None), None),
-                'html')
+                    "url" + str_index, None, scrap.OriginInfo("title" + str_index, None, None, None, None), None), content)
 
         # chunk_size(3) + 1
-        # the last document is an other instance of a duplicated url, should be ignored by the url unicity checker
-        return [scrap_doc(3), scrap_doc(4), scrap_doc(5), scrap_doc(6), scrap_doc(3)]
+        # the before last document is an other instance of a duplicated url, should be ignored by the url unicity checker
+        # the last document should ne ignored as it is returned as unclassifiable by the TopicModeller
+        return [scrap_doc(3), scrap_doc(4), scrap_doc(5), scrap_doc(6), scrap_doc(3), scrap_doc(7, 'unclassifiable')]
 
 
 class MockSaver(object):
@@ -39,8 +39,10 @@ class MockTopicModeller(object):
 
     @staticmethod
     def classify(doc_content):
+        if doc_content == 'unclassifiable':
+            return False, None
         if doc_content == 'html':
-            return MockTopicModeller.feature_vector
+            return True, MockTopicModeller.feature_vector
         else:
             raise ValueError(doc_content)
 
@@ -71,9 +73,9 @@ class ScrapAndLearnTests(unittest.TestCase):
         self.dal.save_users_docs([(user1, user1_user_docs)])
         # II) Orchestrate
         mock_saver = MockSaver()
-        scrap_and_learn(MockScraper(), mock_saver, MockTopicModeller(), docs_chunk_size=2,
-                        user_docs_max_size=5, seen_urls_cache_start_date=utcnow(),
-                        skip_user_func=lambda u: 'test_scrap_and_learn' not in u.email)
+        _scrap_and_learn(MockScraper(), mock_saver, MockTopicModeller(), docs_chunk_size=2,
+                         user_docs_max_size=5, seen_urls_cache_start_date=utcnow(),
+                         keep_user_func=lambda u: 'test_scrap_and_learn' in u.email)
 
         # III) check database and mocks
         result_users_docs = self.dal.get_users_docs([user1, user2])
