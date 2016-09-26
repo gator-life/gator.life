@@ -10,7 +10,7 @@ requests
 cchardet
 numpy
 scipy
-gensim
+gensim==0.13.1
 nltk
 gcloud
 pytz
