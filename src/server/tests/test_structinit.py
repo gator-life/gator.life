@@ -25,6 +25,7 @@ class StructInitTests(unittest.TestCase):
         self.assertEquals(email, user.email)
         self.assertEquals(email, user_from_db.email)
         self.assertEquals(interests, user.interests)
+        self.assertEquals(interests, user_from_db.interests)
         self.assertEquals(pswd.hash_password(password), hash_password_from_db)
         self.assertEquals(REF_FEATURE_SET, profile.feature_vector.feature_set_id)
         self.assertEquals([1, 1, 1, 1], profile.feature_vector.vector)
