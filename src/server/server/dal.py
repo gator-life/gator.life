@@ -6,29 +6,12 @@ through objects uncoupled from gcloud datastore API
 """
 import datetime
 import httplib2
-import jsonpickle
 from gcloud import datastore
 from .environment import GCLOUD_PROJECT, IS_TEST_ENV
 from . import frontendstructs as struct
 
 REF_FEATURE_SET = u"ref_feature_set"
 NULL_FEATURE_SET = u"null_feature_set"
-
-
-def _to_urlsafe(key):
-    """
-    Encode a key to a string that can be passed as an url parameter
-    Be careful, this is only encoded, not encrypted.
-    """
-    # encode call transform key to a string, then b64encode to a base64 format that can be passed in an url
-    return jsonpickle.util.b64encode(jsonpickle.encode(key))
-
-
-def _to_key(urlsafe):
-    """
-    Decode back to a key than has been encoded with _to_urlsafe(key)
-    """
-    return jsonpickle.decode(jsonpickle.util.b64decode(urlsafe))
 
 
 def _to_user_action_type_on_doc(user_action_on_doc_db_string):
@@ -103,9 +86,8 @@ def _to_user_computed_profile(db_user_computed_profile):
 
 def _to_doc(db_doc):
     return struct.Document.make_from_db(
-        url=db_doc['url'], title=db_doc['title'], summary=db_doc['summary'], datetime=db_doc['datetime'],
-        db_key=db_doc.key, key_urlsafe=_to_urlsafe(db_doc.key),
-        feature_vector=_to_feature_vector(db_doc['feature_vector']))
+        url=db_doc['url'], url_hash=db_doc.key.name, title=db_doc['title'], summary=db_doc['summary'],
+        datetime=db_doc['datetime'], db_key=db_doc.key, feature_vector=_to_feature_vector(db_doc['feature_vector']))
 
 
 def _datastore_client():
@@ -388,11 +370,10 @@ class Dal(object):
         db_doc_keys = [db_doc.key for db_doc in db_docs]
         for (doc, key) in zip(docs_with_order, db_doc_keys):
             doc._db_key = key  # pylint: disable=protected-access
-            doc.key_urlsafe = _to_urlsafe(key)
 
     def _to_db_doc(self, doc):
         not_indexed = ('title', 'summary', 'feature_vector')
-        db_doc = self._make_entity('Document', not_indexed)
+        db_doc = self._make_named_entity('Document', doc.url_hash, not_indexed)
         db_doc['url'] = doc.url
         db_doc['title'] = doc.title
         db_doc['summary'] = doc.summary
@@ -400,14 +381,25 @@ class Dal(object):
         db_doc['datetime'] = datetime.datetime.utcnow()
         return db_doc
 
-    def get_doc_by_urlsafe_key(self, key):
+    def get_doc_by_url_hash(self, url_hash):
         """
-        :param key: key corresponding to the field 'key_urlsafe' of a struct.Document
+        :param url_hash: string corresponding to the field 'url_hash' of a struct.Document
         :return: struct.Document
         """
-        db_key = _to_key(urlsafe=key)
+        db_key = self._ds_client.key('Document', url_hash)
         db_doc = self._ds_client.get(db_key)
         return _to_doc(db_doc)
+
+    def get_recent_doc_url_hashes(self, from_datetime):
+        """
+        :param from_datetime: datetime
+        :return: the list of hashes of docs whose datetime is after from_datetime
+        """
+        query = self._ds_client.query(kind='Document')
+        query.keys_only()
+        query.add_filter('datetime', '>', from_datetime)
+        db_doc_entities = query.fetch()
+        return [entity.key.name for entity in db_doc_entities]
 
     def save_user_action_on_doc(self, user, document, action_on_doc):
         """

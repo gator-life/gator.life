@@ -37,7 +37,7 @@ class TopicModeller(object):
         self._dictionary = None
         self._dictionary_words = None
         self._lda = None
-        self.topics = None
+        self._topics = None
         self._tokenizer = document_tokenizer
         self._remove_optimizations = False  # can be set to 'True' for testing purpose
         np.random.seed(2406834896)  # to get reproductible results
@@ -55,7 +55,6 @@ class TopicModeller(object):
 
     def initialize_model(self, documents, num_topics):
         self._create_lda_model(documents, num_topics)
-        self._cache_topics()
 
     def initialize_dictionary(self, documents):
         for_dict_generator = (self._tokenizer.tokenize(document_content) for document_content in documents)
@@ -66,15 +65,22 @@ class TopicModeller(object):
         """
         Do the topic classification of the document
         :param html_document: html document as a string
-        :return: float vector of the size of TopicModeller.topics. Each value measure the significance of the associated
-         topic for this document
+        :return: a two elements tuple:
+            -First element is True if classification succeed, else false.
+            -Second element is a float vector of the size of TopicModeller.topics. Each value measure the significance of
+             the associated topic for this document
         """
         tokenized_doc = self._tokenizer.tokenize(html_document)
         filtered_doc = self._filter_document(tokenized_doc)
         doc_format_for_lda_model = self._dictionary.doc2bow(filtered_doc)
         # self.lda LdaModel []-operator return list of (topic_id, topic_probability) 2-tuples
-        topic_id_weight_dict = dict(self._lda[doc_format_for_lda_model])
-        return [topic_id_weight_dict.get(topic_id, 0) for (topic_id, _) in self.topics]
+        topic_id_to_probability = self._lda[doc_format_for_lda_model]
+        if not any(topic_id_to_probability):
+            return False, None
+        vector = [0] * self._lda.num_topics
+        for topic_id, topic_probability in topic_id_to_probability:
+            vector[topic_id] = topic_probability
+        return True, vector
 
     def load(self, model_data_folder):
         """
@@ -88,7 +94,6 @@ class TopicModeller(object):
         lda_file_path = self._lda_file_path(model_data_folder)
         if os.path.isfile(lda_file_path):
             self._lda = models.LdaModel.load(lda_file_path)
-            self._cache_topics()
         else:
             raise IOError(u'Lda model file does not exists : ' + lda_file_path)
 
@@ -154,6 +159,10 @@ class TopicModeller(object):
         # are "cached" on a set (O(1)).
         self._dictionary_words = set(self._dictionary.values())
 
-    def _cache_topics(self):
-        self.topics = [(i, [word for (word, _) in self._lda.show_topic(topicid=i, topn=1)])
-                       for i in range(self._lda.num_topics)]
+    @property
+    def topics(self):
+        # topics field is lazy loaded because it is rarely used and show_topic function is slow
+        if self._topics is None:
+            self._topics = [(i, [word for (word, _) in self._lda.show_topic(topicid=i, topn=1)])
+                            for i in range(self._lda.num_topics)]
+        return self._topics

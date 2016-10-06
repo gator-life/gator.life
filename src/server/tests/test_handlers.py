@@ -23,13 +23,19 @@ class DalMock(object):
         return self.saved_user
 
     def get_user_docs(self, user):  # pylint: disable=unused-argument, no-self-use
+
+        def build_user_doc(title):
+            return struct.UserDocument.make_from_scratch(
+                struct.Document.make_from_scratch(None, None, title, None, None),
+                0.0)
+
         if user.email == 'mark':
             return \
-                [struct.UserDocument.make_from_scratch(struct.Document.make_from_scratch(None, 'title1', None, None), 0.0),
-                 struct.UserDocument.make_from_scratch(struct.Document.make_from_scratch(None, 'title2', None, None), 0.0)]
+                [build_user_doc('title1'),
+                 build_user_doc('title2')]
         if user.email == 'elon':
             return [
-                struct.UserDocument.make_from_scratch(struct.Document.make_from_scratch(None, 'rocket', None, None), 0.0)]
+                build_user_doc('rocket')]
         return None
 
     def save_user(self, user, password):
@@ -48,9 +54,9 @@ class DalMock(object):
         if email == 'mark':
             return (self.get_user(email), pswd.hash_password('dadada'))
 
-    def get_doc_by_urlsafe_key(self, url_safe_key):  # pylint: disable=unused-argument, no-self-use
-        if url_safe_key == 'url_safe_key':
-            return struct.Document.make_from_scratch('url3', 'title3', None, None)
+    def get_doc_by_url_hash(self, url_hash):  # pylint: disable=unused-argument, no-self-use
+        if url_hash == 'url_hash':
+            return struct.Document.make_from_scratch('url3', None, 'title3', None, None)
         return None
 
     def save_user_action_on_doc(self, user, document, action_on_doc):
@@ -136,7 +142,7 @@ class HandlersTests(unittest.TestCase):
 
     def test_link_with_click_link_save_action_and_redirect(self):
         self._login()
-        response = self.app.get('/link/3/url_safe_key', follow_redirects=False)
+        response = self.app.get('/link/3/url_hash', follow_redirects=False)
         action = self.dal.saved_user_doc_action_tuple[2]
         self.assertEquals(struct.UserActionTypeOnDoc.click_link, action)
         self.assertTrue('redirected' in response.data)
@@ -144,7 +150,7 @@ class HandlersTests(unittest.TestCase):
 
     def test_link_with_down_vote_link_save_action_stay_home(self):
         self._login()
-        response = self.app.get('/link/2/url_safe_key', follow_redirects=True)
+        response = self.app.get('/link/2/url_hash', follow_redirects=True)
 
         user = self.dal.saved_user_doc_action_tuple[0]
         doc = self.dal.saved_user_doc_action_tuple[1]

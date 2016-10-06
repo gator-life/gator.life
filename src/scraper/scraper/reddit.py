@@ -12,7 +12,15 @@ def reddit_link_elements_generator(disconnected):
 
 
 def _make_submissions_generator(disconnected):
-    request_interval = 0 if disconnected else 2  # disconnected if we run with vcrpy, no need to delay requests
+    if disconnected:
+        request_interval = 0  # disconnected if we run with vcrpy, no need to delay requests
+        # praw return cache if same page is hit below 30s. This causes issues between several unit tests (using different
+        # vcr cassette) as praw return response of a previous test, the line below clears this cache
+        # cf. http://praw.readthedocs.io/en/stable/pages/faq.html?highlight=cache
+        praw.handlers.DefaultHandler.clear_cache()
+    else:
+        request_interval = 2
+
     # bug on me PC, see https://urllib3.readthedocs.org/en/latest/security.html section OpenSSL / PyOpenSSL
     urllib3.contrib.pyopenssl.inject_into_urllib3()
     reddit_agent = praw.Reddit(user_agent='gator_reddit_client', check_for_updates=False, api_request_delay=request_interval)

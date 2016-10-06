@@ -1,0 +1,5 @@
+500 topics
+3 passes
+chunk=5k
+updateEvery10
+
