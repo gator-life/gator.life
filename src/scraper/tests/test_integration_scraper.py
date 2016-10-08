@@ -19,7 +19,7 @@ class ScraperIntegrationTests(unittest.TestCase):
         curr_doc = 0
         scraper = Scraper(disconnected=True)
         directory = os.path.dirname(os.path.abspath(__file__))
-        with vcr.use_cassette(directory + '/vcr_cassettes/test_run_scraper.yaml', record_mode='none'):
+        with vcr.use_cassette(directory + '/vcr_cassettes/test_run_scraper.yaml', record_mode='none', ignore_localhost=True):
             for doc in scraper.scrap():
                 self.assertIsNotNone(doc.html_content)  # we don't return unavailable pages
                 self.assertIsInstance(doc.html_content, unicode)  # 'str' sucks, must use unicode (python 3 str versions)

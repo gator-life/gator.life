@@ -46,7 +46,7 @@ def scrap_and_learn():
         start_cache_date = utcnow()
         keep_user_func = lambda u: u.email.startswith(users_prefix)
         import vcr
-        with vcr.use_cassette(vcr_cassette_file, record_mode='none'):
+        with vcr.use_cassette(vcr_cassette_file, record_mode='none', ignore_localhost=True):
             _scrap_and_learn(scraper, doc_saver, topic_modeller, docs_chunk_size, user_docs_max_size, start_cache_date,
                              keep_user_func, nb_docs)
     else:

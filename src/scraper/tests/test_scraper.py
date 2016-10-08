@@ -109,7 +109,7 @@ class ScraperTests(unittest.TestCase):
         links = [LinkElement(url, None, None, None) for url in urls]
 
         with vcr.use_cassette(os.path.dirname(os.path.abspath(__file__)) + '/vcr_cassettes/test_get_doc_generator.yaml',
-                              record_mode='none'):
+                              record_mode='none', ignore_localhost=True):
             docs = list(_get_doc_generator(links))
 
         json_docs = [jsonpickle.encode(d) for d in docs]
