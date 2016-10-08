@@ -21,3 +21,6 @@ python -m nltk.downloader stopwords punkt
 virtualenv appengine_env
 appengine_env/bin/pip install -U pip
 appengine_env/bin/pip install -r src/server/requirements.txt
+
+git lfs pull
+tools/build_docker_gator_deps.sh
