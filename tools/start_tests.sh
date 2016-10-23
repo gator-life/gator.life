@@ -6,6 +6,7 @@
 tools/start_server.sh
 
 if [ "$1" = "cover" ]; then
+	export COVERAGE='True'
 	coverage run --source=src --omit=*tests* -m py.test src
 else
 	py.test src
