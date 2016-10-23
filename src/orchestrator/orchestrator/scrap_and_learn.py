@@ -62,12 +62,12 @@ def _scrap_and_learn(  # pylint: disable=too-many-arguments
         keep_user_func=lambda u: False, nb_docs=-1):
     # pylint: disable=too-many-locals
     dal = Dal()
-    all_users = dal.get_all_users()
+    all_users = dal.user.get_all_users()
     users = [user for user in all_users if keep_user_func(user)]  # to filter in tests
-    users_docs = dal.get_users_docs(users)
-    users_feature_vectors = dal.get_users_feature_vectors(users)
+    users_docs = dal.user_doc.get_users_docs(users)
+    users_feature_vectors = dal.user_computed_profile.get_users_feature_vectors(users)
 
-    url_hashes = set(dal.get_recent_doc_url_hashes(seen_urls_cache_start_date))
+    url_hashes = set(dal.doc.get_recent_doc_url_hashes(seen_urls_cache_start_date))
 
     user_docs_accumulator = _build_user_docs_accumulator(users_docs, users_feature_vectors, user_docs_max_size)
     doc_chunk = [None] * docs_chunk_size
@@ -104,13 +104,13 @@ def _scrap_and_learn(  # pylint: disable=too-many-arguments
 
                 index_in_docs_chunk += 1
                 if index_in_docs_chunk == docs_chunk_size:
-                    dal.save_documents(doc_chunk)
+                    dal.doc.save_documents(doc_chunk)
                     _save_users_docs_current_state(dal, users, user_docs_accumulator)
                     doc_chunk = [None] * docs_chunk_size
                     index_in_docs_chunk = 0
 
             # exit function if scraper generator exited without error
-            dal.save_documents(doc_chunk[:index_in_docs_chunk])
+            dal.doc.save_documents(doc_chunk[:index_in_docs_chunk])
             _save_users_docs_current_state(dal, users, user_docs_accumulator)
             return
         except Exception as exception:  # pylint: disable=broad-except
@@ -137,4 +137,4 @@ def _save_users_docs_current_state(dal, users, user_docs_accumulator):
         (user, [UserDocument.make_from_scratch(lrn_user_doc.doc_id, lrn_user_doc.grade) for lrn_user_doc in lrn_user_docs])
         for user, lrn_user_docs in zip(users, lrn_users_docs)
     )
-    dal.save_users_docs(user_to_user_docs)
+    dal.user_doc.save_users_docs(user_to_user_docs)

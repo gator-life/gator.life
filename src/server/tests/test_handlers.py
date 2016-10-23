@@ -9,21 +9,29 @@ import server.handlers as handlers
 import server.passwordhelpers as pswd
 
 
-class DalMock(object):
+class DalUserMock(object):
 
     def __init__(self):
         self.saved_user = None
         self.saved_password = None
-        self.user_computed_profiles = None
-        self.saved_user_doc_action_tuple = None
 
     def get_user(self, email):  # pylint: disable=unused-argument, no-self-use
         if email == 'mark':
             return struct.User.make_from_scratch(email, ['soccer', 'tuning'])
         return self.saved_user
 
-    def get_user_docs(self, user):  # pylint: disable=unused-argument, no-self-use
+    def save_user(self, user, password):
+        self.saved_user = user
+        self.saved_password = password
 
+    def get_user_and_password(self, email):  # pylint: disable=unused-argument, no-self-use
+        if email == 'mark':
+            return (self.get_user(email), pswd.hash_password('dadada'))
+
+
+class DalUserDocMock(object):
+
+    def get_user_docs(self, user):  # pylint: disable=unused-argument, no-self-use
         def build_user_doc(title):
             return struct.UserDocument.make_from_scratch(
                 struct.Document.make_from_scratch(None, None, title, None, None),
@@ -38,29 +46,50 @@ class DalMock(object):
                 build_user_doc('rocket')]
         return None
 
-    def save_user(self, user, password):
-        self.saved_user = user
-        self.saved_password = password
+
+class DalFeatureSetMock(object):
 
     def get_features(self, feature_set_id):  # pylint: disable=unused-argument, no-self-use
         if feature_set_id == REF_FEATURE_SET:
             return ['label1']
         return None
 
+
+class DalUserComputedProfileMock(object):
+
+    def __init__(self):
+        self.user_computed_profiles = None
+
     def save_user_computed_profiles(self, user_profile_list):
         self.user_computed_profiles = user_profile_list
 
-    def get_user_and_password(self, email):  # pylint: disable=unused-argument, no-self-use
-        if email == 'mark':
-            return (self.get_user(email), pswd.hash_password('dadada'))
+
+class DalDocMock(object):
 
     def get_doc_by_url_hash(self, url_hash):  # pylint: disable=unused-argument, no-self-use
         if url_hash == 'url_hash':
             return struct.Document.make_from_scratch('url3', None, 'title3', None, None)
         return None
 
+
+class DalUserActionMock(object):
+
+    def __init__(self):
+        self.saved_user_doc_action_tuple = None
+
     def save_user_action_on_doc(self, user, document, action_on_doc):
         self.saved_user_doc_action_tuple = (user, document, action_on_doc)
+
+
+class DalMock(object):
+
+    def __init__(self):
+        self.user_action = DalUserActionMock()
+        self.doc = DalDocMock()
+        self.user_computed_profile = DalUserComputedProfileMock()
+        self.feature_set = DalFeatureSetMock()
+        self.user_doc = DalUserDocMock()
+        self.user = DalUserMock()
 
 
 class HandlersTests(unittest.TestCase):
@@ -130,10 +159,10 @@ class HandlersTests(unittest.TestCase):
     def test_register_post_with_new_email_save_profile_redirect_homepage(self):
         post_data = dict(email='elon', password='elon', interests='rockets\r\ncars')
         response = self.app.post('/register', data=post_data, follow_redirects=True)
-        self.assertEquals('elon', self.dal.saved_user.email)
-        self.assertEquals(['rockets', 'cars'], self.dal.saved_user.interests)
-        self.assertEquals(1, len(self.dal.user_computed_profiles))
-        self.assertEquals(pswd.hash_password('elon'), self.dal.saved_password)
+        self.assertEquals('elon', self.dal.user.saved_user.email)
+        self.assertEquals(['rockets', 'cars'], self.dal.user.saved_user.interests)
+        self.assertEquals(1, len(self.dal.user_computed_profile.user_computed_profiles))
+        self.assertEquals(pswd.hash_password('elon'), self.dal.user.saved_password)
         self._assert_is_home_elon(response)
 
     def test_link_with_user_not_connected_redirect_login(self):
@@ -143,7 +172,7 @@ class HandlersTests(unittest.TestCase):
     def test_link_with_click_link_save_action_and_redirect(self):
         self._login()
         response = self.app.get('/link/3/url_hash', follow_redirects=False)
-        action = self.dal.saved_user_doc_action_tuple[2]
+        action = self.dal.user_action.saved_user_doc_action_tuple[2]
         self.assertEquals(struct.UserActionTypeOnDoc.click_link, action)
         self.assertTrue('redirected' in response.data)
         self.assertTrue('url3' in response.data)
@@ -152,9 +181,9 @@ class HandlersTests(unittest.TestCase):
         self._login()
         response = self.app.get('/link/2/url_hash', follow_redirects=True)
 
-        user = self.dal.saved_user_doc_action_tuple[0]
-        doc = self.dal.saved_user_doc_action_tuple[1]
-        action = self.dal.saved_user_doc_action_tuple[2]
+        user = self.dal.user_action.saved_user_doc_action_tuple[0]
+        doc = self.dal.user_action.saved_user_doc_action_tuple[1]
+        action = self.dal.user_action.saved_user_doc_action_tuple[2]
 
         self.assertEquals('mark', user.email)
         self.assertEquals('title3', doc.title)

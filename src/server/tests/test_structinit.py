@@ -11,7 +11,7 @@ class StructInitTests(unittest.TestCase):
 
     def setUp(self):
         self.dal = Dal()
-        self.dal.save_features(REF_FEATURE_SET, feature_names=['f1', 'f2', 'f3', 'f4'])
+        self.dal.feature_set.save_features(REF_FEATURE_SET, feature_names=['f1', 'f2', 'f3', 'f4'])
 
     def test_create_user_in_db(self):
         email = 'email_test_create_user_in_db'
@@ -19,8 +19,8 @@ class StructInitTests(unittest.TestCase):
         password = 'password_test_create_user_in_db'
         user = create_user_in_db(email, interests, password, self.dal)
 
-        user_from_db, hash_password_from_db = self.dal.get_user_and_password(email)
-        profile = self.dal.get_user_computed_profiles([user])[0]
+        user_from_db, hash_password_from_db = self.dal.user.get_user_and_password(email)
+        profile = self.dal.user_computed_profile.get_user_computed_profiles([user])[0]
 
         self.assertEquals(email, user.email)
         self.assertEquals(email, user_from_db.email)

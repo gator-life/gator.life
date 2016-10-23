@@ -23,4 +23,4 @@ def initialize_with_existing_dict(topic_modeller, html_documents, tm_data_folder
 
 def initialize_db(topic_modeller):
     feature_names = [words[0] for (_, words) in topic_modeller.topics]
-    DAL.save_features(REF_FEATURE_SET, feature_names)
+    DAL.feature_set.save_features(REF_FEATURE_SET, feature_names)

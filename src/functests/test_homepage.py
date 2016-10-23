@@ -94,7 +94,7 @@ class NewVisitorTests(unittest.TestCase):
         interests_str = 'finance\npython\ncomputer science'
         self._register(email, 'password', interests_str)
 
-        user = self.dal.get_user(email)
+        user = self.dal.user.get_user(email)
         self.assertIsNotNone(user)
         self.assertItemsEqual(user.interests, interests_str.splitlines())
         self.assertItemsEqual(user.interests, interests_str.splitlines())
@@ -165,7 +165,7 @@ class NewVisitorTests(unittest.TestCase):
         self._click(google_link)
         self.assertEqual("Google", self.browser.title)
 
-        actions_by_user = self.dal.get_user_actions_on_docs([user], now)
+        actions_by_user = self.dal.user_action.get_user_actions_on_docs([user], now)
 
         actions = actions_by_user[0]
         self.assertEqual(3, len(actions))

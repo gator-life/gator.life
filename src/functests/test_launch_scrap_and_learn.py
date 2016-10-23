@@ -13,7 +13,7 @@ class LaunchScrapAndLearnTests(unittest.TestCase):
     def setUp(self):
         self.dal = Dal()
         nb_topics_trained_model = 500
-        self.dal.save_features(REF_FEATURE_SET, ['feature_' + str(i) for i in range(0, nb_topics_trained_model)])
+        self.dal.feature_set.save_features(REF_FEATURE_SET, ['feature_' + str(i) for i in range(0, nb_topics_trained_model)])
         self.is_coverage = bool(os.environ.get('COVERAGE', None))
 
     def test_launch_scrap_and_learn(self):
@@ -47,7 +47,7 @@ class LaunchScrapAndLearnTests(unittest.TestCase):
             sys.argv = [None, model_dir, cassette_file, user_name, nb_docs]
             scrap_and_learn()
 
-        user_docs = self.dal.get_users_docs([user])[0]
+        user_docs = self.dal.user_doc.get_users_docs([user])[0]
         self.assertTrue(len(user_docs) > 6)  # some docs are filtered because not classified
         sorted_docs = sorted(user_docs, key=lambda u: u.grade, reverse=True)
         for doc in sorted_docs[:3]:  # the first user docs should have a significant value
