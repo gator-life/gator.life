@@ -157,25 +157,22 @@ class DalFeatureSet(object):
         self._ds_client = datastore_client
         self._helper = datastore_helper
 
-    def get_features(self, feature_set_id):
+    def get_feature_set(self, feature_set_id):
         """
         :param feature_set_id: string
-        :return: a list of string of feature labels of the feature_set_id. This list matches the order of the elements
-        in the feature vectors associated to this feature_set_id.
+        :return: struct.FeatureSet
         """
         db_feature_set_key = self._ds_client.key(u'FeatureSet', feature_set_id)
         db_feature_set = self._ds_client.get(db_feature_set_key)
-        return db_feature_set.get('features', [])
+        feature_names = db_feature_set.get('features', [])
+        return struct.FeatureSet.make_from_db(feature_set_id, feature_names)
 
-    def save_features(self, feature_set_id, feature_names):
+    def save_feature_set(self, feature_set):
         """
-        Save features names associated to a feature set
-        :param feature_set_id: string, id of the feature_set
-        :param feature_names: list of string
-        :return:
+        :param feature_set: struct.FeatureSet
         """
-        db_feature_set = self._helper.make_named_entity(u'FeatureSet', feature_set_id, not_indexed=('features',))
-        db_feature_set['features'] = feature_names
+        db_feature_set = self._helper.make_named_entity(u'FeatureSet', feature_set.feature_set_id, not_indexed=('features',))
+        db_feature_set['features'] = feature_set.feature_names
         self._ds_client.put(db_feature_set)
 
 

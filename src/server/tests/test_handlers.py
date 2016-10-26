@@ -49,9 +49,9 @@ class DalUserDocMock(object):
 
 class DalFeatureSetMock(object):
 
-    def get_features(self, feature_set_id):  # pylint: disable=unused-argument, no-self-use
+    def get_feature_set(self, feature_set_id):  # pylint: disable=unused-argument, no-self-use
         if feature_set_id == REF_FEATURE_SET:
-            return ['label1']
+            return struct.FeatureSet.make_from_db(feature_set_id, ['label1'])
         return None
 
 

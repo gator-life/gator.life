@@ -191,3 +191,12 @@ def _build_user_docs_accumulator(users, user_docs_max_size, dal):
     )
     user_docs_accumulator = lrn.UserDocumentsAccumulator(user_data_list, user_docs_max_size)
     return user_docs_accumulator
+
+
+# def _update_user_profiles(users, topic_modeller, dal):
+#
+#     profiles = dal.user_computed_profile.get_user_computed_profiles(users)
+#
+#
+#
+#     pass

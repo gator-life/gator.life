@@ -63,6 +63,21 @@ class User(object):
         self._user_computed_profile_db_key = user_computed_profile_db_key
 
 
+class FeatureSet(object):
+
+    @staticmethod
+    def make_from_scratch(feature_set_id, feature_names):
+        return FeatureSet(feature_set_id, feature_names)
+
+    @staticmethod
+    def make_from_db(feature_set_id, feature_names):
+        return FeatureSet(feature_set_id, feature_names)
+
+    def __init__(self, feature_set_id, feature_names):
+        self.feature_set_id = feature_set_id
+        self.feature_names = feature_names
+
+
 class FeatureVector(object):
 
     @staticmethod

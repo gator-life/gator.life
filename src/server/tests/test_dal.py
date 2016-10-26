@@ -13,17 +13,19 @@ class DalTests(unittest.TestCase):
     def setUp(self):
         self.dal = sdal.Dal()
 
-    def test_save_then_get_features(self):
-        self.dal.feature_set.save_features(feature_set_id='set', feature_names=['desc1', 'desc2'])
-        feature_set = self.dal.feature_set.get_features('set')
-        self.assertEquals('desc1', feature_set[0])
-        self.assertEquals('desc2', feature_set[1])
+    def test_save_then_get_feature_set(self):
+        self.dal.feature_set.save_feature_set(
+            struct.FeatureSet.make_from_scratch(feature_set_id='set', feature_names=['desc1', 'desc2']))
+        feature_set = self.dal.feature_set.get_feature_set('set')
+        self.assertEquals('set', feature_set.feature_set_id)
+        self.assertEquals('desc1', feature_set.feature_names[0])
+        self.assertEquals('desc2', feature_set.feature_names[1])
 
     def test_save_then_get_empty_features(self):
-        self.dal.feature_set.save_features(
-            feature_set_id='test_save_then_get_empty_features_feature_set_id', feature_names=[])
-        feature_set = self.dal.feature_set.get_features('test_save_then_get_empty_features_feature_set_id')
-        self.assertEquals([], feature_set)
+        self.dal.feature_set.save_feature_set(struct.FeatureSet.make_from_scratch(
+            feature_set_id='test_save_then_get_empty_features_feature_set_id', feature_names=[]))
+        feature_set = self.dal.feature_set.get_feature_set('test_save_then_get_empty_features_feature_set_id')
+        self.assertEquals([], feature_set.feature_names)
 
     def test_get_user_with_unknown_user_should_return_none(self):
         self.assertIsNone(self.dal.user.get_user('missing_user'))
@@ -320,7 +322,8 @@ class DalTests(unittest.TestCase):
         self.assertTrue(doc2.url_hash in url_hashes)
 
     def build_dummy_db_feature_set(self):
-        self.dal.feature_set.save_features(feature_set_id='set', feature_names=['desc2', 'desc1'])
+        self.dal.feature_set.save_feature_set(
+            struct.FeatureSet.make_from_scratch(feature_set_id='set', feature_names=['desc2', 'desc1']))
         return 'set'
 
 
