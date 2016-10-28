@@ -151,6 +151,15 @@ class Dal(object):
         self.user_doc = DalUserDoc(self._ds_client, ds_helper, self.doc)
 
 
+class DalTopicModel(object): #TODO NICO TEST
+
+    def get_model_description(self, model_description):
+        pass
+
+    def save_model_description(self, model_description):
+        pass
+
+
 class DalFeatureSet(object):
 
     def __init__(self, datastore_client, datastore_helper):

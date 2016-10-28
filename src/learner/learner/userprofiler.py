@@ -113,7 +113,7 @@ class UserProfiler(object):
         if explicit_feedback_norm == 0:
             explicit_feedback_norm = 1
 
-        global_vec = (diff_pos_neg_vec/diff_pos_neg_vec_norm + explicit_feedback_vec/explicit_feedback_norm) / 2
+        global_vec = (diff_pos_neg_vec / diff_pos_neg_vec_norm + explicit_feedback_vec / explicit_feedback_norm) / 2
 
         return global_vec
 
