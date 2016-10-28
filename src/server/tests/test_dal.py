@@ -15,15 +15,17 @@ class DalTests(unittest.TestCase):
 
     def test_save_then_get_feature_set(self):
         self.dal.feature_set.save_feature_set(
-            struct.FeatureSet.make_from_scratch(feature_set_id='set', feature_names=['desc1', 'desc2']))
+            struct.FeatureSet.make_from_scratch(
+                feature_set_id='set', feature_names=['desc1', 'desc2'], model_id='model_test_save_then_get_feature_set'))
         feature_set = self.dal.feature_set.get_feature_set('set')
         self.assertEquals('set', feature_set.feature_set_id)
+        self.assertEquals('model_test_save_then_get_feature_set', feature_set.model_id)
         self.assertEquals('desc1', feature_set.feature_names[0])
         self.assertEquals('desc2', feature_set.feature_names[1])
 
     def test_save_then_get_empty_features(self):
         self.dal.feature_set.save_feature_set(struct.FeatureSet.make_from_scratch(
-            feature_set_id='test_save_then_get_empty_features_feature_set_id', feature_names=[]))
+            feature_set_id='test_save_then_get_empty_features_feature_set_id', feature_names=[], model_id=None))
         feature_set = self.dal.feature_set.get_feature_set('test_save_then_get_empty_features_feature_set_id')
         self.assertEquals([], feature_set.feature_names)
 
@@ -330,7 +332,7 @@ class DalTests(unittest.TestCase):
 
     def build_dummy_db_feature_set(self):
         self.dal.feature_set.save_feature_set(
-            struct.FeatureSet.make_from_scratch(feature_set_id='set', feature_names=['desc2', 'desc1']))
+            struct.FeatureSet.make_from_scratch(feature_set_id='set', feature_names=['desc2', 'desc1'], model_id=None))
         return 'set'
 
 

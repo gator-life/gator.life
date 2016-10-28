@@ -165,7 +165,8 @@ class DalFeatureSet(object):
         db_feature_set_key = self._ds_client.key(u'FeatureSet', feature_set_id)
         db_feature_set = self._ds_client.get(db_feature_set_key)
         feature_names = db_feature_set.get('features', [])
-        return struct.FeatureSet.make_from_db(feature_set_id, feature_names)
+        model_id = db_feature_set['model_id']
+        return struct.FeatureSet.make_from_db(feature_set_id, feature_names, model_id)
 
     def save_feature_set(self, feature_set):
         """
@@ -173,6 +174,7 @@ class DalFeatureSet(object):
         """
         db_feature_set = self._helper.make_named_entity(u'FeatureSet', feature_set.feature_set_id, not_indexed=('features',))
         db_feature_set['features'] = feature_set.feature_names
+        db_feature_set['model_id'] = feature_set.model_id
         self._ds_client.put(db_feature_set)
 
 

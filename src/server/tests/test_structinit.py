@@ -13,7 +13,7 @@ class StructInitTests(unittest.TestCase):
     def setUp(self):
         self.dal = Dal()
         self.dal.feature_set.save_feature_set(
-            FeatureSet.make_from_scratch(REF_FEATURE_SET, feature_names=['f1', 'f2', 'f3', 'f4']))
+            FeatureSet.make_from_scratch(REF_FEATURE_SET, feature_names=['f1', 'f2', 'f3', 'f4'], model_id=None))
 
     def test_create_user_in_db(self):
         email = 'email_test_create_user_in_db'

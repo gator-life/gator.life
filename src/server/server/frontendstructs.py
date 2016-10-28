@@ -65,16 +65,17 @@ class User(object):
 class FeatureSet(object):
 
     @staticmethod
-    def make_from_scratch(feature_set_id, feature_names):
-        return FeatureSet(feature_set_id, feature_names)
+    def make_from_scratch(feature_set_id, feature_names, model_id):
+        return FeatureSet(feature_set_id, feature_names, model_id)
 
     @staticmethod
-    def make_from_db(feature_set_id, feature_names):
-        return FeatureSet(feature_set_id, feature_names)
+    def make_from_db(feature_set_id, feature_names, model_id):
+        return FeatureSet(feature_set_id, feature_names, model_id)
 
-    def __init__(self, feature_set_id, feature_names):
+    def __init__(self, feature_set_id, feature_names, model_id):
         self.feature_set_id = feature_set_id
         self.feature_names = feature_names
+        self.model_id = model_id
 
 
 class FeatureVector(object):
@@ -169,3 +170,31 @@ class UserProfileModelData(object):
         self.negative_feedback_vector = negative_feedback_vector
         self.positive_feedback_sum_coeff = positive_feedback_sum_coeff
         self.negative_feedback_sum_coeff = negative_feedback_sum_coeff
+
+
+class TopicModelDescription(object):
+
+    class Topic(object):
+
+        def __init__(self, topic_words):
+            self.topic_words = topic_words
+
+    class TopicWord(object):
+
+        def __init__(self, word, weight):
+            self.word = word
+            self.weight = weight
+
+    def __init__(self, topic_model_id, topics):
+        self.topic_model_id = topic_model_id
+        self.topics = topics
+
+    @staticmethod
+    def make_from_scratch(topic_model_id, topics):
+        """
+        :param topic_model_id: id of the topic model
+        :param topics: list of topic, each topic is a list of tuple (word, weight)
+        :return:
+        """
+        return TopicModelDescription(topic_model_id, [TopicModelDescription.Topic(
+            [TopicModelDescription.TopicWord(word, weight) for word, weight in topic]) for topic in topics])

@@ -15,7 +15,7 @@ class LaunchScrapAndLearnTests(unittest.TestCase):
         self.dal = Dal()
         nb_topics_trained_model = 500
         self.dal.feature_set.save_feature_set(FeatureSet.make_from_scratch(
-            REF_FEATURE_SET, ['feature_' + str(i) for i in range(0, nb_topics_trained_model)]))
+            REF_FEATURE_SET, ['feature_' + str(i) for i in range(0, nb_topics_trained_model)], "TODO_NICO"))
         self.is_coverage = bool(os.environ.get('COVERAGE', None))
 
     def test_launch_scrap_and_learn(self):
