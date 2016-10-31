@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 
-class Document(object):  # pylint: disable=too-many-instance-attributes
+class Document(object):
 
     @staticmethod
-    def make_from_db(url, url_hash, title, summary, datetime, db_key, feature_vector):  # pylint: disable=too-many-arguments
-        return Document(url, url_hash, title, summary, datetime, db_key, feature_vector)
+    def make_from_db(url, url_hash, title, summary, datetime, feature_vector):
+        return Document(url, url_hash, title, summary, datetime, feature_vector)
 
     @staticmethod
     def make_from_scratch(url, url_hash, title, summary, feature_vector):
@@ -18,13 +18,12 @@ class Document(object):  # pylint: disable=too-many-instance-attributes
         :return:
         """
         return Document(
-            url, url_hash, title, summary, datetime=None, db_key=None, feature_vector=feature_vector)
+            url, url_hash, title, summary, datetime=None, feature_vector=feature_vector)
 
-    def __init__(self, url, url_hash, title, summary, datetime, db_key, feature_vector):  # pylint: disable=too-many-arguments
+    def __init__(self, url, url_hash, title, summary, datetime, feature_vector):
         self.url = url
         self.url_hash = url_hash
         self.title = title
-        self._db_key = db_key
         self.summary = summary
         self.datetime = datetime
         self.feature_vector = feature_vector

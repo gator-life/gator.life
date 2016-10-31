@@ -66,7 +66,7 @@ class DalUserComputedProfileMock(object):
 
 class DalDocMock(object):
 
-    def get_doc_by_url_hash(self, url_hash):  # pylint: disable=unused-argument, no-self-use
+    def get_doc(self, url_hash):  # pylint: disable=unused-argument, no-self-use
         if url_hash == 'url_hash':
             return struct.Document.make_from_scratch('url3', None, 'title3', None, None)
         return None

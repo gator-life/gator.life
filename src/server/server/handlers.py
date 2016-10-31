@@ -105,7 +105,7 @@ def disconnect():
 def link(action_type_on_doc, url_hash):
     user = get_connected_user()
     if user is not None:
-        document = DAL.doc.get_doc_by_url_hash(url_hash)
+        document = DAL.doc.get_doc(url_hash)
         DAL.user_action.save_user_action_on_doc(user, document, action_type_on_doc)
         if action_type_on_doc == struct.UserActionTypeOnDoc.click_link:
             return redirect(document.url.encode('utf-8'))

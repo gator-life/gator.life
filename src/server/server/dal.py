@@ -87,7 +87,7 @@ def _to_user_computed_profile(db_user_computed_profile):
 def _to_doc(db_doc):
     return struct.Document.make_from_db(
         url=db_doc['url'], url_hash=db_doc.key.name, title=db_doc['title'], summary=db_doc['summary'],
-        datetime=db_doc['datetime'], db_key=db_doc.key, feature_vector=_to_feature_vector(db_doc['feature_vector']))
+        datetime=db_doc['datetime'], feature_vector=_to_feature_vector(db_doc['feature_vector']))
 
 
 def _datastore_client():
@@ -196,11 +196,6 @@ class DalDoc(object):
         self._helper = datastore_helper
         self._dal_feature_vector = dal_feature_vector
 
-    def _to_docs(self, db_doc_keys):
-        db_docs = self._helper.get_multi(db_doc_keys)
-        docs = [_to_doc(db_doc) for db_doc in db_docs]
-        return docs
-
     def save_documents(self, documents):
         """
         :param documents: list of struct.Document
@@ -223,14 +218,21 @@ class DalDoc(object):
         db_doc['datetime'] = datetime.datetime.utcnow()
         return db_doc
 
-    def get_doc_by_url_hash(self, url_hash):
+    def get_doc(self, url_hash):
         """
         :param url_hash: string corresponding to the field 'url_hash' of a struct.Document
         :return: struct.Document
         """
-        db_key = self._ds_client.key('Document', url_hash)
-        db_doc = self._ds_client.get(db_key)
-        return _to_doc(db_doc)
+        return self.get_docs([url_hash])[0]
+
+    def get_docs(self, url_hashes):
+        """
+        :param url_hashes: list of string corresponding to the field 'url_hash' of a struct.Document
+        :return: list of struct.Document matching url_hashes list
+        """
+        db_keys = [self._ds_client.key('Document', url_hash) for url_hash in url_hashes]
+        db_docs = self._helper.get_multi(db_keys)
+        return [_to_doc(db_doc) for db_doc in db_docs]
 
     def get_recent_doc_url_hashes(self, from_datetime):
         """
@@ -263,7 +265,7 @@ class DalUserActionOnDoc(object):
     def _to_db_user_action_on_doc(self, user, document, action_on_doc):
         db_action = self._helper.make_entity('UserActionOnDoc', not_indexed=())
         db_action['user_key'] = user._db_key  # pylint: disable=protected-access
-        db_action['document_key'] = document._db_key  # pylint: disable=protected-access
+        db_action['document_url_hash'] = document.url_hash
         db_action['action_type'] = _to_db_action_type_on_doc(action_on_doc)
         db_action['datetime'] = datetime.datetime.utcnow()
         return db_action
@@ -287,15 +289,16 @@ class DalUserActionOnDoc(object):
         # this second point would be solved if the first one (filter on user range) is solved
 
         # 2) retrieve docs present in actions from database
-        doc_keys = list(set(action['document_key'] for action in db_actions))
-        docs = self._dal_doc._to_docs(doc_keys)  # pylint: disable=protected-access
-        doc_key_to_doc = dict(zip(doc_keys, docs))
+        doc_url_hashes = list(set(action['document_url_hash'] for action in db_actions))
+
+        docs = self._dal_doc.get_docs(doc_url_hashes)  # pylint: disable=protected-access
+        doc_hash_to_doc = dict(zip(doc_url_hashes, docs))
 
         # 3) build result, from two above database results
         actions_by_user = [[] for _ in users]
         user_mail_to_index = dict(zip((user.email for user in users), range(len(users))))
         for db_action in db_actions:
-            doc = doc_key_to_doc[db_action['document_key']]
+            doc = doc_hash_to_doc[db_action['document_url_hash']]
             action = _to_user_action_on_doc(doc, db_action)
             user_index = user_mail_to_index.get(db_action['user_key'].name)
             if user_index is not None:  # because we did not filter query on users
@@ -385,8 +388,8 @@ class DalUserDoc(object):
         if 'user_documents' not in db_user_doc_set:  # cannot save an empty list in datastore: field would be removed
             return []
         db_user_docs = db_user_doc_set['user_documents']
-        db_doc_keys = [user_doc['document_key'] for user_doc in db_user_docs]
-        docs = self._dal_doc._to_docs(db_doc_keys)  # pylint: disable=protected-access
+        doc_url_hashes = [user_doc['document_url_hash'] for user_doc in db_user_docs]
+        docs = self._dal_doc.get_docs(doc_url_hashes)
         user_docs = [_to_user_doc(doc, db_user_doc) for doc, db_user_doc in zip(docs, db_user_docs)]
         return user_docs
 
@@ -408,7 +411,7 @@ class DalUserDoc(object):
 
     def _to_db_user_doc(self, user_doc):
         db_user_doc = self._helper.make_entity(u'UserDocument', not_indexed=())
-        db_user_doc['document_key'] = user_doc.document._db_key  # pylint: disable=protected-access
+        db_user_doc['document_url_hash'] = user_doc.document.url_hash
         db_user_doc['grade'] = user_doc.grade
         return db_user_doc
 
@@ -441,7 +444,7 @@ class DalUserDoc(object):
         :return: list matching 'users' list, each list being a list of struct.UserDocument
         """
         def to_user_doc(db_user_doc):
-            return _to_user_doc(keys_to_docs[db_user_doc['document_key']], db_user_doc)
+            return _to_user_doc(hashes_to_docs[db_user_doc['document_url_hash']], db_user_doc)
 
         def db_set_to_user_doc_list(db_user_doc_set):
             db_user_docs = db_docs(db_user_doc_set)
@@ -452,10 +455,11 @@ class DalUserDoc(object):
 
         user_doc_set_db_keys = [user._user_doc_set_db_key for user in users]  # pylint: disable=protected-access
         db_user_doc_sets = self._helper.get_multi(user_doc_set_db_keys)
-        doc_keys_set = {user_doc['document_key'] for user_doc_set in db_user_doc_sets for user_doc in db_docs(user_doc_set)}
-        doc_keys_list = list(doc_keys_set)
-        docs = self._dal_doc._to_docs(doc_keys_list)  # pylint: disable=protected-access
-        keys_to_docs = dict(zip(doc_keys_list, docs))
+        doc_hashes_set = {user_doc['document_url_hash']
+                          for user_doc_set in db_user_doc_sets for user_doc in db_docs(user_doc_set)}
+        doc_hashes_list = list(doc_hashes_set)
+        docs = self._dal_doc.get_docs(doc_hashes_list)
+        hashes_to_docs = dict(zip(doc_hashes_list, docs))
 
         return [db_set_to_user_doc_list(db_user_doc_set) for db_user_doc_set in db_user_doc_sets]
 
