@@ -151,13 +151,30 @@ class Dal(object):
         self.user_doc = DalUserDoc(self._ds_client, ds_helper, self.doc)
 
 
-class DalTopicModel(object): #TODO NICO TEST
+class DalTopicModelDescription(object): #TODO NICO TEST
 
-    def get_model_description(self, model_description):
-        pass
+    def __init__(self, datastore_client, datastore_helper):
+        self._ds_client = datastore_client
+        self._helper = datastore_helper
 
-    def save_model_description(self, model_description):
-        pass
+    def get(self, model_id):
+        key = self._ds_client.key(u'TopicModelDescription', model_id)
+        db_model = self._ds_client.get(key)
+        db_topics = db_model['topics']
+        topics = [zip(db_topic['words'], db_topic['weights']) for db_topic in db_topics]
+        return struct.TopicModelDescription.make_from_scratch(model_id, topics)
+
+    def save(self, model_description):
+        not_indexed = ['topics']
+        db_model = self._helper.make_named_entity(u'TopicModelDescription', model_description.model_id, not_indexed)
+        db_model['topics'] = [self._to_db_topic(topic) for topic in model_description.topics]
+        self._ds_client.put(db_model)
+
+    def _to_db_topic(self, topic):
+        db_topic = self._helper.make_entity(u'Topic')
+        db_topic['words'] = [topic_word.word for topic_word in topic.topic_words]
+        db_topic['weights'] = [topic_word.weight for topic_word in topic.topic_words]
+        return db_topic
 
 
 class DalFeatureSet(object):
