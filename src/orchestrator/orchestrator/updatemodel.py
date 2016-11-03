@@ -7,35 +7,37 @@ from learner.topic_model_converter import TopicModelConverter
 from learner.userprofiler import UserProfiler
 
 
-def update_model_in_db(topic_modeller):
+def update_model_in_db(topic_modeller, all_users):
+    """
+    NB: all_users must be "all" because function will modify documents in database and if others users are using those same
+    docs, it will create a mismatch of vector model between those other users and updated docs
+    """
     dal = Dal()
-    users = dal.user.get_all_users()
 
-    profiles = dal.user_computed_profile.get_user_computed_profiles(users)
+    profiles = dal.user_computed_profile.get_user_computed_profiles(all_users)
 
     target_model = TopicModelDescription.make_from_scratch(topic_modeller.model_id, topic_modeller.topics)
     target_feature_set_id = target_model.topic_model_id
 
     _save_topic_model(dal, target_model)
 
-    feature_set_ids = [set(profile.feature_vector.feature_set_id for profile in profiles)]
+    feature_set_ids = list(set(profile.feature_vector.feature_set_id for profile in profiles))
     model_converters = _get_model_converters(dal, feature_set_ids, target_model)
-    feature_set_id_to_converter = dict(zip(feature_set_ids, model_converters))
+    converter_dict = dict(zip(feature_set_ids, model_converters))
 
-    user_and_profiles = zip(users, profiles)
-    updated_user_to_profiles = _get_updated_user_to_profile(
-        feature_set_id_to_converter, user_and_profiles, target_feature_set_id)
+    user_to_profile = zip(all_users, profiles)
+    updated_user_to_profiles = _get_updated_user_to_profile(converter_dict, user_to_profile, target_feature_set_id)
     dal.user_computed_profile.save_user_computed_profiles(updated_user_to_profiles)
 
-    user_docs_by_user = dal.user_doc.get_users_docs(users)
+    user_docs_by_user = dal.user_doc.get_users_docs(all_users)
     # No need to update all docs in db, only those reachable by at least one user
     docs = set(user_doc.document for user_docs in user_docs_by_user for user_doc in user_docs)
-    updated_docs = _get_updated_docs(docs, feature_set_id_to_converter, target_feature_set_id)
+    updated_docs = _get_updated_docs(docs, converter_dict, target_feature_set_id)
     dal.doc.save_documents(updated_docs)
 
 
 def _save_topic_model(dal, model):
-    dal.topic_model.save_model_description(model)
+    dal.topic_model.save(model)
     target_feature_names = [topic.topic_words[0].word for topic in model.topics]
     target_feature_set = FeatureSet.make_from_scratch(model.topic_model_id, target_feature_names, model.topic_model_id)
     dal.feature_set.save_feature_set(target_feature_set)
@@ -43,7 +45,7 @@ def _save_topic_model(dal, model):
 
 def _get_model_converters(dal, feature_set_ids, target_model):
     feature_sets = [dal.feature_set.get_feature_set(feature_set_id) for feature_set_id in feature_set_ids]
-    models = [dal.topic_model.get_model_description(feature_set.model_id) for feature_set in feature_sets]
+    models = [dal.topic_model.get(feature_set.model_id) for feature_set in feature_sets]
     model_converters = [TopicModelConverter(model, target_model) for model in models]
     return model_converters
 

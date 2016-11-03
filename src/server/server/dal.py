@@ -152,40 +152,6 @@ class Dal(object):  # pylint: disable= too-many-instance-attributes
         self.topic_model = DalTopicModelDescription(self._ds_client, ds_helper)
 
 
-class DalTopicModelDescription(object):
-
-    def __init__(self, datastore_client, datastore_helper):
-        self._ds_client = datastore_client
-        self._helper = datastore_helper
-
-    def get(self, model_id):
-        """
-        :param model_id: string, model unique identifier
-        :return: struct.TopicModelDescription
-        """
-        key = self._ds_client.key(u'TopicModelDescription', model_id)
-        db_model = self._ds_client.get(key)
-        db_topics = db_model['topics']
-        topics = [zip(db_topic['words'], db_topic['weights']) for db_topic in db_topics]
-        return struct.TopicModelDescription.make_from_scratch(model_id, topics)
-
-    def save(self, model_description):
-        """
-        :param model_description: struct.TopicModelDescription
-        """
-        not_indexed = ['topics']
-        db_model = self._helper.make_named_entity(u'TopicModelDescription', model_description.topic_model_id, not_indexed)
-        db_model['topics'] = [self._to_db_topic(topic) for topic in model_description.topics]
-        self._ds_client.put(db_model)
-
-    def _to_db_topic(self, topic):
-        not_indexed = ['words', 'weights']
-        db_topic = self._helper.make_entity(u'Topic', not_indexed)
-        db_topic['words'] = [topic_word.word for topic_word in topic.topic_words]
-        db_topic['weights'] = [topic_word.weight for topic_word in topic.topic_words]
-        return db_topic
-
-
 class DalFeatureSet(object):
 
     def __init__(self, datastore_client, datastore_helper):
@@ -565,3 +531,37 @@ class DalUser(object):
         db_user['user_doc_set_key'] = user._user_doc_set_db_key  # pylint: disable=protected-access
         db_user['user_computed_profile_key'] = user._user_computed_profile_db_key  # pylint: disable=protected-access
         return db_user
+
+
+class DalTopicModelDescription(object):
+
+    def __init__(self, datastore_client, datastore_helper):
+        self._ds_client = datastore_client
+        self._helper = datastore_helper
+
+    def get(self, model_id):
+        """
+        :param model_id: string, model unique identifier
+        :return: struct.TopicModelDescription
+        """
+        key = self._ds_client.key(u'TopicModelDescription', model_id)
+        db_model = self._ds_client.get(key)
+        db_topics = db_model['topics']
+        topics = [zip(db_topic['words'], db_topic['weights']) for db_topic in db_topics]
+        return struct.TopicModelDescription.make_from_scratch(model_id, topics)
+
+    def save(self, model_description):
+        """
+        :param model_description: struct.TopicModelDescription
+        """
+        not_indexed = ['topics']
+        db_model = self._helper.make_named_entity(u'TopicModelDescription', model_description.topic_model_id, not_indexed)
+        db_model['topics'] = [self._to_db_topic(topic) for topic in model_description.topics]
+        self._ds_client.put(db_model)
+
+    def _to_db_topic(self, topic):
+        not_indexed = ['words', 'weights']
+        db_topic = self._helper.make_entity(u'Topic', not_indexed)
+        db_topic['words'] = [topic_word.word for topic_word in topic.topic_words]
+        db_topic['weights'] = [topic_word.weight for topic_word in topic.topic_words]
+        return db_topic

@@ -68,22 +68,25 @@ class TopicModellerTests(unittest.TestCase):
 
     def test_topic_field(self):
         random.seed(0)
-
-        words = ["word" + str(i) for i in range(150)]
+        nb_docs = 5
+        nb_words_by_doc = 150
+        dict_size = 150
+        nb_topics = 2
+        words = ["word" + str(i) for i in range(dict_size)]
         docs = []
-        for _ in range(5):
+        for _ in range(nb_docs):
             doc = ""
-            for _ in range(150):
+            for _ in range(nb_words_by_doc):
                 doc += " " + random.choice(words)
             docs.append(doc)
 
         topic_modeller = TopicModeller(self.MockTokenizer())
         topic_modeller._remove_optimizations = True  # pylint: disable=protected-access
-        topic_modeller.initialize(docs, num_topics=2)
+        topic_modeller.initialize(docs, num_topics=nb_topics)
 
-        self.assertEquals(2, len(topic_modeller.topics))
+        self.assertEquals(nb_topics, len(topic_modeller.topics))
         for topic in topic_modeller.topics:
-            self.assertEquals(100, len(topic))
+            self.assertEquals(100, len(topic))  # we keep 100 most significant words for each topics
             for word, weight in topic:
                 self.assertTrue(word in words)
                 self.assertTrue(0 < weight < 1)
