@@ -160,12 +160,11 @@ class TopicModeller(object):
         self._dictionary_words = set(self._dictionary.values())
 
     @property
-    def topics(self): #TODO NICO TEST
+    def topics(self):
         """
         :return: list of topics, each topic is a list of tuple (word, weight) by descending order of weight
         """
         # topics field is lazy loaded because it is rarely used and show_topic function is slow
         if self._topics is None:
-            self._topics = [(i, [word for (word, _) in self._lda.show_topic(topicid=i, topn=1)])
-                            for i in range(self._lda.num_topics)]
+            self._topics = [self._lda.show_topic(topicid=i, topn=100) for i in range(self._lda.num_topics)]
         return self._topics

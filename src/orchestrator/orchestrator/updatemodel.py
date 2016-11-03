@@ -37,7 +37,7 @@ def update_model_in_db(topic_modeller):
 def _save_topic_model(dal, model):
     dal.topic_model.save_model_description(model)
     target_feature_names = [topic.topic_words[0].word for topic in model.topics]
-    target_feature_set = FeatureSet.make_from_scratch(model.topic_model_id, target_feature_names, target_feature_set_id)
+    target_feature_set = FeatureSet.make_from_scratch(model.topic_model_id, target_feature_names, model.topic_model_id)
     dal.feature_set.save_feature_set(target_feature_set)
 
 
@@ -48,13 +48,13 @@ def _get_model_converters(dal, feature_set_ids, target_model):
     return model_converters
 
 
-def _get_updated_docs(docs, feature_set_id_to_model_converter, target_feature_set_id):
+def _get_updated_docs(docs, feature_set_id_to_converter, target_feature_set_id):
     updated_docs = []
     for doc in docs:
         feature_set_id = doc.feature_vector.feature_set_id
         if feature_set_id == target_feature_set_id:
             continue
-        converter = feature_set_id_to_model_converter[feature_set_id]
+        converter = feature_set_id_to_converter[feature_set_id]
         target_vector = converter.compute_target_vector(doc.feature_vector.vector)
         target_feature_vector = FeatureVector.make_from_scratch(target_vector, target_feature_set_id)
         updated_doc = Document.make_from_db(
@@ -71,19 +71,22 @@ def _get_updated_user_to_profile(feature_set_id_to_converter, user_to_profile, t
         if feature_set_id == target_feature_set_id:
             continue
         converter = feature_set_id_to_converter[feature_set_id]
-        model_data_origin = profile.model_data
-        explicit_target = converter.compute_target_vector(model_data_origin.explicit_feedback_vector)
-        positive_target = converter.compute_target_vector(model_data_origin.positive_feedback_vector)
-        negative_target = converter.compute_target_vector(model_data_origin.negative_feedback_vector)
-
-        model_data_target = UserProfileModelData.make_from_scratch(
-            explicit_target, positive_target, negative_target,
-            model_data_origin.positive_feedback_sum_coeff, model_data_origin.negative_feedback_sum_coeff)
+        model_data_target = _get_updated_model_data(converter, profile.model_data)
 
         profiler_profile = user_profiler.compute_user_profile(model_data_target, profile.datetime, [], profile.datetime)
         target_feature_vector = FeatureVector.make_from_scratch(profiler_profile.feedback_vector, target_feature_set_id)
         target_profile = UserComputedProfile.make_from_db(
-            target_feature_vector, model_data_origin, model_data_origin.datetime)
+            target_feature_vector, model_data_target, profile.datetime)
 
         updated_user_to_profile.append((user, target_profile))
     return updated_user_to_profile
+
+
+def _get_updated_model_data(converter, model_data_origin):
+    explicit_target = converter.compute_target_vector(model_data_origin.explicit_feedback_vector)
+    positive_target = converter.compute_target_vector(model_data_origin.positive_feedback_vector)
+    negative_target = converter.compute_target_vector(model_data_origin.negative_feedback_vector)
+    model_data_target = UserProfileModelData.make_from_scratch(
+        explicit_target, positive_target, negative_target,
+        model_data_origin.positive_feedback_sum_coeff, model_data_origin.negative_feedback_sum_coeff)
+    return model_data_target

@@ -330,6 +330,27 @@ class DalTests(unittest.TestCase):
         self.assertTrue(doc1.url_hash in url_hashes)
         self.assertTrue(doc2.url_hash in url_hashes)
 
+    def test_save_then_get_topic_model_description(self):
+
+        model_id = "model_id_test_save_then_get_topic_model_description"
+        topics = [
+            [("topic1_word1", 0.5), ("topic1_word2", 0.3)],
+            [("topic2_word1", 0.8)]
+        ]
+        model = struct.TopicModelDescription.make_from_scratch(model_id, topics)
+        self.dal.topic_model.save(model)
+        result_model = self.dal.topic_model.get(model_id)
+        self._assert_topic_model_equals(model, result_model)
+
+    def _assert_topic_model_equals(self, expected_model, result_model):
+        self.assertEquals(expected_model.topic_model_id, result_model.topic_model_id)
+        self.assertEquals(len(expected_model.topics), len(result_model.topics))
+        for expected_topic, result_topic in zip(expected_model.topics, result_model.topics):
+            self.assertEquals(len(expected_topic.topic_words), len(result_topic.topic_words))
+            for expected_topic_word, result_topic_word in zip(expected_topic.topic_words, result_topic.topic_words):
+                self.assertEquals(expected_topic_word.word, result_topic_word.word)
+                self.assertEquals(expected_topic_word.weight, result_topic_word.weight)
+
     def build_dummy_db_feature_set(self):
         self.dal.feature_set.save_feature_set(
             struct.FeatureSet.make_from_scratch(feature_set_id='set', feature_names=['desc2', 'desc1'], model_id=None))

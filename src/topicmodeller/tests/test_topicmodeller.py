@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import random
 import unittest
 
 from topicmodeller.topicmodeller import TopicModeller
@@ -30,10 +31,11 @@ class TopicModellerTests(unittest.TestCase):
         # check most recurrent words are selected topics (green, orange)
         index_orange = -1
         index_green = -1
-        for index, topic in topic_modeller.topics:
-            if topic[0] == u'orange':
+        for index, topic in zip(range(2), topic_modeller.topics):
+            (word, _) = topic[0]
+            if word == u'orange':
                 index_orange = index
-            if topic[0] == u'green':
+            if word == u'green':
                 index_green = index
         self.assertNotEquals(-1, index_orange)
         self.assertNotEquals(-1, index_green)
@@ -63,6 +65,29 @@ class TopicModellerTests(unittest.TestCase):
         self.assertEquals(len(topic_modeller.topics), len(classification_after_load_doc1))
         for after_init, after_load in zip(classification_after_init_doc1, classification_after_load_doc1):
             self.assertAlmostEqual(after_init, after_load, places=4)
+
+    def test_topic_field(self):
+        random.seed(0)
+
+        words = ["word" + str(i) for i in range(150)]
+        docs = []
+        for _ in range(5):
+            doc = ""
+            for _ in range(150):
+                doc += " " + random.choice(words)
+            docs.append(doc)
+
+        topic_modeller = TopicModeller(self.MockTokenizer())
+        topic_modeller._remove_optimizations = True  # pylint: disable=protected-access
+        topic_modeller.initialize(docs, num_topics=2)
+
+        self.assertEquals(2, len(topic_modeller.topics))
+        for topic in topic_modeller.topics:
+            self.assertEquals(100, len(topic))
+            for word, weight in topic:
+                self.assertTrue(word in words)
+                self.assertTrue(0 < weight < 1)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -134,7 +134,7 @@ class DatastoreHelper(object):
         return [key_to_entity[key] for key in keys]
 
 
-class Dal(object):
+class Dal(object):  # pylint: disable= too-many-instance-attributes
     # Dal is a class rather than plain module functions to enable init logic in the future,
     # but datastore client is slow to initialize, so we share it between Dal instances
 
@@ -149,15 +149,20 @@ class Dal(object):
         self.user_computed_profile = DalUserComputedProfile(self._ds_client, ds_helper, self.feature_vector)
         self.user = DalUser(self._ds_client, ds_helper, self.user_computed_profile)
         self.user_doc = DalUserDoc(self._ds_client, ds_helper, self.doc)
+        self.topic_model = DalTopicModelDescription(self._ds_client, ds_helper)
 
 
-class DalTopicModelDescription(object): #TODO NICO TEST
+class DalTopicModelDescription(object):
 
     def __init__(self, datastore_client, datastore_helper):
         self._ds_client = datastore_client
         self._helper = datastore_helper
 
     def get(self, model_id):
+        """
+        :param model_id: string, model unique identifier
+        :return: struct.TopicModelDescription
+        """
         key = self._ds_client.key(u'TopicModelDescription', model_id)
         db_model = self._ds_client.get(key)
         db_topics = db_model['topics']
@@ -165,13 +170,17 @@ class DalTopicModelDescription(object): #TODO NICO TEST
         return struct.TopicModelDescription.make_from_scratch(model_id, topics)
 
     def save(self, model_description):
+        """
+        :param model_description: struct.TopicModelDescription
+        """
         not_indexed = ['topics']
-        db_model = self._helper.make_named_entity(u'TopicModelDescription', model_description.model_id, not_indexed)
+        db_model = self._helper.make_named_entity(u'TopicModelDescription', model_description.topic_model_id, not_indexed)
         db_model['topics'] = [self._to_db_topic(topic) for topic in model_description.topics]
         self._ds_client.put(db_model)
 
     def _to_db_topic(self, topic):
-        db_topic = self._helper.make_entity(u'Topic')
+        not_indexed = ['words', 'weights']
+        db_topic = self._helper.make_entity(u'Topic', not_indexed)
         db_topic['words'] = [topic_word.word for topic_word in topic.topic_words]
         db_topic['weights'] = [topic_word.weight for topic_word in topic.topic_words]
         return db_topic
