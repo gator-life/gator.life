@@ -15,8 +15,7 @@ class TopicModelConverter(object):
         """
         words = set(topic_word.word
                     for topic in chain(origin_model.topics, target_model.topics)
-                    for topic_word in topic.topic_words
-                    )  # unique words
+                    for topic_word in topic.topic_words)  # unique words
 
         word_to_index = dict(izip(words, range(len(words))))
         origin_model_basis = self._build_basis_matrix(word_to_index, origin_model)

@@ -159,9 +159,16 @@ class DalTests(unittest.TestCase):
         result_profile = self.dal.user_computed_profile.get_user_computed_profiles([user])[0]
         self._assert_profiles_equals(profile, result_profile)
 
+    def test_save_user_computed_profiles_with_datetime_keep_it(self):
+        user, profile = self._build_profile(4)
+        profile.datetime = utcnow()
+        self.dal.user_computed_profile.save_user_computed_profile(user, profile)
+        saved_profile = self.dal.user_computed_profile.get_user_computed_profiles([user])[0]
+        self.assertEquals(profile.datetime, saved_profile.datetime)
+
     def test_get_users_feature_vectors(self):
-        user1, profile1 = self._build_profile(4)
-        user2, profile2 = self._build_profile(5)
+        user1, profile1 = self._build_profile(5)
+        user2, profile2 = self._build_profile(6)
         self.dal.user_computed_profile.save_user_computed_profiles([(user1, profile1), (user2, profile2)])
 
         vectors = self.dal.user_computed_profile.get_users_feature_vectors([user2, user1])
@@ -171,7 +178,7 @@ class DalTests(unittest.TestCase):
         self._assert_feature_vector_equals(profile2.feature_vector, vectors[0])
 
     def test_get_user_feature_vector(self):
-        user, profile = self._build_profile(6)
+        user, profile = self._build_profile(7)
         self.dal.user_computed_profile.save_user_computed_profiles([(user, profile)])
         vector = self.dal.user_computed_profile.get_user_feature_vector(user)
         self._assert_feature_vector_equals(profile.feature_vector, vector)
@@ -315,6 +322,13 @@ class DalTests(unittest.TestCase):
         result_docs = self.dal.doc.get_docs([doc1.url_hash, doc2.url_hash])
         self._assert_doc_equals(doc1, result_docs[0])
         self._assert_doc_equals(doc2, result_docs[1])
+
+    def test_save_doc_with_datetime_keep_it(self):
+        doc = self.make_dummy_doc('test_save_doc_with_datetime_keep_it')
+        doc.datetime = utcnow()
+        self.dal.doc.save_documents([doc])
+        saved_doc = self.dal.doc.get_doc(doc.url_hash)
+        self.assertEquals(doc.datetime, saved_doc.datetime)
 
     def test_get_recent_doc_url_hashes(self):
 

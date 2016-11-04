@@ -218,7 +218,7 @@ class DalDoc(object):
         db_doc['summary'] = doc.summary
         db_doc['feature_vector'] = self._dal_feature_vector._to_db_feature_vector(  # pylint: disable=protected-access
             doc.feature_vector)
-        db_doc['datetime'] = datetime.datetime.utcnow()
+        db_doc['datetime'] = doc.datetime or datetime.datetime.utcnow()
         return db_doc
 
     def get_doc(self, url_hash):
@@ -335,7 +335,7 @@ class DalUserComputedProfile(object):
             self._dal_feature_vector._to_db_feature_vector(  # pylint: disable=protected-access
                 user_computed_profile.feature_vector)
         db_user_computed_profile['model_data'] = self._to_db_user_profile_model_data(user_computed_profile.model_data)
-        db_user_computed_profile['datetime'] = datetime.datetime.utcnow()
+        db_user_computed_profile['datetime'] = user_computed_profile.datetime or datetime.datetime.utcnow()
         return db_user_computed_profile
 
     def save_user_computed_profile(self, user, user_computed_profile):

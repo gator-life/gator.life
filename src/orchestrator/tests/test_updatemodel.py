@@ -33,33 +33,26 @@ class UpdateModelTests(unittest.TestCase):
         self.dal.feature_set.save_feature_set(struct.FeatureSet.make_from_scratch(feature_set_id, ['feat_name'], model_id))
 
         vec_doc = [0.8]
-        feat_vec_doc = struct.FeatureVector.make_from_scratch(vec_doc, feature_set_id)
         url_hash = 'hash_test_update_model_in_db'
-        doc = struct.Document.make_from_scratch('', url_hash, None, None, feat_vec_doc)
-        self.dal.doc.save_documents([doc])
+        doc = self._get_saved_doc(feature_set_id, url_hash, vec_doc)
 
         email = 'email_test_update_model_in_db'
         user = struct.User.make_from_scratch(email, '')
         self.dal.user.save_user(user, 'password')
 
         vec_profile = [-1]
-        feat_vec_profile = struct.FeatureVector.make_from_scratch(vec_profile, feature_set_id)
         explicit = [2.0]
         positive = [3.0]
         negative = [4.0]
         pos_sum = 1.0
         neg_sum = 2.0
-        model_data = struct.UserProfileModelData.make_from_scratch(explicit, positive, negative, pos_sum, neg_sum)
-        profile = struct.UserComputedProfile.make_from_scratch(feat_vec_profile, model_data)
-        self.dal.user_computed_profile.save_user_computed_profile(user, profile)
-        profile = self.dal.user_computed_profile.get_user_computed_profiles([user])[0]  # to update profile.datetime
+        profile = self._get_saved_profile(user, vec_profile, feature_set_id, explicit, positive, negative, pos_sum, neg_sum)
 
         user_doc = struct.UserDocument.make_from_scratch(doc, 0.0)
         self.dal.user_doc.save_user_docs(user, [user_doc])
 
         # 2) call update
-        mock_model = MockTopicModel()
-        update_model_in_db(mock_model, [user])
+        update_model_in_db(MockTopicModel(), [user])
 
         # 3) check datastore updates
         new_model_id = 'new_model_id'
@@ -70,6 +63,7 @@ class UpdateModelTests(unittest.TestCase):
         self.assertIsNotNone(new_feature_set)
 
         updated_doc = self.dal.doc.get_doc(url_hash)
+        self.assertEquals(doc.datetime, updated_doc.datetime)
         self.assertEquals(new_model_id, updated_doc.feature_vector.feature_set_id)
         self.assertEquals([vec_doc[0] * 2, 0.0], updated_doc.feature_vector.vector)  # because weight on 'word' divided by 2
 
@@ -85,6 +79,22 @@ class UpdateModelTests(unittest.TestCase):
         self.assertEquals([explicit[0] * 2, 0.0], updated_model_data.explicit_feedback_vector)
         self.assertEquals([positive[0] * 2, 0.0], updated_model_data.positive_feedback_vector)
         self.assertEquals([negative[0] * 2, 0.0], updated_model_data.negative_feedback_vector)
+
+    def _get_saved_doc(self, feature_set_id, url_hash, vec_doc):
+        feat_vec_doc = struct.FeatureVector.make_from_scratch(vec_doc, feature_set_id)
+        doc = struct.Document.make_from_scratch('', url_hash, None, None, feat_vec_doc)
+        self.dal.doc.save_documents([doc])
+        doc = self.dal.doc.get_doc(url_hash)  # to update doc.datetime
+        return doc
+
+    def _get_saved_profile(self, user, vec_profile, feature_set_id, explicit, positive, negative, pos_sum, neg_sum):  # pylint: disable=too-many-arguments
+        # (disable pylint, nb of args here seems good trade-off)
+        feat_vec_profile = struct.FeatureVector.make_from_scratch(vec_profile, feature_set_id)
+        model_data = struct.UserProfileModelData.make_from_scratch(explicit, positive, negative, pos_sum, neg_sum)
+        profile = struct.UserComputedProfile.make_from_scratch(feat_vec_profile, model_data)
+        self.dal.user_computed_profile.save_user_computed_profile(user, profile)
+        profile = self.dal.user_computed_profile.get_user_computed_profiles([user])[0]  # to update profile.datetime
+        return profile
 
 
 if __name__ == '__main__':
