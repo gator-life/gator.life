@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from orchestrator.initialize_topicmodeller import initialize_topicmodeller_and_db
-from server.dal import Dal, REF_FEATURE_SET
+from orchestrator.initialize_topicmodeller import initialize_topicmodeller
 
 
 class MockTopicModeller(object):
@@ -27,9 +26,6 @@ class MockTopicModeller(object):
 
 class TopicModellerTests(unittest.TestCase):
 
-    def setUp(self):
-        self.dal = Dal()
-
     def test_initialize_topicmodeller(self):
         num_topics = 128
 
@@ -41,13 +37,10 @@ class TopicModellerTests(unittest.TestCase):
 
         topic_modeller = MockTopicModeller(topics, html_documents, tm_data_folder, num_topics)
 
-        initialize_topicmodeller_and_db(topic_modeller, html_documents, tm_data_folder, num_topics)
+        initialize_topicmodeller(topic_modeller, html_documents, tm_data_folder, num_topics)
 
         self.assertTrue(topic_modeller.initialized)
         self.assertTrue(topic_modeller.saved)
-
-        saved_features_names = self.dal.feature_set.get_feature_set(REF_FEATURE_SET).feature_names
-        self.assertEquals(saved_features_names, features_names)
 
 
 if __name__ == '__main__':
