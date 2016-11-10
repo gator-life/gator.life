@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import random
 import unittest
 
 from topicmodeller.topicmodeller import TopicModeller
@@ -30,10 +31,11 @@ class TopicModellerTests(unittest.TestCase):
         # check most recurrent words are selected topics (green, orange)
         index_orange = -1
         index_green = -1
-        for index, topic in topic_modeller.topics:
-            if topic[0] == u'orange':
+        for index, topic in zip(range(2), topic_modeller.topics):
+            (word, _) = topic[0]
+            if word == u'orange':
                 index_orange = index
-            if topic[0] == u'green':
+            if word == u'green':
                 index_green = index
         self.assertNotEquals(-1, index_orange)
         self.assertNotEquals(-1, index_green)
@@ -63,6 +65,56 @@ class TopicModellerTests(unittest.TestCase):
         self.assertEquals(len(topic_modeller.topics), len(classification_after_load_doc1))
         for after_init, after_load in zip(classification_after_init_doc1, classification_after_load_doc1):
             self.assertAlmostEqual(after_init, after_load, places=4)
+
+    def test_topic_field(self):
+        nb_docs = 5
+        nb_words_by_doc = 150
+        dict_size = 150
+        nb_topics = 2
+        words = ["word" + str(i) for i in range(dict_size)]
+        topic_modeller = self._build_topic_model(nb_docs, nb_topics, nb_words_by_doc, words)
+        self.assertEquals(nb_topics, len(topic_modeller.topics))
+        for topic in topic_modeller.topics:
+            self.assertEquals(100, len(topic))  # we keep 100 most significant words for each topics
+            for word, weight in topic:
+                self.assertTrue(word in words)
+                self.assertTrue(0 < weight < 1)
+
+    def test_get_model_id(self):
+        nb_docs = 3
+        nb_words_by_doc = 20
+        dict_size = 50
+        nb_topics = 2
+        words = ["word" + str(i) for i in range(dict_size)]
+        topic_modeller = self._build_topic_model(nb_docs, nb_topics, nb_words_by_doc, words)
+        topic_modeller_same = self._build_topic_model(nb_docs, nb_topics, nb_words_by_doc, words)
+        topic_modeller_diff = self._build_topic_model(nb_docs, nb_topics, nb_words_by_doc + 1, words)
+
+        model_id = topic_modeller.get_model_id()
+        model_id_same = topic_modeller_same.get_model_id()
+        self.assertEquals(model_id, model_id_same)
+        self.assertNotEquals(model_id, topic_modeller_diff)
+
+        directory = os.path.dirname(os.path.abspath(__file__))
+        topic_modeller.save(directory)
+        deserialized_topic_modeller = TopicModeller(self.MockTokenizer())
+        deserialized_topic_modeller.load(directory)
+        model_id_after_load = deserialized_topic_modeller.get_model_id()
+        self.assertEquals(model_id, model_id_after_load)
+
+    def _build_topic_model(self, nb_docs, nb_topics, nb_words_by_doc, words):
+        docs = []
+        random.seed(0)
+        for _ in range(nb_docs):
+            doc = ""
+            for _ in range(nb_words_by_doc):
+                doc += " " + random.choice(words)
+            docs.append(doc)
+        topic_modeller = TopicModeller(self.MockTokenizer())
+        topic_modeller._remove_optimizations = True  # pylint: disable=protected-access
+        topic_modeller.initialize(docs, num_topics=nb_topics)
+        return topic_modeller
+
 
 if __name__ == '__main__':
     unittest.main()
