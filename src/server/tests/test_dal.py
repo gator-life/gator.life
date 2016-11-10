@@ -15,15 +15,17 @@ class DalTests(unittest.TestCase):
 
     def test_save_then_get_feature_set(self):
         self.dal.feature_set.save_feature_set(
-            struct.FeatureSet.make_from_scratch(feature_set_id='set', feature_names=['desc1', 'desc2']))
+            struct.FeatureSet.make_from_scratch(
+                feature_set_id='set', feature_names=['desc1', 'desc2'], model_id='model_test_save_then_get_feature_set'))
         feature_set = self.dal.feature_set.get_feature_set('set')
         self.assertEquals('set', feature_set.feature_set_id)
+        self.assertEquals('model_test_save_then_get_feature_set', feature_set.model_id)
         self.assertEquals('desc1', feature_set.feature_names[0])
         self.assertEquals('desc2', feature_set.feature_names[1])
 
     def test_save_then_get_empty_features(self):
         self.dal.feature_set.save_feature_set(struct.FeatureSet.make_from_scratch(
-            feature_set_id='test_save_then_get_empty_features_feature_set_id', feature_names=[]))
+            feature_set_id='test_save_then_get_empty_features_feature_set_id', feature_names=[], model_id=None))
         feature_set = self.dal.feature_set.get_feature_set('test_save_then_get_empty_features_feature_set_id')
         self.assertEquals([], feature_set.feature_names)
 
@@ -157,9 +159,16 @@ class DalTests(unittest.TestCase):
         result_profile = self.dal.user_computed_profile.get_user_computed_profiles([user])[0]
         self._assert_profiles_equals(profile, result_profile)
 
+    def test_save_user_computed_profiles_with_datetime_keep_it(self):
+        user, profile = self._build_profile(4)
+        profile.datetime = utcnow()
+        self.dal.user_computed_profile.save_user_computed_profile(user, profile)
+        saved_profile = self.dal.user_computed_profile.get_user_computed_profiles([user])[0]
+        self.assertEquals(profile.datetime, saved_profile.datetime)
+
     def test_get_users_feature_vectors(self):
-        user1, profile1 = self._build_profile(4)
-        user2, profile2 = self._build_profile(5)
+        user1, profile1 = self._build_profile(5)
+        user2, profile2 = self._build_profile(6)
         self.dal.user_computed_profile.save_user_computed_profiles([(user1, profile1), (user2, profile2)])
 
         vectors = self.dal.user_computed_profile.get_users_feature_vectors([user2, user1])
@@ -169,7 +178,7 @@ class DalTests(unittest.TestCase):
         self._assert_feature_vector_equals(profile2.feature_vector, vectors[0])
 
     def test_get_user_feature_vector(self):
-        user, profile = self._build_profile(6)
+        user, profile = self._build_profile(7)
         self.dal.user_computed_profile.save_user_computed_profiles([(user, profile)])
         vector = self.dal.user_computed_profile.get_user_feature_vector(user)
         self._assert_feature_vector_equals(profile.feature_vector, vector)
@@ -314,6 +323,13 @@ class DalTests(unittest.TestCase):
         self._assert_doc_equals(doc1, result_docs[0])
         self._assert_doc_equals(doc2, result_docs[1])
 
+    def test_save_doc_with_datetime_keep_it(self):
+        doc = self.make_dummy_doc('test_save_doc_with_datetime_keep_it')
+        doc.datetime = utcnow()
+        self.dal.doc.save_documents([doc])
+        saved_doc = self.dal.doc.get_doc(doc.url_hash)
+        self.assertEquals(doc.datetime, saved_doc.datetime)
+
     def test_get_recent_doc_url_hashes(self):
 
         doc_before = self.make_dummy_doc('get_recent_doc_url_hashes_before')
@@ -328,9 +344,30 @@ class DalTests(unittest.TestCase):
         self.assertTrue(doc1.url_hash in url_hashes)
         self.assertTrue(doc2.url_hash in url_hashes)
 
+    def test_save_then_get_topic_model_description(self):
+
+        model_id = "model_id_test_save_then_get_topic_model_description"
+        topics = [
+            [("topic1_word1", 0.5), ("topic1_word2", 0.3)],
+            [("topic2_word1", 0.8)]
+        ]
+        model = struct.TopicModelDescription.make_from_scratch(model_id, topics)
+        self.dal.topic_model.save(model)
+        result_model = self.dal.topic_model.get(model_id)
+        self._assert_topic_model_equals(model, result_model)
+
+    def _assert_topic_model_equals(self, expected_model, result_model):
+        self.assertEquals(expected_model.topic_model_id, result_model.topic_model_id)
+        self.assertEquals(len(expected_model.topics), len(result_model.topics))
+        for expected_topic, result_topic in zip(expected_model.topics, result_model.topics):
+            self.assertEquals(len(expected_topic.topic_words), len(result_topic.topic_words))
+            for expected_topic_word, result_topic_word in zip(expected_topic.topic_words, result_topic.topic_words):
+                self.assertEquals(expected_topic_word.word, result_topic_word.word)
+                self.assertEquals(expected_topic_word.weight, result_topic_word.weight)
+
     def build_dummy_db_feature_set(self):
         self.dal.feature_set.save_feature_set(
-            struct.FeatureSet.make_from_scratch(feature_set_id='set', feature_names=['desc2', 'desc1']))
+            struct.FeatureSet.make_from_scratch(feature_set_id='set', feature_names=['desc2', 'desc1'], model_id=None))
         return 'set'
 
 

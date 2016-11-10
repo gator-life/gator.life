@@ -134,7 +134,7 @@ class DatastoreHelper(object):
         return [key_to_entity[key] for key in keys]
 
 
-class Dal(object):
+class Dal(object):  # pylint: disable= too-many-instance-attributes
     # Dal is a class rather than plain module functions to enable init logic in the future,
     # but datastore client is slow to initialize, so we share it between Dal instances
 
@@ -149,6 +149,7 @@ class Dal(object):
         self.user_computed_profile = DalUserComputedProfile(self._ds_client, ds_helper, self.feature_vector)
         self.user = DalUser(self._ds_client, ds_helper, self.user_computed_profile)
         self.user_doc = DalUserDoc(self._ds_client, ds_helper, self.doc)
+        self.topic_model = DalTopicModelDescription(self._ds_client, ds_helper)
 
 
 class DalFeatureSet(object):
@@ -165,7 +166,8 @@ class DalFeatureSet(object):
         db_feature_set_key = self._ds_client.key(u'FeatureSet', feature_set_id)
         db_feature_set = self._ds_client.get(db_feature_set_key)
         feature_names = db_feature_set.get('features', [])
-        return struct.FeatureSet.make_from_db(feature_set_id, feature_names)
+        model_id = db_feature_set['model_id']
+        return struct.FeatureSet.make_from_db(feature_set_id, feature_names, model_id)
 
     def save_feature_set(self, feature_set):
         """
@@ -173,6 +175,7 @@ class DalFeatureSet(object):
         """
         db_feature_set = self._helper.make_named_entity(u'FeatureSet', feature_set.feature_set_id, not_indexed=('features',))
         db_feature_set['features'] = feature_set.feature_names
+        db_feature_set['model_id'] = feature_set.model_id
         self._ds_client.put(db_feature_set)
 
 
@@ -215,7 +218,7 @@ class DalDoc(object):
         db_doc['summary'] = doc.summary
         db_doc['feature_vector'] = self._dal_feature_vector._to_db_feature_vector(  # pylint: disable=protected-access
             doc.feature_vector)
-        db_doc['datetime'] = datetime.datetime.utcnow()
+        db_doc['datetime'] = doc.datetime or datetime.datetime.utcnow()
         return db_doc
 
     def get_doc(self, url_hash):
@@ -332,7 +335,7 @@ class DalUserComputedProfile(object):
             self._dal_feature_vector._to_db_feature_vector(  # pylint: disable=protected-access
                 user_computed_profile.feature_vector)
         db_user_computed_profile['model_data'] = self._to_db_user_profile_model_data(user_computed_profile.model_data)
-        db_user_computed_profile['datetime'] = datetime.datetime.utcnow()
+        db_user_computed_profile['datetime'] = user_computed_profile.datetime or datetime.datetime.utcnow()
         return db_user_computed_profile
 
     def save_user_computed_profile(self, user, user_computed_profile):
@@ -528,3 +531,37 @@ class DalUser(object):
         db_user['user_doc_set_key'] = user._user_doc_set_db_key  # pylint: disable=protected-access
         db_user['user_computed_profile_key'] = user._user_computed_profile_db_key  # pylint: disable=protected-access
         return db_user
+
+
+class DalTopicModelDescription(object):
+
+    def __init__(self, datastore_client, datastore_helper):
+        self._ds_client = datastore_client
+        self._helper = datastore_helper
+
+    def get(self, model_id):
+        """
+        :param model_id: string, model unique identifier
+        :return: struct.TopicModelDescription
+        """
+        key = self._ds_client.key(u'TopicModelDescription', model_id)
+        db_model = self._ds_client.get(key)
+        db_topics = db_model['topics']
+        topics = [zip(db_topic['words'], db_topic['weights']) for db_topic in db_topics]
+        return struct.TopicModelDescription.make_from_scratch(model_id, topics)
+
+    def save(self, model_description):
+        """
+        :param model_description: struct.TopicModelDescription
+        """
+        not_indexed = ['topics']
+        db_model = self._helper.make_named_entity(u'TopicModelDescription', model_description.topic_model_id, not_indexed)
+        db_model['topics'] = [self._to_db_topic(topic) for topic in model_description.topics]
+        self._ds_client.put(db_model)
+
+    def _to_db_topic(self, topic):
+        not_indexed = ['words', 'weights']
+        db_topic = self._helper.make_entity(u'Topic', not_indexed)
+        db_topic['words'] = [topic_word.word for topic_word in topic.topic_words]
+        db_topic['weights'] = [topic_word.weight for topic_word in topic.topic_words]
+        return db_topic

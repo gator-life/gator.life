@@ -45,7 +45,8 @@ class UserProfileBuilderTests(unittest.TestCase):
 
     def _build_feature_set(self):
         feature_set_id = 'test_update_user_profiles_in_database'
-        self.dal.feature_set.save_feature_set(struct.FeatureSet.make_from_scratch(feature_set_id, ['feature_name']))
+        self.dal.feature_set.save_feature_set(
+            struct.FeatureSet.make_from_scratch(feature_set_id, ['feature_name'], None))
         return feature_set_id
 
     @staticmethod
