@@ -10,10 +10,13 @@ class TopicModelConverter(object):
 
     def __init__(self, origin_model, target_model):
         """
-        :param origin_model: list of topics of "old" model, each topic is a list of tuple (word, weight)
-        :param target_model: list of topics of "new" model, each topic is a list of tuple (word, weight)
+        :param origin_model: struct.TopicModelDescription of the "old" model
+        :param target_model: struct.TopicModelDescription of the "new" model
         """
-        words = set(word for topic in chain(origin_model, target_model) for (word, _) in topic)  # unique words
+        words = set(topic_word.word
+                    for topic in chain(origin_model.topics, target_model.topics)
+                    for topic_word in topic.topic_words)  # unique words
+
         word_to_index = dict(izip(words, range(len(words))))
         origin_model_basis = self._build_basis_matrix(word_to_index, origin_model)
         target_model_basis = self._build_basis_matrix(word_to_index, target_model)
@@ -21,10 +24,10 @@ class TopicModelConverter(object):
 
     @staticmethod
     def _build_basis_matrix(word_to_index, model):
-        model_basis = np.zeros((len(word_to_index), len(model)))
-        for index_topic, topic in enumerate(model):
-            for word, weight in topic:
-                model_basis[word_to_index[word], index_topic] = weight
+        model_basis = np.zeros((len(word_to_index), len(model.topics)))
+        for index_topic, topic in enumerate(model.topics):
+            for topic_word in topic.topic_words:
+                model_basis[word_to_index[topic_word.word], index_topic] = topic_word.weight
         return model_basis
 
     def compute_target_vector(self, origin_vector):
