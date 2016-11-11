@@ -154,16 +154,16 @@ class DalFeatureSet(object):
     def __init__(self, datastore_client, datastore_helper):
         self._ds_client = datastore_client
         self._helper = datastore_helper
-        self._ref_feature_set_id = u"ref_feature_set"
+        self._ref_feature_set_id = u"ref_feature_set_id"
 
     def get_ref_feature_set_id(self):
-        key = self._ds_client.key(u'SpecialFeatureSetId', self._ref_feature_set_id)
+        key = self._ds_client.key(u'ConfigKey', self._ref_feature_set_id)
         db_special_feature_set = self._ds_client.get(key)
-        return db_special_feature_set['ref_feature_set_id']
+        return db_special_feature_set['value']
 
     def save_ref_feature_set_id(self, new_ref_feature_set_id):
-        entity = self._helper.make_named_entity(u'SpecialFeatureSetId', self._ref_feature_set_id, [])
-        entity['ref_feature_set_id'] = new_ref_feature_set_id
+        entity = self._helper.make_named_entity(u'ConfigKey', self._ref_feature_set_id, [])
+        entity['value'] = new_ref_feature_set_id
         self._ds_client.put(entity)
 
     def get_feature_set(self, feature_set_id):
