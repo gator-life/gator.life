@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import server.frontendstructs as struct
-from server.dal import Dal, REF_FEATURE_SET
+from server.dal import Dal
 
 
 def create_user_dummy(user_id, password, interests):
     dal = Dal()
+    ref_feature_set_id = dal.feature_set.get_ref_feature_set_id()
     dummy_doc1 = struct.Document.make_from_scratch(
         url='https://www.google.com', url_hash='hash_create_user_dummy_1_' + user_id, title='google.com',
         summary='we will buy you',
-        feature_vector=struct.FeatureVector.make_from_scratch([], REF_FEATURE_SET))
+        feature_vector=struct.FeatureVector.make_from_scratch([], ref_feature_set_id))
     dummy_doc2 = struct.Document.make_from_scratch(
         url='gator.life', url_hash='hash_create_user_dummy_2_' + user_id, title='gator.life', summary='YGNI',
-        feature_vector=struct.FeatureVector.make_from_scratch([], REF_FEATURE_SET))
+        feature_vector=struct.FeatureVector.make_from_scratch([], ref_feature_set_id))
     dal.doc.save_documents([dummy_doc1, dummy_doc2])
 
     new_user = struct.User.make_from_scratch(email=user_id, interests=interests)

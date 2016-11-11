@@ -5,7 +5,7 @@ import unittest
 from orchestrator.scrap_and_learn import _scrap_and_learn
 from common.datehelper import utcnow
 import scraper.scraperstructs as scrap
-from server.dal import Dal, NULL_FEATURE_SET, REF_FEATURE_SET
+from server.dal import Dal
 import server.frontendstructs as struct
 
 
@@ -51,7 +51,9 @@ class ScrapAndLearnTests(unittest.TestCase):
 
     def setUp(self):
         self.dal = Dal()
-        self.dummy_feat_vec = struct.FeatureVector.make_from_scratch([], NULL_FEATURE_SET)
+        self.ref_feature_set_id = 'feature_set_id_ScrapAndLearnTests'
+        self.dal.feature_set.save_ref_feature_set_id(self.ref_feature_set_id)
+        self.dummy_feat_vec = struct.FeatureVector.make_from_scratch([], self.ref_feature_set_id)
 
     def test_scrap_and_learn(self):
         # I)setup database and mocks
@@ -88,8 +90,7 @@ class ScrapAndLearnTests(unittest.TestCase):
                 self.fail()
         self.assertEquals(4, len(mock_saver.saved_docs))  # MockScraper generate 4 docs
         for doc in mock_saver.saved_docs:
-            # currently, model versioning is not managed, all is set to ref
-            self.assertEquals(REF_FEATURE_SET, doc.feature_vector.feature_set_id)
+            self.assertEquals(self.ref_feature_set_id, doc.feature_vector.feature_set_id)
             self.assertEquals(MockTopicModeller.feature_vector, doc.feature_vector.vector)
 
     def _save_dummy_profile_for_user(self, user):

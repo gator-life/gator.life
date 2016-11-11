@@ -3,7 +3,6 @@
 
 import unittest
 from flask import Flask
-from server.dal import REF_FEATURE_SET
 import server.frontendstructs as struct
 import server.handlers as handlers
 import server.passwordhelpers as pswd
@@ -49,8 +48,12 @@ class DalUserDocMock(object):
 
 class DalFeatureSetMock(object):
 
-    def get_feature_set(self, feature_set_id):  # pylint: disable=unused-argument, no-self-use
-        if feature_set_id == REF_FEATURE_SET:
+    @staticmethod
+    def get_ref_feature_set_id():
+        return 'ref_feature_set_DalFeatureSetMock'
+
+    def get_feature_set(self, feature_set_id):
+        if feature_set_id == self.get_ref_feature_set_id():
             return struct.FeatureSet.make_from_db(feature_set_id, ['label1'], None)
         return None
 

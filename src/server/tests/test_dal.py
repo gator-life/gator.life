@@ -13,6 +13,12 @@ class DalTests(unittest.TestCase):
     def setUp(self):
         self.dal = sdal.Dal()
 
+    def test_save_then_get_ref_feature_set_id(self):
+        expected_id = 'test_save_then_get_ref_feature_set_id'
+        self.dal.feature_set.save_ref_feature_set_id(expected_id)
+        result_id = self.dal.feature_set.get_ref_feature_set_id()
+        self.assertEquals(expected_id, result_id)
+
     def test_save_then_get_feature_set(self):
         self.dal.feature_set.save_feature_set(
             struct.FeatureSet.make_from_scratch(
@@ -147,7 +153,8 @@ class DalTests(unittest.TestCase):
         self.dal.user.save_user(user, 'test_get_empty_user_computed_profiles_password')
         result_profile = self.dal.user_computed_profile.get_user_computed_profiles([user])[0]
         expected_profile = struct.UserComputedProfile.make_from_scratch(
-            feature_vector=struct.FeatureVector.make_from_scratch([], sdal.NULL_FEATURE_SET),
+            feature_vector=struct.FeatureVector.make_from_scratch(
+                [], self.dal.user._new_user_feature_set_id),  # pylint: disable=protected-access
             model_data=struct.UserProfileModelData.make_from_scratch([], [], [], 0, 0)
         )
 

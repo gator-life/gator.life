@@ -10,9 +10,6 @@ from gcloud import datastore
 from .environment import GCLOUD_PROJECT, IS_TEST_ENV
 from . import frontendstructs as struct
 
-REF_FEATURE_SET = u"ref_feature_set"
-NULL_FEATURE_SET = u"null_feature_set"
-
 
 def _to_user_action_type_on_doc(user_action_on_doc_db_string):
     if user_action_on_doc_db_string == 'up_vote':
@@ -157,6 +154,17 @@ class DalFeatureSet(object):
     def __init__(self, datastore_client, datastore_helper):
         self._ds_client = datastore_client
         self._helper = datastore_helper
+        self._ref_feature_set_id = u"ref_feature_set"
+
+    def get_ref_feature_set_id(self):
+        key = self._ds_client.key(u'SpecialFeatureSetId', self._ref_feature_set_id)
+        db_special_feature_set = self._ds_client.get(key)
+        return db_special_feature_set['ref_feature_set_id']
+
+    def save_ref_feature_set_id(self, new_ref_feature_set_id):
+        entity = self._helper.make_named_entity(u'SpecialFeatureSetId', self._ref_feature_set_id, [])
+        entity['ref_feature_set_id'] = new_ref_feature_set_id
+        self._ds_client.put(entity)
 
     def get_feature_set(self, feature_set_id):
         """
@@ -473,6 +481,7 @@ class DalUser(object):
         self._ds_client = datastore_client
         self._helper = datastore_helper
         self._dal_user_computed_profile = dal_user_computed_profile
+        self._new_user_feature_set_id = u"new_user_feature_set_id"
 
     def get_user(self, email):
         """
@@ -510,7 +519,7 @@ class DalUser(object):
         if user._user_computed_profile_db_key is None:  # pylint: disable=protected-access
 
             user_computed_profile = struct.UserComputedProfile.make_from_scratch(
-                struct.FeatureVector.make_from_scratch([], NULL_FEATURE_SET),
+                struct.FeatureVector.make_from_scratch([], self._new_user_feature_set_id),
                 struct.UserProfileModelData.make_from_scratch([], [], [], 0.0, 0.0))
             db_user_computed_profile = \
                 self._dal_user_computed_profile._to_db_user_computed_profile(  # pylint: disable=protected-access

@@ -9,7 +9,7 @@ import common.crypto as crypto
 import learner.learner as lrn
 from scraper.scraper import Scraper
 from server.frontendstructs import Document, UserDocument, FeatureVector
-from server.dal import Dal, REF_FEATURE_SET
+from server.dal import Dal
 from server.environment import IS_TEST_ENV
 from topicmodeller.topicmodeller import TopicModeller
 
@@ -61,7 +61,7 @@ def _scrap_and_learn(  # pylint: disable=too-many-arguments
 
     dal = Dal()
 
-    doc_builder = DocBuilder(topic_modeller)
+    doc_builder = DocBuilder(topic_modeller, dal)
     users = _get_users(dal, keep_user_func)
     scraper_filtered = ScraperFiltered(scraper, nb_docs, seen_urls_cache_start_date, dal)
     doc_saver = UserDocSaverByChunk(docs_chunk_size, UserDocChunkSaver(dal), scraper_doc_saver)
@@ -166,8 +166,9 @@ class UserDocChunkSaver(object):
 
 class DocBuilder(object):
 
-    def __init__(self, topic_modeller):
+    def __init__(self, topic_modeller, dal):
         self._topic_modeller = topic_modeller
+        self._ref_feature_set_id = dal.feature_set.get_ref_feature_set_id()
 
     def build_doc(self, scraper_document, url_hash):
         (classify_ok, topic_feature_vector) = self._topic_modeller.classify(scraper_document.html_content)
@@ -175,7 +176,7 @@ class DocBuilder(object):
             return False, None
         doc = Document.make_from_scratch(
             scraper_document.link_element.url, url_hash, scraper_document.link_element.origin_info.title,
-            summary=None, feature_vector=FeatureVector.make_from_scratch(topic_feature_vector, REF_FEATURE_SET))
+            summary=None, feature_vector=FeatureVector.make_from_scratch(topic_feature_vector, self._ref_feature_set_id))
         return True, doc
 
 
