@@ -64,6 +64,9 @@ class UpdateModelTests(unittest.TestCase):
 
         new_feature_set = self.dal.feature_set.get_feature_set(new_model_id)
         self.assertIsNotNone(new_feature_set)
+        self.assertEquals(new_model_id, new_feature_set.feature_set_id)
+        self.assertEquals(['word', 'other_topic'], new_feature_set.feature_names)
+        self.assertEquals(new_model_id, new_feature_set.model_id)
 
         updated_doc = self.dal.doc.get_doc(url_hash)
         self.assertEquals(doc.datetime, updated_doc.datetime)

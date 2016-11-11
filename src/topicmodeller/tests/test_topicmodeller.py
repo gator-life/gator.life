@@ -26,12 +26,12 @@ class TopicModellerTests(unittest.TestCase):
         topic_modeller.initialize(docs, num_topics=2)
 
         # check number of topics is expected
-        self.assertEquals(2, len(topic_modeller.topics))
+        self.assertEquals(2, len(topic_modeller.get_topics()))
 
         # check most recurrent words are selected topics (green, orange)
         index_orange = -1
         index_green = -1
-        for index, topic in zip(range(2), topic_modeller.topics):
+        for index, topic in zip(range(2), topic_modeller.get_topics()):
             (word, _) = topic[0]
             if word == u'orange':
                 index_orange = index
@@ -45,7 +45,7 @@ class TopicModellerTests(unittest.TestCase):
         # -same topic, different docs
         (ok1, classification_after_init_doc1) = topic_modeller.classify(doc1)
         self.assertTrue(ok1)
-        self.assertEquals(len(topic_modeller.topics), len(classification_after_init_doc1))
+        self.assertEquals(len(topic_modeller.get_topics()), len(classification_after_init_doc1))
         (ok2, classification_after_init_doc2) = topic_modeller.classify(doc2)
         self.assertTrue(ok2)
         self.assertTrue(classification_after_init_doc1[index_orange] > classification_after_init_doc1[index_green])
@@ -62,7 +62,7 @@ class TopicModellerTests(unittest.TestCase):
 
         (ok1_reload, classification_after_load_doc1) = deserialized_topic_modeller.classify(doc1)
         self.assertTrue(ok1_reload)
-        self.assertEquals(len(topic_modeller.topics), len(classification_after_load_doc1))
+        self.assertEquals(len(topic_modeller.get_topics()), len(classification_after_load_doc1))
         for after_init, after_load in zip(classification_after_init_doc1, classification_after_load_doc1):
             self.assertAlmostEqual(after_init, after_load, places=4)
 
@@ -73,12 +73,13 @@ class TopicModellerTests(unittest.TestCase):
         nb_topics = 2
         words = ["word" + str(i) for i in range(dict_size)]
         topic_modeller = self._build_topic_model(nb_docs, nb_topics, nb_words_by_doc, words)
-        self.assertEquals(nb_topics, len(topic_modeller.topics))
-        for topic in topic_modeller.topics:
-            self.assertEquals(100, len(topic))  # we keep 100 most significant words for each topics
+        self.assertEquals(nb_topics, len(topic_modeller.get_topics()))
+        for topic in topic_modeller.get_topics():
+            # we keep topic_modeller._nb_words_by_topic most significant words for each topics
+            self.assertEquals(topic_modeller._nb_words_by_topic, len(topic))
             for word, weight in topic:
                 self.assertTrue(word in words)
-                self.assertTrue(0 < weight < 1)
+                self.assertTrue(weight > 0)
 
     def test_get_model_id(self):
         nb_docs = 3

@@ -19,11 +19,10 @@ def update_model_in_db(topic_modeller, all_users):
     target_model = TopicModelDescription.make_from_scratch(topic_modeller.get_model_id(), topic_modeller.topics)
     target_feature_set_id = target_model.topic_model_id
 
-    _save_topic_model(dal, target_model)
+    _save_topic_model_and_feature_set(dal, target_model)
 
     feature_set_ids = list(set(profile.feature_vector.feature_set_id for profile in profiles))
-    model_converters = _get_model_converters(dal, feature_set_ids, target_model)
-    converter_dict = dict(zip(feature_set_ids, model_converters))
+    converter_dict = _get_model_converters(dal, feature_set_ids, target_model)
 
     user_to_profile = zip(all_users, profiles)
     updated_user_to_profiles = _get_updated_user_to_profile(converter_dict, user_to_profile, target_feature_set_id)
@@ -36,7 +35,7 @@ def update_model_in_db(topic_modeller, all_users):
     dal.doc.save_documents(updated_docs)
 
 
-def _save_topic_model(dal, model):
+def _save_topic_model_and_feature_set(dal, model): # pylint: disable=invalid-name
     dal.topic_model.save(model)
     target_feature_names = [topic.topic_words[0].word for topic in model.topics]
     target_feature_set = FeatureSet.make_from_scratch(model.topic_model_id, target_feature_names, model.topic_model_id)
@@ -47,7 +46,7 @@ def _get_model_converters(dal, feature_set_ids, target_model):
     feature_sets = [dal.feature_set.get_feature_set(feature_set_id) for feature_set_id in feature_set_ids]
     models = [dal.topic_model.get(feature_set.model_id) for feature_set in feature_sets]
     model_converters = [TopicModelConverter(model, target_model) for model in models]
-    return model_converters
+    return dict(zip(feature_set_ids, model_converters))
 
 
 def _get_updated_docs(docs, feature_set_id_to_converter, target_feature_set_id):
