@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from itertools import chain, izip
 import numpy as np
 
@@ -57,8 +59,10 @@ class _VectorSpaceProjector(object):
         -let's call 'a' a vector of coordinates expressed in origin_space referential.
         -We want to find 'b', a vector of coordinates expressed in target_space that is the best approximation of 'a'
         -Best is understood in the sens of the L2 natural norm of the global vector space
-        -We search 'b'= arg_min ||Aa-Bb||. By taking Grad[(Aa-Bb).(Aa-Bb)] = 0, we show that:
+        -We search 'b'= arg_min ||Aa-Bb||. By taking Grad[(Aa-Bb)·(Aa-Bb)] = 0, we show that:
         This is solved by the linear equation : ( B^T * B ) b = ( B^T * A ) a.
+        proof: follow https://en.wikipedia.org/wiki/Linear_least_squares_(mathematics)#Derivation_of_the_normal_equations
+               but taking y:=Aa X:=B, beta:=b
         """
         # pre-compute left hand side (B^T * B) and right hand side ( B^T * A )
         target_space_transposed = target_space_basis.transpose()
