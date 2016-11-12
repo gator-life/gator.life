@@ -3,7 +3,7 @@
 import os
 import numpy as np
 from gensim import corpora, models
-from common.crypto import hash_safe
+import common.crypto as crypto
 from .doctokenizer import DocTokenizerFromRawText, DocTokenizerFromHtml
 
 
@@ -187,7 +187,7 @@ class TopicModeller(object):
         # Nb: hash is computed only with world and not weight to prevent possible rounding errors between several machines,
         # The risk that two models have the exact same words in same order being negligible
         string_topics = ''.join(word for topic in self.get_topics() for word, _ in topic)
-        hash_topic_words = hash_safe(string_topics)
+        hash_topic_words = crypto.hash_str(string_topics)
         return hash_topic_words
 
 

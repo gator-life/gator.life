@@ -3,3 +3,5 @@ gcloud==0.18.1
 gunicorn==19.6.0
 oauth2client==2.0.2
 httplib2
+bcrypt
+passlib

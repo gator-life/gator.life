@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from flask import Blueprint, render_template, redirect, session, request
+import common.crypto as crypto
 from .dal import Dal
 from . import frontendstructs as struct
-from . import passwordhelpers
 from . import structinit
 
 # keep low case name because it seems flask / blueprint standard
@@ -39,8 +39,8 @@ def login():
         email = request.form['email']
         password = request.form['password']
 
-        (user, user_password) = DAL.user.get_user_and_password(email)
-        if user is not None and passwordhelpers.is_password_valid_for_user(user_password, password):
+        (user, hashed_password) = DAL.user.get_user_and_password(email)
+        if user is not None and crypto.verify_password(password, hashed_password):
             set_connected_user(user)
             return redirect('/')
         else:

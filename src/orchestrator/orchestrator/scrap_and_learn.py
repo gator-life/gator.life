@@ -112,7 +112,7 @@ class ScraperFiltered(object):
                 return
             self._current_doc_count += 1
 
-            url_hash = crypto.hash_safe(doc.link_element.url)
+            url_hash = crypto.hash_str(doc.link_element.url)
             if url_hash in self._url_hashes:
                 continue
             self._url_hashes.add(url_hash)

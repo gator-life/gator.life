@@ -6,9 +6,10 @@ import unittest
 from _socket import timeout
 from selenium.common.exceptions import TimeoutException
 from selenium import webdriver
-from server import frontendstructs as structs, passwordhelpers as passwordhelpers
+from server import frontendstructs as structs
 from server.dal import Dal
 from common.datehelper import utcnow
+import common.crypto as crypto
 import daltesthelpers
 
 
@@ -75,7 +76,7 @@ class NewVisitorTests(unittest.TestCase):
         self.assertEquals('Unknown email or invalid password', error_message)
 
     def test_login_with_invalid_password(self):
-        daltesthelpers.create_user_dummy('known_user@gator.com', '', [''])
+        daltesthelpers.create_user_dummy('known_user@gator.com', crypto.hash_password('password'), [''])
         self._get_webpage()
         self._login('known_user@gator.com', 'invalid_password')
         error_message = self.browser.find_element_by_name('error-message').text
@@ -119,7 +120,7 @@ class NewVisitorTests(unittest.TestCase):
         email = 'kevin@gator.com'
         password = 'kevintheboss'
 
-        user = daltesthelpers.create_user_dummy(email, passwordhelpers.hash_password(password),
+        user = daltesthelpers.create_user_dummy(email, crypto.hash_password(password),
                                                 interests=['lol', 'xpdr', 'trop lol'])
 
         self._get_webpage()
