@@ -47,6 +47,21 @@ class MockTopicModeller(object):
             raise ValueError(doc_content)
 
 
+class MockModelUpdater(object):
+
+    def __init__(self, expected_topic_model, expected_users):
+        self.expected_topic_model = expected_topic_model
+        self.expected_users = expected_users
+        self.updated = False
+
+    def update_model_in_db(self, topic_modeller, all_users):
+        if self.expected_topic_model != topic_modeller:
+            raise ValueError(topic_modeller)
+        if len(self.expected_users) != len(all_users):
+            raise ValueError(all_users)
+        self.updated = True
+
+
 class ScrapAndLearnTests(unittest.TestCase):
 
     def setUp(self):
@@ -74,12 +89,15 @@ class ScrapAndLearnTests(unittest.TestCase):
             struct.UserDocument.make_from_scratch(doc2, grade=1.0)]
         self.dal.user_doc.save_users_docs([(user1, user1_user_docs)])
         # II) Orchestrate
+        topic_modeller = MockTopicModeller()
         mock_saver = MockSaver()
-        _scrap_and_learn(MockScraper(), mock_saver, MockTopicModeller(), docs_chunk_size=2,
+        model_updater = MockModelUpdater(topic_modeller, [user1, user2])
+        _scrap_and_learn(MockScraper(), mock_saver, topic_modeller, model_updater, docs_chunk_size=2,
                          user_docs_max_size=5, seen_urls_cache_start_date=utcnow(),
                          keep_user_func=lambda u: 'test_scrap_and_learn' in u.email)
 
         # III) check database and mocks
+        self.assertTrue(model_updater.updated)
         result_users_docs = self.dal.user_doc.get_users_docs([user1, user2])
         result_user1_docs = result_users_docs[0]
         result_user2_docs = result_users_docs[1]

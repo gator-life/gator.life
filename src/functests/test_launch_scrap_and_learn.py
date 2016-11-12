@@ -5,7 +5,7 @@ import unittest
 import os
 import subprocess32 as subprocess
 from server.dal import Dal
-from server.frontendstructs import FeatureSet
+from server.frontendstructs import FeatureSet, TopicModelDescription
 import server.structinit as structinit
 
 
@@ -13,11 +13,15 @@ class LaunchScrapAndLearnTests(unittest.TestCase):
 
     def setUp(self):
         self.dal = Dal()
-        nb_topics_trained_model = 500
-        ref_feature_set_id = 'ref_feature_set_id_LaunchScrapAndLearnTests'
-        self.dal.feature_set.save_ref_feature_set_id(ref_feature_set_id)
+        # current model settings to prevent long model update
+        model_id = '3206b8699d6040f7d46d0b72eb4532801629397cf96f21137611746537aacf31'
+        nb_topics = 500
+        model = TopicModelDescription.make_from_scratch(model_id, [[]])
+        self.dal.topic_model.save(model)
+        ref_feature_set_id = 'LaunchScrapAndLearnTests_ref_feature_set_id'
         self.dal.feature_set.save_feature_set(FeatureSet.make_from_scratch(
-            ref_feature_set_id, ['feature_' + str(i) for i in range(0, nb_topics_trained_model)], "TODO"))
+            ref_feature_set_id, ['feature_' + str(i) for i in range(nb_topics)], model_id))
+        self.dal.feature_set.save_ref_feature_set_id(ref_feature_set_id)
         self.is_coverage = bool(os.environ.get('COVERAGE', None))
 
     def test_launch_scrap_and_learn(self):
