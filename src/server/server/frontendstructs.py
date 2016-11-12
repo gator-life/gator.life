@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 
-class Document(object):  # pylint: disable=too-many-instance-attributes
+class Document(object):
 
     @staticmethod
-    def make_from_db(url, url_hash, title, summary, datetime, db_key, feature_vector):  # pylint: disable=too-many-arguments
-        return Document(url, url_hash, title, summary, datetime, db_key, feature_vector)
+    def make_from_db(url, url_hash, title, summary, datetime, feature_vector):
+        return Document(url, url_hash, title, summary, datetime, feature_vector)
 
     @staticmethod
     def make_from_scratch(url, url_hash, title, summary, feature_vector):
@@ -18,13 +18,12 @@ class Document(object):  # pylint: disable=too-many-instance-attributes
         :return:
         """
         return Document(
-            url, url_hash, title, summary, datetime=None, db_key=None, feature_vector=feature_vector)
+            url, url_hash, title, summary, datetime=None, feature_vector=feature_vector)
 
-    def __init__(self, url, url_hash, title, summary, datetime, db_key, feature_vector):  # pylint: disable=too-many-arguments
+    def __init__(self, url, url_hash, title, summary, datetime, feature_vector):
         self.url = url
         self.url_hash = url_hash
         self.title = title
-        self._db_key = db_key
         self.summary = summary
         self.datetime = datetime
         self.feature_vector = feature_vector
@@ -61,6 +60,22 @@ class User(object):
         self.interests = interests
         self._user_doc_set_db_key = user_doc_set_db_key
         self._user_computed_profile_db_key = user_computed_profile_db_key
+
+
+class FeatureSet(object):
+
+    @staticmethod
+    def make_from_scratch(feature_set_id, feature_names, model_id):
+        return FeatureSet(feature_set_id, feature_names, model_id)
+
+    @staticmethod
+    def make_from_db(feature_set_id, feature_names, model_id):
+        return FeatureSet(feature_set_id, feature_names, model_id)
+
+    def __init__(self, feature_set_id, feature_names, model_id):
+        self.feature_set_id = feature_set_id
+        self.feature_names = feature_names
+        self.model_id = model_id
 
 
 class FeatureVector(object):
@@ -155,3 +170,31 @@ class UserProfileModelData(object):
         self.negative_feedback_vector = negative_feedback_vector
         self.positive_feedback_sum_coeff = positive_feedback_sum_coeff
         self.negative_feedback_sum_coeff = negative_feedback_sum_coeff
+
+
+class TopicModelDescription(object):
+
+    class Topic(object):
+
+        def __init__(self, topic_words):
+            self.topic_words = topic_words
+
+    class TopicWord(object):
+
+        def __init__(self, word, weight):
+            self.word = word
+            self.weight = weight
+
+    def __init__(self, topic_model_id, topics):
+        self.topic_model_id = topic_model_id
+        self.topics = topics
+
+    @staticmethod
+    def make_from_scratch(topic_model_id, topics):
+        """
+        :param topic_model_id: id of the topic model
+        :param topics: list of topic, each topic is a list of tuple (word, weight)
+        :return:
+        """
+        return TopicModelDescription(topic_model_id, [TopicModelDescription.Topic(
+            [TopicModelDescription.TopicWord(word, weight) for word, weight in topic]) for topic in topics])

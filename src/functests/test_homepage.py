@@ -7,7 +7,7 @@ from _socket import timeout
 from selenium.common.exceptions import TimeoutException
 from selenium import webdriver
 from server import frontendstructs as structs, passwordhelpers as passwordhelpers
-from server.dal import Dal, REF_FEATURE_SET
+from server.dal import Dal
 from common.datehelper import utcnow
 import daltesthelpers
 
@@ -38,15 +38,14 @@ class NewVisitorTests(unittest.TestCase):
     def _click(element):
         with_retry(element.click)
 
-    @classmethod
-    def setUpClass(cls):
-        daltesthelpers.init_features_dummy(REF_FEATURE_SET)
-
     def setUp(self):
         self.browser = webdriver.PhantomJS()
         self.browser.implicitly_wait(3)
         self.browser.set_page_load_timeout(60)
         self.dal = Dal()
+        ref_feature_set_id = 'ref_feature_set_id_NewVisitorTests'
+        self.dal.feature_set.save_ref_feature_set_id(ref_feature_set_id)
+        daltesthelpers.init_features_dummy(ref_feature_set_id)
 
     def tearDown(self):
         self.browser.quit()
@@ -94,7 +93,7 @@ class NewVisitorTests(unittest.TestCase):
         interests_str = 'finance\npython\ncomputer science'
         self._register(email, 'password', interests_str)
 
-        user = self.dal.get_user(email)
+        user = self.dal.user.get_user(email)
         self.assertIsNotNone(user)
         self.assertItemsEqual(user.interests, interests_str.splitlines())
         self.assertItemsEqual(user.interests, interests_str.splitlines())
@@ -165,7 +164,7 @@ class NewVisitorTests(unittest.TestCase):
         self._click(google_link)
         self.assertEqual("Google", self.browser.title)
 
-        actions_by_user = self.dal.get_user_actions_on_docs([user], now)
+        actions_by_user = self.dal.user_action.get_user_actions_on_docs([user], now)
 
         actions = actions_by_user[0]
         self.assertEqual(3, len(actions))
