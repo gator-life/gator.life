@@ -29,7 +29,7 @@ def unset_connected_user():
 
 def get_connected_user():
     if 'email' in session:
-        return DAL.get_user(session['email'])
+        return DAL.user.get_user(session['email'])
     return None
 
 
@@ -39,7 +39,7 @@ def login():
         email = request.form['email']
         password = request.form['password']
 
-        (user, user_password) = DAL.get_user_and_password(email)
+        (user, user_password) = DAL.user.get_user_and_password(email)
         if user is not None and passwordhelpers.is_password_valid_for_user(user_password, password):
             set_connected_user(user)
             return redirect('/')
@@ -57,7 +57,7 @@ def login():
 def home():
     user = get_connected_user()
     if user is not None:
-        user_docs = DAL.get_user_docs(user)
+        user_docs = DAL.user_doc.get_user_docs(user)
         links = [Link(url_hash=user_doc.document.url_hash, text=user_doc.document.title) for user_doc in user_docs]
         actions_mapping = {'click_link': struct.UserActionTypeOnDoc.click_link,
                            'up_vote': struct.UserActionTypeOnDoc.up_vote,
@@ -76,7 +76,7 @@ def register():
             email = request.form['email']
             password = request.form['password']
             interests = request.form['interests'].splitlines()
-            user = DAL.get_user(email)
+            user = DAL.user.get_user(email)
             if user is None:
                 user = structinit.create_user_in_db(email, interests, password, DAL)
                 set_connected_user(user)
@@ -105,8 +105,8 @@ def disconnect():
 def link(action_type_on_doc, url_hash):
     user = get_connected_user()
     if user is not None:
-        document = DAL.get_doc_by_url_hash(url_hash)
-        DAL.save_user_action_on_doc(user, document, action_type_on_doc)
+        document = DAL.doc.get_doc(url_hash)
+        DAL.user_action.save_user_action_on_doc(user, document, action_type_on_doc)
         if action_type_on_doc == struct.UserActionTypeOnDoc.click_link:
             return redirect(document.url.encode('utf-8'))
         else:

@@ -5,7 +5,7 @@ import unittest
 from orchestrator.scrap_and_learn import _scrap_and_learn
 from common.datehelper import utcnow
 import scraper.scraperstructs as scrap
-from server.dal import Dal, NULL_FEATURE_SET, REF_FEATURE_SET
+from server.dal import Dal
 import server.frontendstructs as struct
 
 
@@ -51,26 +51,28 @@ class ScrapAndLearnTests(unittest.TestCase):
 
     def setUp(self):
         self.dal = Dal()
-        self.dummy_feat_vec = struct.FeatureVector.make_from_scratch([], NULL_FEATURE_SET)
+        self.ref_feature_set_id = 'feature_set_id_ScrapAndLearnTests'
+        self.dal.feature_set.save_ref_feature_set_id(self.ref_feature_set_id)
+        self.dummy_feat_vec = struct.FeatureVector.make_from_scratch([], self.ref_feature_set_id)
 
     def test_scrap_and_learn(self):
         # I)setup database and mocks
         # I.1) user
         user1 = struct.User.make_from_scratch("test_scrap_and_learn_user1", ["interests1"])
-        self.dal.save_user(user1, "password1")
+        self.dal.user.save_user(user1, "password1")
         self._save_dummy_profile_for_user(user1)
         user2 = struct.User.make_from_scratch("test_scrap_and_learn_user2", ["interests2"])
-        self.dal.save_user(user2, "password2")
+        self.dal.user.save_user(user2, "password2")
         self._save_dummy_profile_for_user(user2)
         # I.2) doc
         doc1 = struct.Document.make_from_scratch("url1", 'hash1', 'title1', "sum1", self.dummy_feat_vec)
         doc2 = struct.Document.make_from_scratch("url2", 'hash2', 'title2', "sum2", self.dummy_feat_vec)
-        self.dal.save_documents([doc1, doc2])
+        self.dal.doc.save_documents([doc1, doc2])
         # I.3) userDoc
         user1_user_docs = [
             struct.UserDocument.make_from_scratch(doc1, grade=0.0),  # this one should be removed
             struct.UserDocument.make_from_scratch(doc2, grade=1.0)]
-        self.dal.save_users_docs([(user1, user1_user_docs)])
+        self.dal.user_doc.save_users_docs([(user1, user1_user_docs)])
         # II) Orchestrate
         mock_saver = MockSaver()
         _scrap_and_learn(MockScraper(), mock_saver, MockTopicModeller(), docs_chunk_size=2,
@@ -78,7 +80,7 @@ class ScrapAndLearnTests(unittest.TestCase):
                          keep_user_func=lambda u: 'test_scrap_and_learn' in u.email)
 
         # III) check database and mocks
-        result_users_docs = self.dal.get_users_docs([user1, user2])
+        result_users_docs = self.dal.user_doc.get_users_docs([user1, user2])
         result_user1_docs = result_users_docs[0]
         result_user2_docs = result_users_docs[1]
         self.assertEquals(5, len(result_user1_docs))  # 5 because of user_docs_max_size=5
@@ -88,14 +90,14 @@ class ScrapAndLearnTests(unittest.TestCase):
                 self.fail()
         self.assertEquals(4, len(mock_saver.saved_docs))  # MockScraper generate 4 docs
         for doc in mock_saver.saved_docs:
-            # currently, model versioning is not managed, all is set to ref
-            self.assertEquals(REF_FEATURE_SET, doc.feature_vector.feature_set_id)
+            self.assertEquals(self.ref_feature_set_id, doc.feature_vector.feature_set_id)
             self.assertEquals(MockTopicModeller.feature_vector, doc.feature_vector.vector)
 
     def _save_dummy_profile_for_user(self, user):
         feature_vector = struct.FeatureVector.make_from_scratch([1.0], "featureSetId-test_scrap_learn")
         model_data = struct.UserProfileModelData.make_empty(1)
-        self.dal.save_user_computed_profile(user, struct.UserComputedProfile.make_from_scratch(feature_vector, model_data))
+        self.dal.user_computed_profile.save_user_computed_profile(
+            user, struct.UserComputedProfile.make_from_scratch(feature_vector, model_data))
 
 if __name__ == '__main__':
     unittest.main()

@@ -3,6 +3,7 @@
 import os
 import numpy as np
 from gensim import corpora, models
+from common.crypto import hash_safe
 from .doctokenizer import DocTokenizerFromRawText, DocTokenizerFromHtml
 
 
@@ -23,6 +24,7 @@ class _MultiIterator(object):
 
 
 class TopicModeller(object):
+    _nb_words_by_topic = 100
 
     @classmethod
     def make_with_html_tokenizer(cls):
@@ -159,10 +161,35 @@ class TopicModeller(object):
         # are "cached" on a set (O(1)).
         self._dictionary_words = set(self._dictionary.values())
 
-    @property
-    def topics(self):
-        # topics field is lazy loaded because it is rarely used and show_topic function is slow
-        if self._topics is None:
-            self._topics = [(i, [word for (word, _) in self._lda.show_topic(topicid=i, topn=1)])
-                            for i in range(self._lda.num_topics)]
-        return self._topics
+    def get_topics(self):
+        """
+        :return: list of topics, each topic is a list of tuple (word, weight) by descending order of weight
+        """
+        # Monkey patch to optimize show_topic: it calls slow function LdaState.get_lambda() for each call to show_topic
+        # but get_lambda() is independent of topic so it can be called once and cached
+        models.ldamodel.LdaState.gensim_get_lambda = models.ldamodel.LdaState.get_lambda
+        models.ldamodel.LdaState.get_lambda = _gensim_get_lambda_monkey_patch
+        topics = [self._lda.show_topic(topicid=i, topn=self._nb_words_by_topic) for i in range(self._lda.num_topics)]
+        models.ldamodel.LdaState.get_lambda = models.ldamodel.LdaState.gensim_get_lambda
+        # Delete gensim_get_lambda and the attribute dynamically created by _gensim_get_lambda_monkey_patch
+        # (leave a clean structure).
+        del models.ldamodel.LdaState.gensim_get_lambda
+        del self._lda.state._cached_get_lambda_result # pylint: disable=protected-access, no-member
+
+        return topics
+
+    def get_model_id(self):
+        """
+        :return: string: identifier of the topic model.
+        """
+        # Nb: hash is computed only with world and not weight to prevent possible rounding errors between several machines,
+        # The risk that two models have the exact same words in same order being negligible
+        string_topics = ''.join(word for topic in self.get_topics() for word, _ in topic)
+        hash_topic_words = hash_safe(string_topics)
+        return hash_topic_words
+
+
+def _gensim_get_lambda_monkey_patch(self):
+    if not hasattr(self, '_cached_get_lambda_result') or self._cached_get_lambda_result is None:  # pylint: disable=protected-access
+        self._cached_get_lambda_result = self.gensim_get_lambda()  # pylint: disable=protected-access
+    return self._cached_get_lambda_result  # pylint: disable=protected-access
