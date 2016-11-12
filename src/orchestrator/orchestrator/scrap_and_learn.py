@@ -12,6 +12,7 @@ from server.frontendstructs import Document, UserDocument, FeatureVector
 from server.dal import Dal
 from server.environment import IS_TEST_ENV
 from topicmodeller.topicmodeller import TopicModeller
+from .updatemodel import ModelUpdater
 
 
 def scrap_and_learn():
@@ -47,22 +48,23 @@ def scrap_and_learn():
         keep_user_func = lambda u: u.email.startswith(users_prefix)
         import vcr
         with vcr.use_cassette(vcr_cassette_file, record_mode='none', ignore_localhost=True):
-            _scrap_and_learn(scraper, doc_saver, topic_modeller, docs_chunk_size, user_docs_max_size, start_cache_date,
-                             keep_user_func, nb_docs)
+            _scrap_and_learn(scraper, doc_saver, topic_modeller, ModelUpdater(), docs_chunk_size, user_docs_max_size,
+                             start_cache_date, keep_user_func, nb_docs)
     else:
         _scrap_and_learn(
-            scraper, doc_saver, topic_modeller, docs_chunk_size, user_docs_max_size, start_cache_date)
+            scraper, doc_saver, topic_modeller, ModelUpdater(), docs_chunk_size, user_docs_max_size, start_cache_date)
 
 
 def _scrap_and_learn(  # pylint: disable=too-many-arguments
-        scraper, scraper_doc_saver, topic_modeller,
+        scraper, scraper_doc_saver, topic_modeller, model_updater,
         docs_chunk_size, user_docs_max_size, seen_urls_cache_start_date,
-        keep_user_func=lambda u: False, nb_docs=-1):
+        keep_user_func=lambda u: True, nb_docs=-1):
 
     dal = Dal()
 
     doc_builder = DocBuilder(topic_modeller, dal)
     users = _get_users(dal, keep_user_func)
+    model_updater.update_model_in_db(topic_modeller, users)
     scraper_filtered = ScraperFiltered(scraper, nb_docs, seen_urls_cache_start_date, dal)
     doc_saver = UserDocSaverByChunk(docs_chunk_size, UserDocChunkSaver(dal), scraper_doc_saver)
     user_docs_accumulator = _build_user_docs_accumulator(users, user_docs_max_size, dal)

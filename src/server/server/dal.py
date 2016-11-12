@@ -106,29 +106,26 @@ def _datastore_client():
         return datastore.Client(GCLOUD_PROJECT)
 
 
-class DatastoreHelper(object):
+def _make_entity(datastore_client, entity_type, not_indexed):
+    key = datastore_client.key(entity_type)
+    return datastore.entity.Entity(key, exclude_from_indexes=not_indexed)
 
-    def __init__(self, datastore_client):
-        self._ds_client = datastore_client
 
-    def make_entity(self, entity_type, not_indexed):
-        key = self._ds_client.key(entity_type)
-        return datastore.entity.Entity(key, exclude_from_indexes=not_indexed)
+def _make_named_entity(datastore_client, entity_type, key_name, not_indexed):
+    key = datastore_client.key(entity_type, key_name)
+    return datastore.entity.Entity(key, exclude_from_indexes=not_indexed)
 
-    def make_named_entity(self, entity_type, key_name, not_indexed):
-        key = self._ds_client.key(entity_type, key_name)
-        return datastore.entity.Entity(key, exclude_from_indexes=not_indexed)
 
-    def get_multi(self, keys):
-        """
-        Wrapper around get_multi datastore function that ensure matching of indexes between keys and retrieved entities.
-        It seems to works natively at least with test gcloud server but it's not clearly specified.
-        :param keys: list of gcloud.datastore.entity.key
-        :return: list of gcloud.datastore.entity
-        """
-        entities = self._ds_client.get_multi(keys)
-        key_to_entity = dict((entity.key, entity) for entity in entities)
-        return [key_to_entity[key] for key in keys]
+def _get_multi(datastore_client, keys):
+    """
+    Wrapper around get_multi datastore function that ensure matching of indexes between keys and retrieved entities.
+    It seems to works natively at least with test gcloud server but it's not clearly specified.
+    :param keys: list of gcloud.datastore.entity.key
+    :return: list of gcloud.datastore.entity
+    """
+    entities = datastore_client.get_multi(keys)
+    key_to_entity = dict((entity.key, entity) for entity in entities)
+    return [key_to_entity[key] for key in keys]
 
 
 class Dal(object):  # pylint: disable= too-many-instance-attributes
@@ -138,22 +135,20 @@ class Dal(object):  # pylint: disable= too-many-instance-attributes
     _ds_client = _datastore_client()
 
     def __init__(self):
-        ds_helper = DatastoreHelper(self._ds_client)
-        self.feature_set = DalFeatureSet(self._ds_client, ds_helper)
-        self.feature_vector = DalFeatureVector(self._ds_client, ds_helper)
-        self.doc = DalDoc(self._ds_client, ds_helper, self.feature_vector)
-        self.user_action = DalUserActionOnDoc(self._ds_client, ds_helper, self.doc)
-        self.user_computed_profile = DalUserComputedProfile(self._ds_client, ds_helper, self.feature_vector)
-        self.user = DalUser(self._ds_client, ds_helper, self.user_computed_profile)
-        self.user_doc = DalUserDoc(self._ds_client, ds_helper, self.doc)
-        self.topic_model = DalTopicModelDescription(self._ds_client, ds_helper)
+        self.feature_set = DalFeatureSet(self._ds_client)
+        self.feature_vector = DalFeatureVector(self._ds_client)
+        self.doc = DalDoc(self._ds_client, self.feature_vector)
+        self.user_action = DalUserActionOnDoc(self._ds_client, self.doc)
+        self.user_computed_profile = DalUserComputedProfile(self._ds_client, self.feature_vector)
+        self.user = DalUser(self._ds_client, self.user_computed_profile)
+        self.user_doc = DalUserDoc(self._ds_client, self.doc)
+        self.topic_model = DalTopicModelDescription(self._ds_client)
 
 
 class DalFeatureSet(object):
 
-    def __init__(self, datastore_client, datastore_helper):
+    def __init__(self, datastore_client):
         self._ds_client = datastore_client
-        self._helper = datastore_helper
         self._ref_feature_set_id = u"ref_feature_set_id"
 
     def get_ref_feature_set_id(self):
@@ -162,7 +157,8 @@ class DalFeatureSet(object):
         return db_special_feature_set['value']
 
     def save_ref_feature_set_id(self, new_ref_feature_set_id):
-        entity = self._helper.make_named_entity(u'ConfigKey', self._ref_feature_set_id, [])
+        entity = _make_named_entity(
+            self._ds_client, u'ConfigKey', self._ref_feature_set_id, [])
         entity['value'] = new_ref_feature_set_id
         self._ds_client.put(entity)
 
@@ -181,7 +177,8 @@ class DalFeatureSet(object):
         """
         :param feature_set: struct.FeatureSet
         """
-        db_feature_set = self._helper.make_named_entity(u'FeatureSet', feature_set.feature_set_id, not_indexed=('features',))
+        db_feature_set = _make_named_entity(
+            self._ds_client, u'FeatureSet', feature_set.feature_set_id, not_indexed=('features',))
         db_feature_set['features'] = feature_set.feature_names
         db_feature_set['model_id'] = feature_set.model_id
         self._ds_client.put(db_feature_set)
@@ -189,12 +186,11 @@ class DalFeatureSet(object):
 
 class DalFeatureVector(object):
 
-    def __init__(self, datastore_client, datastore_helper):
+    def __init__(self, datastore_client):
         self._ds_client = datastore_client
-        self._helper = datastore_helper
 
     def _to_db_feature_vector(self, feature_vector):
-        db_feature_vector = self._helper.make_entity(u'FeatureVector', not_indexed=('vector',))
+        db_feature_vector = _make_entity(self._ds_client, u'FeatureVector', not_indexed=('vector',))
         db_feature_vector['feature_set_key'] = self._ds_client.key(u'FeatureSet', feature_vector.feature_set_id)
         db_feature_vector['vector'] = feature_vector.vector
         return db_feature_vector
@@ -202,9 +198,8 @@ class DalFeatureVector(object):
 
 class DalDoc(object):
 
-    def __init__(self, datastore_client, datastore_helper, dal_feature_vector):
+    def __init__(self, datastore_client, dal_feature_vector):
         self._ds_client = datastore_client
-        self._helper = datastore_helper
         self._dal_feature_vector = dal_feature_vector
 
     def save_documents(self, documents):
@@ -220,7 +215,7 @@ class DalDoc(object):
 
     def _to_db_doc(self, doc):
         not_indexed = ('title', 'summary', 'feature_vector')
-        db_doc = self._helper.make_named_entity('Document', doc.url_hash, not_indexed)
+        db_doc = _make_named_entity(self._ds_client, 'Document', doc.url_hash, not_indexed)
         db_doc['url'] = doc.url
         db_doc['title'] = doc.title
         db_doc['summary'] = doc.summary
@@ -242,7 +237,7 @@ class DalDoc(object):
         :return: list of struct.Document matching url_hashes list
         """
         db_keys = [self._ds_client.key('Document', url_hash) for url_hash in url_hashes]
-        db_docs = self._helper.get_multi(db_keys)
+        db_docs = _get_multi(self._ds_client, db_keys)
         return [_to_doc(db_doc) for db_doc in db_docs]
 
     def get_recent_doc_url_hashes(self, from_datetime):
@@ -259,9 +254,8 @@ class DalDoc(object):
 
 class DalUserActionOnDoc(object):
 
-    def __init__(self, datastore_client, datastore_helper, dal_doc):
+    def __init__(self, datastore_client, dal_doc):
         self._ds_client = datastore_client
-        self._helper = datastore_helper
         self._dal_doc = dal_doc
 
     def save_user_action_on_doc(self, user, document, action_on_doc):
@@ -274,7 +268,7 @@ class DalUserActionOnDoc(object):
         self._ds_client.put(db_action)
 
     def _to_db_user_action_on_doc(self, user, document, action_on_doc):
-        db_action = self._helper.make_entity('UserActionOnDoc', not_indexed=())
+        db_action = _make_entity(self._ds_client, 'UserActionOnDoc', not_indexed=())
         db_action['user_key'] = user._db_key  # pylint: disable=protected-access
         db_action['document_url_hash'] = document.url_hash
         db_action['action_type'] = _to_db_action_type_on_doc(action_on_doc)
@@ -319,15 +313,14 @@ class DalUserActionOnDoc(object):
 
 class DalUserComputedProfile(object):
 
-    def __init__(self, datastore_client, datastore_helper, dal_feature_vector):
+    def __init__(self, datastore_client, dal_feature_vector):
         self._ds_client = datastore_client
-        self._helper = datastore_helper
         self._dal_feature_vector = dal_feature_vector
 
     def _to_db_user_profile_model_data(self, user_profile_model_data):
         not_indexed = ('explicit_feedback_vector', 'positive_feedback_vector', 'negative_feedback_vector',
                        'positive_feedback_sum_coeff', 'negative_feedback_sum_coeff')
-        db_user_profile_model_data = self._helper.make_entity(u'UserProfileModelData', not_indexed)
+        db_user_profile_model_data = _make_entity(self._ds_client, u'UserProfileModelData', not_indexed)
         db_user_profile_model_data['explicit_feedback_vector'] = user_profile_model_data.explicit_feedback_vector
         db_user_profile_model_data['positive_feedback_vector'] = user_profile_model_data.positive_feedback_vector
         db_user_profile_model_data['negative_feedback_vector'] = user_profile_model_data.negative_feedback_vector
@@ -338,7 +331,7 @@ class DalUserComputedProfile(object):
 
     def _to_db_user_computed_profile(self, user_computed_profile):
         not_indexed = ('feature_vector', 'model_data', 'datetime')
-        db_user_computed_profile = self._helper.make_entity(u'UserComputedProfile', not_indexed)
+        db_user_computed_profile = _make_entity(self._ds_client, u'UserComputedProfile', not_indexed)
         db_user_computed_profile['feature_vector'] =\
             self._dal_feature_vector._to_db_feature_vector(  # pylint: disable=protected-access
                 user_computed_profile.feature_vector)
@@ -367,7 +360,7 @@ class DalUserComputedProfile(object):
         :return: list of struct.UserComputedProfile matching 'users' list
         """
         keys = [user._user_computed_profile_db_key for user in users]  # pylint: disable=protected-access
-        db_profiles = self._helper.get_multi(keys)
+        db_profiles = _get_multi(self._ds_client, keys)
         profiles = [_to_user_computed_profile(db_profile) for db_profile in db_profiles]
         return profiles
 
@@ -390,9 +383,8 @@ class DalUserComputedProfile(object):
 
 class DalUserDoc(object):
 
-    def __init__(self, datastore_client, datastore_helper, dal_doc):
+    def __init__(self, datastore_client, dal_doc):
         self._ds_client = datastore_client
-        self._helper = datastore_helper
         self._dal_doc = dal_doc
 
     def _to_user_docs(self, db_user_doc_set):
@@ -421,7 +413,7 @@ class DalUserDoc(object):
         return db_user_docs
 
     def _to_db_user_doc(self, user_doc):
-        db_user_doc = self._helper.make_entity(u'UserDocument', not_indexed=())
+        db_user_doc = _make_entity(self._ds_client, u'UserDocument', not_indexed=())
         db_user_doc['document_url_hash'] = user_doc.document.url_hash
         db_user_doc['grade'] = user_doc.grade
         return db_user_doc
@@ -436,7 +428,7 @@ class DalUserDoc(object):
         for user, user_docs in user_to_user_docs_list:
             user_set_db_keys.append(user._user_doc_set_db_key)  # pylint: disable=protected-access
             users_docs.append(user_docs)
-        db_user_sets = self._helper.get_multi(user_set_db_keys)
+        db_user_sets = _get_multi(self._ds_client, user_set_db_keys)
         for (db_user_set, user_docs) in zip(db_user_sets, users_docs):
             db_user_set['user_documents'] = self._to_db_user_docs(user_docs)
         self._ds_client.put_multi(db_user_sets)
@@ -465,7 +457,7 @@ class DalUserDoc(object):
             return db_user_doc_set.get('user_documents', [])
 
         user_doc_set_db_keys = [user._user_doc_set_db_key for user in users]  # pylint: disable=protected-access
-        db_user_doc_sets = self._helper.get_multi(user_doc_set_db_keys)
+        db_user_doc_sets = _get_multi(self._ds_client, user_doc_set_db_keys)
         doc_hashes_set = {user_doc['document_url_hash']
                           for user_doc_set in db_user_doc_sets for user_doc in db_docs(user_doc_set)}
         doc_hashes_list = list(doc_hashes_set)
@@ -477,9 +469,8 @@ class DalUserDoc(object):
 
 class DalUser(object):
 
-    def __init__(self, datastore_client, datastore_helper, dal_user_computed_profile):
+    def __init__(self, datastore_client, dal_user_computed_profile):
         self._ds_client = datastore_client
-        self._helper = datastore_helper
         self._dal_user_computed_profile = dal_user_computed_profile
         self._new_user_feature_set_id = u"new_user_feature_set_id"
 
@@ -512,7 +503,7 @@ class DalUser(object):
         save a user into the database, if it's newly created, db_keys will be initialized
         """
         if user._user_doc_set_db_key is None:  # pylint: disable=protected-access
-            user_doc_set_db = self._helper.make_entity('UserDocumentSet', not_indexed=('user_documents',))
+            user_doc_set_db = _make_entity(self._ds_client, 'UserDocumentSet', not_indexed=('user_documents',))
             user_doc_set_db['user_documents'] = []
             self._ds_client.put(user_doc_set_db)
             user._user_doc_set_db_key = user_doc_set_db.key  # pylint: disable=protected-access
@@ -533,7 +524,7 @@ class DalUser(object):
 
     def _to_db_user(self, user, password):
         not_indexed = ('password', 'interests', 'user_doc_set_key', 'user_computed_profile_key')
-        db_user = self._helper.make_named_entity('User', user.email, not_indexed)
+        db_user = _make_named_entity(self._ds_client, 'User', user.email, not_indexed)
         db_user['email'] = user.email
         db_user['password'] = password
         db_user['interests'] = user.interests
@@ -544,9 +535,8 @@ class DalUser(object):
 
 class DalTopicModelDescription(object):
 
-    def __init__(self, datastore_client, datastore_helper):
+    def __init__(self, datastore_client):
         self._ds_client = datastore_client
-        self._helper = datastore_helper
 
     def get(self, model_id):
         """
@@ -564,13 +554,14 @@ class DalTopicModelDescription(object):
         :param model_description: struct.TopicModelDescription
         """
         not_indexed = ['topics']
-        db_model = self._helper.make_named_entity(u'TopicModelDescription', model_description.topic_model_id, not_indexed)
+        db_model = _make_named_entity(
+            self._ds_client, u'TopicModelDescription', model_description.topic_model_id, not_indexed)
         db_model['topics'] = [self._to_db_topic(topic) for topic in model_description.topics]
         self._ds_client.put(db_model)
 
     def _to_db_topic(self, topic):
         not_indexed = ['words', 'weights']
-        db_topic = self._helper.make_entity(u'Topic', not_indexed)
+        db_topic = _make_entity(self._ds_client, u'Topic', not_indexed)
         db_topic['words'] = [topic_word.word for topic_word in topic.topic_words]
         db_topic['weights'] = [topic_word.weight for topic_word in topic.topic_words]
         return db_topic
