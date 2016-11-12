@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from orchestrator.updatemodel import update_model_in_db
+from orchestrator.updatemodel import ModelUpdater
 import server.frontendstructs as struct
 from server.dal import Dal
 
@@ -20,10 +20,18 @@ class MockTopicModel(object):
         return self._model_id
 
 
-class UpdateModelTests(unittest.TestCase):
+class ModelUpdaterTests(unittest.TestCase):
 
     def setUp(self):
         self.dal = Dal()
+
+    def test_update_model_in_db_with_model_already_ref_do_nothing(self):
+        model = MockTopicModel()
+        model_id = model.get_model_id()
+        self.dal.feature_set.save_ref_feature_set_id(model_id)
+        self.dal.feature_set.save_feature_set(struct.FeatureSet.make_from_scratch('feat_set_id', ['feat'], model_id))
+        updater = ModelUpdater()
+        updater.update_model_in_db(model, None)  # to finish after rebase
 
     def test_update_model_in_db(self):
         # 1) save input in datastore
@@ -31,16 +39,15 @@ class UpdateModelTests(unittest.TestCase):
         model_id = 'previous_model_id'
         model = struct.TopicModelDescription.make_from_scratch(model_id, topics)
         self.dal.topic_model.save(model)
-
         feature_set_id = 'feature_set_id_test_update_model_in_db'
+        self.dal.feature_set.save_ref_feature_set_id(feature_set_id)
         self.dal.feature_set.save_feature_set(struct.FeatureSet.make_from_scratch(feature_set_id, ['feat_name'], model_id))
 
         vec_doc = [0.8]
         url_hash = 'hash_test_update_model_in_db'
         doc = self._get_saved_doc(feature_set_id, url_hash, vec_doc)
 
-        email = 'email_test_update_model_in_db'
-        user = struct.User.make_from_scratch(email, '')
+        user = struct.User.make_from_scratch('email_test_update_model_in_db', '')
         self.dal.user.save_user(user, 'password')
 
         vec_profile = [-1]
@@ -55,28 +62,30 @@ class UpdateModelTests(unittest.TestCase):
         self.dal.user_doc.save_user_docs(user, [user_doc])
 
         # 2) call update
-        update_model_in_db(MockTopicModel(), [user])
+        mock_topic_model = MockTopicModel()
+        ModelUpdater().update_model_in_db(mock_topic_model, [user])
 
         # 3) check datastore updates
-        new_model_id = 'new_model_id'
-        new_model = self.dal.topic_model.get(new_model_id)
+        new_model_expected_id = mock_topic_model.get_model_id()
+        new_ref_feature_set_id = self.dal.feature_set.get_ref_feature_set_id()
+        self.assertEquals(new_model_expected_id, new_ref_feature_set_id)
+        new_model = self.dal.topic_model.get(new_model_expected_id)
         self.assertIsNotNone(new_model)
 
-        new_feature_set = self.dal.feature_set.get_feature_set(new_model_id)
-        self.assertIsNotNone(new_feature_set)
-        self.assertEquals(new_model_id, new_feature_set.feature_set_id)
+        new_feature_set = self.dal.feature_set.get_feature_set(new_model_expected_id)
+        self.assertEquals(new_feature_set.model_id, new_model_expected_id)
         self.assertEquals(['word', 'other_topic'], new_feature_set.feature_names)
-        self.assertEquals(new_model_id, new_feature_set.model_id)
+        self.assertEquals(new_model_expected_id, new_feature_set.model_id)
 
         updated_doc = self.dal.doc.get_doc(url_hash)
         self.assertEquals(doc.datetime, updated_doc.datetime)
-        self.assertEquals(new_model_id, updated_doc.feature_vector.feature_set_id)
+        self.assertEquals(new_ref_feature_set_id, updated_doc.feature_vector.feature_set_id)
         self.assertEquals([vec_doc[0] * 2, 0.0], updated_doc.feature_vector.vector)  # because weight on 'word' divided by 2
 
         updated_profile = self.dal.user_computed_profile.get_user_computed_profiles([user])[0]
         self.assertEquals(profile.datetime, updated_profile.datetime)
         updated_profile_feat_vec = updated_profile.feature_vector
-        self.assertEquals(new_model_id, updated_profile_feat_vec.feature_set_id)
+        self.assertEquals(new_ref_feature_set_id, updated_profile_feat_vec.feature_set_id)
         self.assertEquals([1.0, 0.0], updated_profile_feat_vec.vector)  # because no weight on 2nd topic and normalized
 
         updated_model_data = updated_profile.model_data
