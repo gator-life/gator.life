@@ -24,7 +24,9 @@ class _MultiIterator(object):
 
 
 class TopicModeller(object):
-    _nb_words_by_topic = 100
+    # a too big number create a too big entity when saved as model description
+    # 30 should be enough to keep relevant info as weight is already very low at 30' word
+    _nb_words_by_topic = 30
 
     @classmethod
     def make_with_html_tokenizer(cls):
@@ -174,7 +176,7 @@ class TopicModeller(object):
         # Delete gensim_get_lambda and the attribute dynamically created by _gensim_get_lambda_monkey_patch
         # (leave a clean structure).
         del models.ldamodel.LdaState.gensim_get_lambda
-        del self._lda.state._cached_get_lambda_result # pylint: disable=protected-access, no-member
+        del self._lda.state._cached_get_lambda_result  # pylint: disable=protected-access, no-member
 
         return topics
 
