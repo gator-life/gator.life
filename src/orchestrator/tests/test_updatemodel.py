@@ -9,15 +9,27 @@ from server.dal import Dal
 
 class MockTopicModel(object):
 
-    def __init__(self):
-        self._model_id = 'new_model_id'
-        self.topics = [
+    @staticmethod
+    def get_model_id():
+        return 'new_model_id'
+
+    @staticmethod
+    def get_topics():
+        return [
             [('word', 0.5)],
             [('other_topic', 1.0)]
         ]
 
-    def get_model_id(self):
-        return self._model_id
+
+class EmptyTopicModel(object):
+
+    @staticmethod
+    def get_model_id():
+        return 'test_update_model_in_db_with_model_already_ref_do_nothing'
+
+    @staticmethod
+    def get_topics():
+        raise ValueError("should not be called")
 
 
 class ModelUpdaterTests(unittest.TestCase):
@@ -26,12 +38,14 @@ class ModelUpdaterTests(unittest.TestCase):
         self.dal = Dal()
 
     def test_update_model_in_db_with_model_already_ref_do_nothing(self):
-        model = MockTopicModel()
+        model = EmptyTopicModel()
         model_id = model.get_model_id()
-        self.dal.feature_set.save_ref_feature_set_id(model_id)
-        self.dal.feature_set.save_feature_set(struct.FeatureSet.make_from_scratch('feat_set_id', ['feat'], model_id))
+        feature_set_id = 'test_update_model_in_db_with_model_already_ref_do_nothing_feature_set_id'
+        self.dal.feature_set.save_feature_set(struct.FeatureSet.make_from_scratch(feature_set_id, ['feat'], model_id))
+        self.dal.feature_set.save_ref_feature_set_id(feature_set_id)
         updater = ModelUpdater()
-        updater.update_model_in_db(model, None)  # to finish after rebase
+        # would fail in EmptyTopicModel.get_topics() if function tried to update model in database
+        updater.update_model_in_db(model, None)
 
     def test_update_model_in_db(self):
         # 1) save input in datastore

@@ -21,7 +21,7 @@ class ModelUpdater(object):
         if _is_already_ref(dal, model_id):
             return
 
-        target_model = TopicModelDescription.make_from_scratch(model_id, topic_modeller.topics)
+        target_model = TopicModelDescription.make_from_scratch(model_id, topic_modeller.get_topics())
         target_feature_set_id = target_model.topic_model_id
         _save_topic_model_and_feature_set(dal, target_model)
 
