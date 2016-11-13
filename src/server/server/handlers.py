@@ -39,7 +39,7 @@ def login():
         email = request.form['email']
         password = request.form['password']
 
-        (user, hashed_password) = DAL.user.get_user_and_password(email)
+        (user, hashed_password) = DAL.user.get_user_and_hash_password(email)
         if user is not None and crypto.verify_password(password, hashed_password):
             set_connected_user(user)
             return redirect('/')

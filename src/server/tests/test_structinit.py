@@ -24,7 +24,7 @@ class StructInitTests(unittest.TestCase):
 
         user = create_user_in_db(email, interests, password, self.dal)
 
-        user_from_db, hash_password_from_db = self.dal.user.get_user_and_password(email)
+        user_from_db, hash_password_from_db = self.dal.user.get_user_and_hash_password(email)
         profile = self.dal.user_computed_profile.get_user_computed_profiles([user])[0]
 
         self.assertEquals(email, user.email)

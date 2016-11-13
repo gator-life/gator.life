@@ -23,7 +23,7 @@ class DalUserMock(object):
         self.saved_user = user
         self.saved_password = password
 
-    def get_user_and_password(self, email):  # pylint: disable=unused-argument, no-self-use
+    def get_user_and_hash_password(self, email):  # pylint: disable=unused-argument, no-self-use
         if email == 'mark':
             return (self.get_user(email), crypto.hash_password('dadada'))
 

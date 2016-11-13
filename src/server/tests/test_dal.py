@@ -57,8 +57,8 @@ class DalTests(unittest.TestCase):
         result_user = self.dal.user.get_user('email')
         self.assert_users_equals(expected_user, result_user)
 
-        # ------- check get_user_and_password -------
-        (result_user, result_password) = self.dal.user.get_user_and_password('email')
+        # ------- check get_user_and_hash_password -------
+        (result_user, result_password) = self.dal.user.get_user_and_hash_password('email')
         self.assert_users_equals(expected_user, result_user)
         self.assertEquals(password, result_password)
 
