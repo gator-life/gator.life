@@ -7,6 +7,11 @@ from flask import Flask
 from server.environment import IS_TEST_ENV
 from server.handlers import handlers
 
+if not IS_TEST_ENV:
+    import sys
+    with open('local_deps.txt') as f:
+        sys.path += f.readlines()
+
 # This variable is referenced by gunicorn in
 #  - entrypoint section of app.yaml file,
 #  - tools/start_server.sh

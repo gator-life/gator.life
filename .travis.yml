@@ -23,6 +23,7 @@ script:
 - python tools/run_pylint.py src
 - ./tools/start_tests.sh cover
 after_success:
+- { cat src/server/local_deps.txt; echo; } | while read line; do cp -R "src/$line/$line" src/server; done
 - coveralls
 deploy:
   provider: gae
