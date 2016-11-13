@@ -62,6 +62,16 @@ class DalTests(unittest.TestCase):
         self.assert_users_equals(expected_user, result_user)
         self.assertEquals(password, result_password)
 
+    def test_save_user_with_existing_user_same_email_override(self):
+        email = 'test_save_user_with_existing_user_same_email_override'
+        password = 'password'
+        user = struct.User.make_from_scratch(email=email, interests=['interests'])
+        self.dal.user.save_user(user, password)
+        user2 = struct.User.make_from_scratch(email=email, interests=['interests2'])
+        self.dal.user.save_user(user2, password)
+        result = self.dal.user.get_user(email)
+        self.assert_users_equals(user2, result)
+
     def assert_users_equals(self, expected_user, result_user):
         self.assertEquals(expected_user.email, result_user.email)
         self.assertEquals(expected_user.interests, result_user.interests)
@@ -73,18 +83,15 @@ class DalTests(unittest.TestCase):
         users_data = [('test_get_all_users_user1', ['interests1']),
                       ('test_get_all_users_user2', ['interests2']),
                       ('test_get_all_users_user3', ['interests3'])]
-        for (email, interests) in users_data:
-            self.dal.user.save_user(struct.User.make_from_scratch(email, interests), 'password')
+
+        all_users_expected = [struct.User.make_from_scratch(email, interests) for (email, interests) in users_data]
+        for user in all_users_expected:
+            self.dal.user.save_user(user, 'password')
+        all_user_keys = [user._db_key for user in all_users_expected]
 
         all_users = self.dal.user.get_all_users()
-        all_users_this_test = [user for user in all_users if 'test_get_all_users' in user.email]
-
+        all_users_this_test = [user for user in all_users if user._db_key in all_user_keys]
         self.assertEquals(3, len(all_users_this_test))
-
-        result_users_data = sorted([(user.email, user.interests) for user in all_users_this_test],
-                                   key=lambda user_data: user_data[0])
-        for (expected, result) in zip(users_data, result_users_data):
-            self.assertEquals(expected, result)
 
     def test_save_then_get_user_docs_should_be_equals(self):
         # setup : init docs in database
