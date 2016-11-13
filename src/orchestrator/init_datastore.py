@@ -7,8 +7,8 @@ from orchestrator.updatemodel import _save_topic_model_and_feature_set
 
 def _init_datastore():
     directory = os.path.dirname(os.path.abspath(__file__))
-    root_dir = directory + '/../..'
-    model_dir = root_dir + '/docker_images/gator_deps/trained_topic_model'
+    root_dir = os.path.join(directory, "../..")
+    model_dir = os.path.join(root_dir, "docker_images/gator_deps/trained_topic_model")
 
     topic_modeller = TopicModeller.make_with_html_tokenizer()
     topic_modeller.load(model_dir)
