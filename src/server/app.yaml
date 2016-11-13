@@ -6,6 +6,9 @@ entrypoint: gunicorn -b :$PORT main:APP
 runtime_config:
   python_version: 2
 
+manual_scaling:
+  instances: 1
+
 #to get a f1-micro instance
 resources:
   cpu: .5
