@@ -46,12 +46,13 @@ def _is_already_ref(dal, topic_model_id):
     return feature_set.model_id == topic_model_id
 
 
-def _save_topic_model_and_feature_set(dal, model):  # pylint: disable=invalid-name
-    dal.topic_model.save(model)
-    target_feature_names = [topic.topic_words[0].word for topic in model.topics]
-    dal.feature_set.save_ref_feature_set_id(model.topic_model_id)
-    target_feature_set = FeatureSet.make_from_scratch(model.topic_model_id, target_feature_names, model.topic_model_id)
+def _save_topic_model_and_feature_set(dal, model_description):  # pylint: disable=invalid-name
+    dal.topic_model.save(model_description)
+    target_feature_names = [topic.topic_words[0].word for topic in model_description.topics]
+    target_feature_set = FeatureSet.make_from_scratch(
+        model_description.topic_model_id, target_feature_names, model_description.topic_model_id)
     dal.feature_set.save_feature_set(target_feature_set)
+    dal.feature_set.save_ref_feature_set_id(model_description.topic_model_id)
 
 
 def _get_model_converters(dal, feature_set_ids, target_model):
