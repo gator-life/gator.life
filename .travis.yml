@@ -23,6 +23,7 @@ script:
 - python tools/run_pylint.py src
 - ./tools/start_tests.sh cover
 after_success:
+- tools/copy_local_deps_on_server.sh
 - coveralls
 deploy:
   provider: gae

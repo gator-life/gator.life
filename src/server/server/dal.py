@@ -480,10 +480,10 @@ class DalUser(object):
         :param email:
         :return: Struct.User if user found, else None
         """
-        (user, _) = self.get_user_and_password(email)
+        (user, _) = self.get_user_and_hash_password(email)
         return user
 
-    def get_user_and_password(self, email):
+    def get_user_and_hash_password(self, email):
         """
         :param email:
         :return: A tuple (Struct.User, encoded password) if user found, else (None, None)

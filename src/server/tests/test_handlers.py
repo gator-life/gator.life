@@ -5,7 +5,7 @@ import unittest
 from flask import Flask
 import server.frontendstructs as struct
 import server.handlers as handlers
-import server.passwordhelpers as pswd
+import common.crypto as crypto
 
 
 class DalUserMock(object):
@@ -23,9 +23,9 @@ class DalUserMock(object):
         self.saved_user = user
         self.saved_password = password
 
-    def get_user_and_password(self, email):  # pylint: disable=unused-argument, no-self-use
+    def get_user_and_hash_password(self, email):  # pylint: disable=unused-argument, no-self-use
         if email == 'mark':
-            return (self.get_user(email), pswd.hash_password('dadada'))
+            return (self.get_user(email), crypto.hash_password('dadada'))
 
 
 class DalUserDocMock(object):
@@ -165,7 +165,7 @@ class HandlersTests(unittest.TestCase):
         self.assertEquals('elon', self.dal.user.saved_user.email)
         self.assertEquals(['rockets', 'cars'], self.dal.user.saved_user.interests)
         self.assertEquals(1, len(self.dal.user_computed_profile.user_computed_profiles))
-        self.assertEquals(pswd.hash_password('elon'), self.dal.user.saved_password)
+        self.assertTrue(crypto.verify_password('elon', self.dal.user.saved_password))
         self._assert_is_home_elon(response)
 
     def test_link_with_user_not_connected_redirect_login(self):

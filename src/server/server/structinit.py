@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
+import common.crypto as crypto
 from . import frontendstructs as struct
-from . import passwordhelpers
 
 
 def create_user_in_db(email, interests, password, dal):
     user = struct.User.make_from_scratch(email, interests)
-    dal.user.save_user(user, passwordhelpers.hash_password(password))
+    dal.user.save_user(user, crypto.hash_password(password))
 
     # Create an empty profile for the newly created user
     ref_feature_set_id = dal.feature_set.get_ref_feature_set_id()

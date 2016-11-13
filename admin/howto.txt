@@ -87,8 +87,10 @@ docker build -t "whatever_you_want:whatever_you_want" .
     - open the Dockerfile and add the line "ENV GOOGLE_APPLICATION_CREDENTIALS generate_key_name.json" before "CMD gunicorn -b :$PORT main:APP"
     - IMPORTANT: After debugging, delete the generate key (locally and on google cloud console)
 
+- Add the line "ENV PORT 8080" before "CMD gunicorn -b :$PORT main:APP"
+
 - Run the image
-docker run -i -t whatever_you_want:whatever_you_want
+docker run -i -p 8080:8080 -t whatever_you_want:whatever_you_want
 
 - The app is then accessible at
 http://localhost:8080/

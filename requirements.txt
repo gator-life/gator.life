@@ -18,3 +18,5 @@ nltk
 gcloud
 pytz
 vcrpy
+bcrypt
+passlib
