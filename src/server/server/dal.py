@@ -301,8 +301,8 @@ class DalUserActionOnDoc(object):
 
         # 3) build result, from two above database results
         actions_by_user = [[] for _ in users]
-        user_key_to_index = dict(zip((user._db_key for user in users), range(len(users)))
-                                 )  # pylint: disable=protected-access
+        user_key_to_index = dict(
+            zip((user._db_key for user in users), range(len(users))))  # pylint: disable=protected-access
         for db_action in db_actions:
             doc = doc_hash_to_doc[db_action['document_url_hash']]
             action = _to_user_action_on_doc(doc, db_action)
