@@ -301,11 +301,12 @@ class DalUserActionOnDoc(object):
 
         # 3) build result, from two above database results
         actions_by_user = [[] for _ in users]
-        user_mail_to_index = dict(zip((user.email for user in users), range(len(users))))
+        user_key_to_index = dict(
+            zip((user._db_key for user in users), range(len(users))))  # pylint: disable=protected-access
         for db_action in db_actions:
             doc = doc_hash_to_doc[db_action['document_url_hash']]
             action = _to_user_action_on_doc(doc, db_action)
-            user_index = user_mail_to_index.get(db_action['user_key'].name)
+            user_index = user_key_to_index.get(db_action['user_key'])
             if user_index is not None:  # because we did not filter query on users
                 actions_by_user[user_index].append(action)
         return actions_by_user
@@ -487,16 +488,23 @@ class DalUser(object):
         :param email:
         :return: A tuple (Struct.User, encoded password) if user found, else (None, None)
         """
-        key = self._ds_client.key('User', email)
-        db_user = self._ds_client.get(key)
-        return (_to_user(db_user), _to_user_password(db_user)) if db_user else (None, None)
+        email_key = self._ds_client.key('UserKeyByEmail', email)
+        db_user_key_by_email = self._ds_client.get(email_key)
+        if db_user_key_by_email is None:
+            return None, None
+        db_user_key = db_user_key_by_email['user_key']
+        db_user = self._ds_client.get(db_user_key)
+        return _to_user(db_user), _to_user_password(db_user)
 
+    # this function should be replaced by a get_all_users_anonym()
     def get_all_users(self):
         """
         :return: A list of struct.User of all users in database
         """
+        all_alive_users_query = self._ds_client.query(kind='UserKeyByEmail').fetch()
+        all_alive_user_keys = set(user_key_by_email['user_key'] for user_key_by_email in all_alive_users_query)
         all_users_query = self._ds_client.query(kind='User').fetch()
-        return [_to_user(db_user) for db_user in all_users_query]
+        return [_to_user(db_user) for db_user in all_users_query if db_user.key in all_alive_user_keys]
 
     def save_user(self, user, password):
         """
@@ -522,9 +530,13 @@ class DalUser(object):
         self._ds_client.put(db_user)
         user._db_key = db_user.key  # pylint: disable=protected-access
 
+        db_user_key_by_email = _make_named_entity(self._ds_client, 'UserKeyByEmail', user.email, [])
+        db_user_key_by_email['user_key'] = user._db_key  # pylint: disable=protected-access
+        self._ds_client.put(db_user_key_by_email)
+
     def _to_db_user(self, user, password):
         not_indexed = ('password', 'interests', 'user_doc_set_key', 'user_computed_profile_key')
-        db_user = _make_named_entity(self._ds_client, 'User', user.email, not_indexed)
+        db_user = _make_entity(self._ds_client, 'User', not_indexed)
         db_user['email'] = user.email
         db_user['password'] = password
         db_user['interests'] = user.interests
