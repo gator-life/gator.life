@@ -3,7 +3,7 @@
 from server.dal import Dal
 from server.frontendstructs import FeatureSet, UserProfileModelData, UserComputedProfile, FeatureVector, Document,\
     TopicModelDescription
-from learner.topic_model_converter import TopicModelConverter
+from learner.topicmodelapprox import TopicModelConverter
 from learner.userprofiler import UserProfiler
 
 
