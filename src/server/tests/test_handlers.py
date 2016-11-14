@@ -54,7 +54,7 @@ class DalFeatureSetMock(object):
 
     def get_feature_set(self, feature_set_id):
         if feature_set_id == self.get_ref_feature_set_id():
-            return struct.FeatureSet.make_from_db(feature_set_id, ['label1'], None)
+            return struct.FeatureSet.make_from_db(feature_set_id, ['label1'], DalTopicModelMock.topic_model_id)
         return None
 
 
@@ -84,6 +84,19 @@ class DalUserActionMock(object):
         self.saved_user_doc_action_tuple = (user, document, action_on_doc)
 
 
+class DalTopicModelMock(object):
+
+    topic_model_id = 'DalTopicModelMock_topic_model_id'
+
+    def __init__(self):
+        self._topic_model = struct.TopicModelDescription.make_from_scratch(self.topic_model_id, [[('word', 1)]])
+
+    def get(self, model_id):
+        if model_id == self.topic_model_id:
+            return self._topic_model
+        raise ValueError(model_id)
+
+
 class DalMock(object):
 
     def __init__(self):
@@ -93,6 +106,7 @@ class DalMock(object):
         self.feature_set = DalFeatureSetMock()
         self.user_doc = DalUserDocMock()
         self.user = DalUserMock()
+        self.topic_model = DalTopicModelMock()
 
 
 class HandlersTests(unittest.TestCase):

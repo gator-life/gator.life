@@ -4,12 +4,13 @@ from flask import Blueprint, render_template, redirect, session, request
 import common.crypto as crypto
 from .dal import Dal
 from . import frontendstructs as struct
-from . import structinit
+from .structinit import UserCreator
 
 # keep low case name because it seems flask / blueprint standard
 handlers = Blueprint('handlers', __name__, template_folder='templates')  # pylint: disable=invalid-name
 
 DAL = Dal()
+USER_CREATOR = UserCreator()
 
 
 class Link(object):
@@ -78,7 +79,7 @@ def register():
             interests = request.form['interests'].splitlines()
             user = DAL.user.get_user(email)
             if user is None:
-                user = structinit.create_user_in_db(email, interests, password, DAL)
+                user = USER_CREATOR.create_user_in_db(email, interests, password, DAL)
                 set_connected_user(user)
                 return redirect('/')
             else:

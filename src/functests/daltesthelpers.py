@@ -27,8 +27,11 @@ def create_user_dummy(user_id, password, interests):
 
 def init_features_dummy(feature_set_id):
     dal = Dal()
+    model_id = 'init_features_dummy_model_id'
+    dal.topic_model.save(struct.TopicModelDescription.make_from_scratch(model_id, [[('topic', 1)]]))
     dal.feature_set.save_feature_set(
-        struct.FeatureSet.make_from_scratch(feature_set_id, feature_names=['sport', 'trading', 'bmw', 'c++'], model_id=None))
+        struct.FeatureSet.make_from_scratch(
+            feature_set_id, feature_names=['sport', 'trading', 'bmw', 'c++'], model_id=model_id))
 
 
 NEW_USER_ID = "new_user_id"
