@@ -15,7 +15,7 @@ numpy
 scipy
 gensim==0.13.1
 nltk
-gcloud
+google-cloud==0.21.0
 pytz
 vcrpy
 bcrypt

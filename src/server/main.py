@@ -27,7 +27,7 @@ if __name__ == '__main__':
     # to not risk to pollute database
     if not IS_TEST_ENV:
         raise Exception("TEST_ENV environment variable should be set for testing")
-    if os.environ["DATASTORE_HOST"] != "http://localhost:33001":
-        raise Exception("DATASTORE_HOST environment variable should be set to http://localhost:33001 for testing")
+    if os.environ["DATASTORE_EMULATOR_HOST"] != "localhost:33001":
+        raise Exception("DATASTORE_EMULATOR_HOST environment variable should be set to localhost:33001 for testing")
 
     APP.run(host='127.0.0.1', port=8080, debug=True)

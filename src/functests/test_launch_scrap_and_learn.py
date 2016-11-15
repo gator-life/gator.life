@@ -35,13 +35,13 @@ class LaunchScrapAndLearnTests(unittest.TestCase):
             docker_image_name = "scrap_learn"
             model_directory_in_docker_image = "trained_topic_model"
             cassette_path_in_docker_image = "src/functests/vcr_cassettes/test_launch_scrap_and_learn.yaml"
-            local_datastore = "http://localhost:33001"
+            local_datastore = "localhost:33001"
 
             subprocess.call(["tools/build_docker_scrap_learn.sh"], cwd=root_dir, shell=True)
             subprocess.call(['docker', 'run',
                              "--net=host",  # so container can access local datastore address
                              "-e", "TEST_ENV=True",
-                             "-e", "DATASTORE_HOST=" + local_datastore,
+                             "-e", "DATASTORE_EMULATOR_HOST=" + local_datastore,
                              docker_image_name,
                              model_directory_in_docker_image,
                              cassette_path_in_docker_image,
