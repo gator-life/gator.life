@@ -9,7 +9,7 @@ from server.frontendstructs import FeatureSet, TopicModelDescription
 from server.structinit import UserCreator
 
 
-class LaunchScrapAndLearnTests(unittest.TestCase):
+class BackgroundUpdateTests(unittest.TestCase):
 
     def setUp(self):
         self.dal = Dal()
@@ -18,31 +18,32 @@ class LaunchScrapAndLearnTests(unittest.TestCase):
         nb_topics = 500
         model = TopicModelDescription.make_from_scratch(model_id, [[('w' + str(i), 1)] for i in range(nb_topics)])
         self.dal.topic_model.save(model)
-        ref_feature_set_id = 'LaunchScrapAndLearnTests_ref_feature_set_id'
+        ref_feature_set_id = 'BackgroundUpdateTests_ref_feature_set_id'
         self.dal.feature_set.save_feature_set(FeatureSet.make_from_scratch(
             ref_feature_set_id, ['feature_' + str(i) for i in range(nb_topics)], model_id))
         self.dal.feature_set.save_ref_feature_set_id(ref_feature_set_id)
-        self.is_coverage = True  #  bool(os.environ.get('COVERAGE', None))
+        self.is_coverage = bool(os.environ.get('COVERAGE', None))
 
-    def test_launch_scrap_and_learn(self):
+    def test_update_model_profiles_userdocs(self):
         user_name = 'test_launch_scrap_and_learn'
         nb_docs = str(10)
-        interests = [' w' + str(i) for i in range(500)]
+
+        interests = [' w' + str(i) for i in range(200)]  # choose 200 of the 500 words used in topic model description
         user = UserCreator().create_user_in_db(user_name, interests, 'pass', self.dal)
+
         directory = os.path.dirname(os.path.abspath(__file__))
         root_dir = directory + '/../..'
 
         if not self.is_coverage:
-            docker_image_name = "scrap_learn"
+            docker_image_name = "background_update"
             model_directory_in_docker_image = "trained_topic_model"
-            cassette_path_in_docker_image = "src/functests/vcr_cassettes/test_launch_scrap_and_learn.yaml"
-            local_datastore = "localhost:33001"
+            cassette_path_in_docker_image = "src/functests/vcr_cassettes/update_model_profiles_userdocs.yaml"
 
-            subprocess.call(["tools/build_docker_scrap_learn.sh"], cwd=root_dir, shell=True)
+            subprocess.call(["tools/build_docker_background_update.sh"], cwd=root_dir, shell=True)
             subprocess.call(['docker', 'run',
                              "--net=host",  # so container can access local datastore address
-                             "-e", "TEST_ENV=True",
-                             "-e", "DATASTORE_EMULATOR_HOST=" + local_datastore,
+                             "-e", "TEST_ENV=" + os.environ["TEST_ENV"],  # forward some environment variables
+                             "-e", "DATASTORE_EMULATOR_HOST=" + os.environ["DATASTORE_EMULATOR_HOST"],
                              docker_image_name,
                              model_directory_in_docker_image,
                              cassette_path_in_docker_image,
@@ -50,11 +51,11 @@ class LaunchScrapAndLearnTests(unittest.TestCase):
                              nb_docs])
         else:
             import sys
-            from orchestrator.scrap_and_learn import scrap_and_learn
-            cassette_file = directory + '/vcr_cassettes/test_launch_scrap_and_learn.yaml'
+            from orchestrator.backgroundupdate import update_model_profiles_userdocs
+            cassette_file = directory + '/vcr_cassettes/update_model_profiles_userdocs.yaml'
             model_dir = root_dir + '/docker_images/gator_deps/trained_topic_model'
             sys.argv = [None, model_dir, cassette_file, user_name, nb_docs]
-            scrap_and_learn()
+            update_model_profiles_userdocs()
 
         user_docs = self.dal.user_doc.get_users_docs([user])[0]
         self.assertTrue(len(user_docs) > 6)  # some docs are filtered because not classified

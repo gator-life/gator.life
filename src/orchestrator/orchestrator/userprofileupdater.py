@@ -8,11 +8,11 @@ from server.dal import Dal
 DAL = Dal()
 
 
-def update_profiles_in_database():
+def update_profiles_in_database(users):
     """
     This method update profile in database of all users from their new actions since last model update
     """
-    _update_profiles_in_database(DAL.user.get_all_users(), UserProfiler(), utcnow())
+    _update_profiles_in_database(users, UserProfiler(), utcnow())
 
 
 def _update_profiles_in_database(users, profiler, now):

@@ -36,9 +36,10 @@ class UserProfileBuilderTests(unittest.TestCase):
         self.dal.user_action.save_user_action_on_doc(user1, doc, struct.UserActionTypeOnDoc.down_vote)
         self.dal.user_action.save_user_action_on_doc(user2, doc, struct.UserActionTypeOnDoc.down_vote)
 
-        update_profiles_in_database()
+        users = [user1, user2]
+        update_profiles_in_database(users)
 
-        profiles = self.dal.user_computed_profile.get_user_computed_profiles([user1, user2])
+        profiles = self.dal.user_computed_profile.get_user_computed_profiles(users)
 
         # user1 profile should prefer doc more thant user2
         self.assertGreater(profiles[0].feature_vector.vector[0], profiles[1].feature_vector.vector[0])

@@ -19,10 +19,15 @@ class MockScraper(object):
                 scrap.LinkElement(
                     "url" + str_index, None, scrap.OriginInfo("title" + str_index, None, None, None, None), None), content)
 
-        # chunk_size(3) + 1
-        # the before last document is an other instance of a duplicated url, should be ignored by the url unicity checker
-        # the last document should ne ignored as it is returned as unclassifiable by the TopicModeller
-        return [scrap_doc(3), scrap_doc(4), scrap_doc(5), scrap_doc(6), scrap_doc(3), scrap_doc(7, 'unclassifiable')]
+        return [
+            scrap_doc(3),
+            scrap_doc(4),
+            scrap_doc(5),  # those 3 should be taken in first chunk (chunk_size=3)
+            scrap_doc(6),  # taken after first chunk
+            scrap_doc(3),  #  other instance of a duplicated url, should be ignored by the url unicity checker
+            scrap_doc(7, 'unclassifiable'),  # should ne ignored as it is returned as unclassifiable by the TopicModeller
+            scrap_doc(8, 'excluded_because_after_nbdocs')  # should not be read because nbdocs = 6
+        ]
 
 
 class MockSaver(object):
@@ -45,21 +50,6 @@ class MockTopicModeller(object):
             return True, MockTopicModeller.feature_vector
         else:
             raise ValueError(doc_content)
-
-
-class MockModelUpdater(object):
-
-    def __init__(self, expected_topic_model, expected_users):
-        self.expected_topic_model = expected_topic_model
-        self.expected_users = expected_users
-        self.updated = False
-
-    def update_model_in_db(self, topic_modeller, all_users):
-        if self.expected_topic_model != topic_modeller:
-            raise ValueError(topic_modeller)
-        if len(self.expected_users) != len(all_users):
-            raise ValueError(all_users)
-        self.updated = True
 
 
 class ScrapAndLearnTests(unittest.TestCase):
@@ -91,14 +81,13 @@ class ScrapAndLearnTests(unittest.TestCase):
         # II) Orchestrate
         topic_modeller = MockTopicModeller()
         mock_saver = MockSaver()
-        model_updater = MockModelUpdater(topic_modeller, [user1, user2])
-        _scrap_and_learn(MockScraper(), mock_saver, topic_modeller, model_updater, docs_chunk_size=2,
+        users = [user1, user2]
+        _scrap_and_learn(MockScraper(), mock_saver, topic_modeller, docs_chunk_size=3,
                          user_docs_max_size=5, seen_urls_cache_start_date=utcnow(),
-                         keep_user_func=lambda u: 'test_scrap_and_learn' in u.email)
+                         users=users, nb_docs=6)
 
         # III) check database and mocks
-        self.assertTrue(model_updater.updated)
-        result_users_docs = self.dal.user_doc.get_users_docs([user1, user2])
+        result_users_docs = self.dal.user_doc.get_users_docs(users)
         result_user1_docs = result_users_docs[0]
         result_user2_docs = result_users_docs[1]
         self.assertEquals(5, len(result_user1_docs))  # 5 because of user_docs_max_size=5
