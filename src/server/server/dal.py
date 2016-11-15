@@ -6,7 +6,7 @@ through objects uncoupled from gcloud datastore API
 """
 import datetime
 import httplib2
-from gcloud import datastore
+import google.cloud.datastore as datastore  # pylint: disable=import-error
 from .environment import GCLOUD_PROJECT, IS_TEST_ENV
 from . import frontendstructs as struct
 
