@@ -33,7 +33,7 @@ def update_model_profiles_userdocs():
     else:
         vcr_cassette_file = None
         keep_user_func = lambda u: True
-        nb_docs_before_users_reload = 300
+        nb_docs_before_users_reload = 100
         start_cache_date = utcnow() - datetime.timedelta(days=14)
 
     users = _get_users(dal, keep_user_func)
