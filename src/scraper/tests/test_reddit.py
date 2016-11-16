@@ -14,14 +14,22 @@ class RedditTests(unittest.TestCase):
 
         link_elt = reddit._make_link_element(submission)
 
-        self.assertEquals('my_url', link_elt.url)
-        self.assertEquals('my_title', link_elt.origin_info.title)
-        self.assertEquals('my_cat', link_elt.origin_info.category)
-        self.assertEquals('orig_url', link_elt.origin_info.url)
-        self.assertEquals('orig_id', link_elt.origin_info.unique_id)
-        self.assertEquals('cat_id', link_elt.origin_info.category_id)
+        self.assertEquals(u'my_url', link_elt.url)
+        self.assertEquals(u'my_title', link_elt.origin_info.title)
+        self.assertEquals(u'my_cat', link_elt.origin_info.category)
+        self.assertEquals(u'orig_url', link_elt.origin_info.url)
+        self.assertEquals(u'orig_id', link_elt.origin_info.unique_id)
+        self.assertEquals(u'cat_id', link_elt.origin_info.category_id)
         self.assertEquals(123456, link_elt.date_utc_timestamp)
-        self.assertEquals('reddit', link_elt.origin)
+        self.assertEquals(u'reddit', link_elt.origin)
+
+        self.assertIsInstance(link_elt.url, unicode)
+        self.assertIsInstance(link_elt.origin_info.title, unicode)
+        self.assertIsInstance(link_elt.origin_info.category, unicode)
+        self.assertIsInstance(link_elt.origin_info.url, unicode)
+        self.assertIsInstance(link_elt.origin_info.unique_id, unicode)
+        self.assertIsInstance(link_elt.origin_info.category_id, unicode)
+        self.assertIsInstance(link_elt.origin, unicode)
 
     def test_is_valid_submission_with_is_self_return_false(self):
         submission = MagicMock(is_self=True, over_18=False)

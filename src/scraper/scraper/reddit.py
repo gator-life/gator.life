@@ -7,8 +7,13 @@ from .scraperstructs import LinkElement, OriginInfo
 
 def reddit_link_elements_generator(disconnected):
     submissions = _make_submissions_generator(disconnected)
-    link_elts = (_make_link_element(s) for s in submissions if _is_valid_submission(s))
-    return link_elts
+    for submission in submissions:
+        if _is_valid_submission(submission):
+            try:
+                elt = _make_link_element(submission)
+                yield elt
+            except UnicodeError:
+                pass
 
 
 def _make_submissions_generator(disconnected):
@@ -38,13 +43,13 @@ def _is_valid_submission(submission):
 
 
 def _make_link_element(submission):
-    url = submission.url.encode('utf8')
+    url = submission.url.decode('utf8')
     origin_name = u'reddit'
-    title = submission.title.encode('utf8')
-    category = submission.subreddit.display_name.encode('utf8')
-    origin_url = submission.permalink.encode('utf8')
-    origin_id = submission.id.encode('utf8')
-    category_id = submission.subreddit_id.encode('utf8')
+    title = submission.title.decode('utf8')
+    category = submission.subreddit.display_name.decode('utf8')
+    origin_url = submission.permalink.decode('utf8')
+    origin_id = submission.id.decode('utf8')
+    category_id = submission.subreddit_id.decode('utf8')
     origin_info = OriginInfo(title, category, origin_url, origin_id, category_id)
     date_as_utc_timestamp = submission.created_utc
     link_elt = LinkElement(url, origin_name, origin_info, date_as_utc_timestamp)
