@@ -12,27 +12,27 @@ from . import frontendstructs as struct
 
 
 def _to_user_action_type_on_doc(user_action_on_doc_db_string):
-    if user_action_on_doc_db_string == 'up_vote':
+    if user_action_on_doc_db_string == u'up_vote':
         return struct.UserActionTypeOnDoc.up_vote
-    if user_action_on_doc_db_string == 'down_vote':
+    if user_action_on_doc_db_string == u'down_vote':
         return struct.UserActionTypeOnDoc.down_vote
-    if user_action_on_doc_db_string == 'click_link':
+    if user_action_on_doc_db_string == u'click_link':
         return struct.UserActionTypeOnDoc.click_link
-    if user_action_on_doc_db_string == 'view_link':
+    if user_action_on_doc_db_string == u'view_link':
         return struct.UserActionTypeOnDoc.view_link
-    raise ValueError(user_action_on_doc_db_string + ' has no matching for Enum UserActionTypeOnDoc')
+    raise ValueError(user_action_on_doc_db_string + u' has no matching for Enum UserActionTypeOnDoc')
 # NB: when struct.UserActionTypeOnDoc become an Enum, we can just call user_action_on_doc_enum.name
 
 
 def _to_db_action_type_on_doc(user_action_on_doc_enum):
     if user_action_on_doc_enum == struct.UserActionTypeOnDoc.up_vote:
-        return 'up_vote'
+        return u'up_vote'
     if user_action_on_doc_enum == struct.UserActionTypeOnDoc.down_vote:
-        return 'down_vote'
+        return u'down_vote'
     if user_action_on_doc_enum == struct.UserActionTypeOnDoc.click_link:
-        return 'click_link'
+        return u'click_link'
     if user_action_on_doc_enum == struct.UserActionTypeOnDoc.view_link:
-        return 'view_link'
+        return u'view_link'
     raise ValueError(str(user_action_on_doc_enum) + ' has not string matching for database')
 
 
