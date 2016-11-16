@@ -16,6 +16,8 @@ def update_profiles_in_database(users):
 
 
 def _update_profiles_in_database(users, profiler, now):
+    if len(users) == 0:
+        return  # no profile to update
     old_profiles = DAL.user_computed_profile.get_user_computed_profiles(users)
     actions_by_user = _get_new_actions(users, old_profiles)
     new_profiles = _build_updated_profiles(profiler, zip(old_profiles, actions_by_user), now)

@@ -12,7 +12,11 @@ class UserProfileBuilderTests(unittest.TestCase):
     def setUp(self):
         self.dal = Dal()
 
-    def test_update_all_user_profiles_in_database(self):
+    @staticmethod
+    def test_update_profiles_in_database_no_user_return():
+        update_profiles_in_database([])
+
+    def test_update_profiles_in_database(self):
         user1 = struct.User.make_from_scratch(email='user1-test_update_user_profiles_in_database', interests=['interests1'])
         user2 = struct.User.make_from_scratch(email='user2-test_update_user_profiles_in_database', interests=['interests2'])
         self.dal.user.save_user(user1, 'password1')
