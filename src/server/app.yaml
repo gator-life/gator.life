@@ -17,6 +17,7 @@ resources:
 
 env_variables:
     GCLOUD_PROJECT: gator-01
+    NLTK_DATA: ./nltk_data
 
 skip_files:
   # gae default (cf. https://cloud.google.com/appengine/docs/python/config/appref#skip_files)

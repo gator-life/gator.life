@@ -21,6 +21,7 @@ python -m nltk.downloader stopwords punkt
 virtualenv appengine_env
 appengine_env/bin/pip install -U pip
 appengine_env/bin/pip install -r src/server/requirements.txt
+python -m nltk.downloader -d src/server/nltk_data stopwords punkt
 { cat src/server/local_deps.txt; echo; } | while read line; do appengine_env/bin/pip install -e "src/$line"; done
 
 git lfs pull
