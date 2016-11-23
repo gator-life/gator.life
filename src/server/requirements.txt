@@ -6,5 +6,6 @@ httplib2
 bcrypt
 passlib
 numpy
+scipy
 nltk
 pytz

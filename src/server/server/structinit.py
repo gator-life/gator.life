@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+import datetime
 import common.crypto as crypto
 from common.datehelper import utcnow
 from learner.topicmodelapprox import TopicModelApproxClassifier
 from learner.userprofiler import UserProfiler
+from learner.learner import UserDocumentsAccumulator, UserData
 import nltk
 from . import frontendstructs as struct
 
@@ -11,6 +13,8 @@ class UserCreator(object):
 
     def __init__(self):
         self._profile_initializer = None
+        self._doc_duration = datetime.timedelta(hours=12)
+        self._nb_user_docs = 30
 
     def create_user_in_db(self, email, interests, password, dal):
         if self._profile_initializer is None:
@@ -18,8 +22,10 @@ class UserCreator(object):
 
         user = struct.User.make_from_scratch(email, interests)
         profile = self._profile_initializer.get_new_profile(interests)
+        user_docs = _get_user_docs(dal, profile.feature_vector, utcnow() - self._doc_duration, self._nb_user_docs)
         dal.user.save_user(user, crypto.hash_password(password))
         dal.user_computed_profile.save_user_computed_profiles([(user, profile)])
+        dal.user_doc.save_user_docs(user, user_docs)
         return user
 
 
@@ -51,3 +57,17 @@ class _ProfileInitializer(object):
         feature_vector = struct.FeatureVector.make_from_scratch(profile.feedback_vector, self._ref_feature_set_id)
         user_profile = struct.UserComputedProfile.make_from_scratch(feature_vector, profile.model_data)
         return user_profile
+
+
+def _get_user_docs(dal, user_feature_vector, min_date_docs, nb_user_docs):
+    url_hashes = dal.doc.get_recent_doc_url_hashes(min_date_docs)
+    docs = dal.doc.get_docs(url_hashes)
+    user_feat_set_id = user_feature_vector.feature_set_id
+    valid_docs = (doc for doc in docs if doc.feature_vector.feature_set_id == user_feat_set_id)
+    doc_accu = UserDocumentsAccumulator([UserData(user_feature_vector.vector, [])], nb_user_docs)
+    for doc in valid_docs:
+        doc_accu.add_doc(doc, doc.feature_vector.vector)
+    lrn_docs = doc_accu.build_user_docs()[0]
+    to_user_doc = lambda lrn_doc: struct.UserDocument.make_from_scratch(lrn_doc.doc_id, lrn_doc.grade)
+    user_docs = [to_user_doc(lrn_doc) for lrn_doc in lrn_docs]
+    return user_docs
