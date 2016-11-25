@@ -237,15 +237,18 @@ class DalDoc(object):
         db_docs = _get_multi(self._ds_client, db_keys)
         return [_to_doc(db_doc) for db_doc in db_docs]
 
-    def get_recent_doc_url_hashes(self, from_datetime):
+    def get_recent_doc_url_hashes(self, from_datetime, max_nb_docs=None):
         """
         :param from_datetime: datetime
-        :return: the list of hashes of docs whose datetime is after from_datetime
+        :param max_nb_docs: int, set 1000 if you want to use get_multi on result
+        :return: list of hashes of max_nb_docs most recent docs whose datetime is after from_datetime
         """
-        query = self._ds_client.query(kind='Document')
+        # nb: query is ordered as a way to ensure we get the max_nb_docs most recent
+        # but it's a implementation detail, order on returned hashes is not needed / specified
+        query = self._ds_client.query(kind='Document', order=['-datetime'])
         query.keys_only()
         query.add_filter('datetime', '>', from_datetime)
-        db_doc_entities = query.fetch()
+        db_doc_entities = query.fetch(max_nb_docs)
         return [entity.key.name for entity in db_doc_entities]
 
 

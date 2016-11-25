@@ -80,7 +80,9 @@ class DalDocMock(object):
         return None
 
     @staticmethod
-    def get_recent_doc_url_hashes(min_date_docs):  # pylint: disable=unused-argument
+    def get_recent_doc_url_hashes(from_datetime, max_nb_docs):  # pylint: disable=unused-argument
+        if max_nb_docs != 1000:
+            raise ValueError(max_nb_docs)
         return ['url_hash']
 
     @staticmethod

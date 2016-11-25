@@ -60,7 +60,8 @@ class _ProfileInitializer(object):
 
 
 def _get_user_docs(dal, user_feature_vector, min_date_docs, nb_user_docs):
-    url_hashes = dal.doc.get_recent_doc_url_hashes(min_date_docs)
+    # limit to 1000 so we can call dal.doc.get_docs (fails above 1000 in datastore)
+    url_hashes = dal.doc.get_recent_doc_url_hashes(min_date_docs, max_nb_docs=1000)
     docs = dal.doc.get_docs(url_hashes)
     user_feat_set_id = user_feature_vector.feature_set_id
     valid_docs = (doc for doc in docs if doc.feature_vector.feature_set_id == user_feat_set_id)

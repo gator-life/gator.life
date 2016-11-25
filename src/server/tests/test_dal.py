@@ -347,16 +347,21 @@ class DalTests(unittest.TestCase):
     def test_get_recent_doc_url_hashes(self):
 
         doc_before = self.make_dummy_doc(u'get_recent_doc_url_hashes_before')
+        doc_above_nb_max = self.make_dummy_doc(u'get_recent_doc_url_hashes_above_max')
         doc1 = self.make_dummy_doc(u'get_recent_doc_url_hashes_1')
         doc2 = self.make_dummy_doc(u'get_recent_doc_url_hashes_2')
 
         self.dal.doc.save_documents([doc_before])
         min_datetime = utcnow()
-        self.dal.doc.save_documents([doc1, doc2])
-        url_hashes = self.dal.doc.get_recent_doc_url_hashes(min_datetime)
+        self.dal.doc.save_documents([doc_above_nb_max])
+        self.dal.doc.save_documents([doc1])
+        self.dal.doc.save_documents([doc2])
+        url_hashes = self.dal.doc.get_recent_doc_url_hashes(min_datetime, 2)
         self.assertEquals(2, len(url_hashes))
         self.assertTrue(doc1.url_hash in url_hashes)
         self.assertTrue(doc2.url_hash in url_hashes)
+        url_hashes_no_max_nb_docs = self.dal.doc.get_recent_doc_url_hashes(min_datetime)
+        self.assertEquals(3, len(url_hashes_no_max_nb_docs))
 
     def test_save_then_get_topic_model_description(self):
 
