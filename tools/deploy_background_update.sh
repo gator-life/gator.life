@@ -1,6 +1,7 @@
 #!/bin/bash
 # script must be executed from root git directory
 # 1) Build docker image
+tools/build_docker_gator_deps.sh
 tools/build_docker_background_update.sh
 # 2) Tag it to be compliant with gcr (google container repository) repo naming
 # https://cloud.google.com/container-registry/docs/pushing
