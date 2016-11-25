@@ -87,7 +87,7 @@ def _to_doc(db_doc):
         datetime=db_doc['datetime'], feature_vector=_to_feature_vector(db_doc['feature_vector']))
 
 
-def _datastore_client():
+def _datastore_test_client():
 
     class _EmulatorCreds(object):
         """
@@ -98,12 +98,9 @@ def _datastore_client():
         def create_scoped_required():
             return False
 
-    if IS_TEST_ENV:
-        credentials = _EmulatorCreds()
-        http = httplib2.Http()  # Un-authorized.
-        return datastore.Client(project=GCLOUD_PROJECT, credentials=credentials, http=http)
-    else:
-        return datastore.Client(GCLOUD_PROJECT)
+    credentials = _EmulatorCreds()
+    http = httplib2.Http()  # Un-authorized.
+    return datastore.Client(project=GCLOUD_PROJECT, credentials=credentials, http=http)
 
 
 def _make_entity(datastore_client, entity_type, not_indexed):
@@ -129,20 +126,20 @@ def _get_multi(datastore_client, keys):
 
 
 class Dal(object):  # pylint: disable= too-many-instance-attributes
-    # Dal is a class rather than plain module functions to enable init logic in the future,
-    # but datastore client is slow to initialize, so we share it between Dal instances
 
-    _ds_client = _datastore_client()
+    # re-use same connection for tests to improve perfs. In prod, client should have a short life
+    _ds_singleton_test_client = _datastore_test_client() if IS_TEST_ENV else None
 
     def __init__(self):
-        self.feature_set = DalFeatureSet(self._ds_client)
-        self.feature_vector = DalFeatureVector(self._ds_client)
-        self.doc = DalDoc(self._ds_client, self.feature_vector)
-        self.user_action = DalUserActionOnDoc(self._ds_client, self.doc)
-        self.user_computed_profile = DalUserComputedProfile(self._ds_client, self.feature_vector)
-        self.user = DalUser(self._ds_client, self.user_computed_profile)
-        self.user_doc = DalUserDoc(self._ds_client, self.doc)
-        self.topic_model = DalTopicModelDescription(self._ds_client)
+        ds_client = self._ds_singleton_test_client if IS_TEST_ENV else datastore.Client(GCLOUD_PROJECT)
+        self.feature_set = DalFeatureSet(ds_client)
+        self.feature_vector = DalFeatureVector(ds_client)
+        self.doc = DalDoc(ds_client, self.feature_vector)
+        self.user_action = DalUserActionOnDoc(ds_client, self.doc)
+        self.user_computed_profile = DalUserComputedProfile(ds_client, self.feature_vector)
+        self.user = DalUser(ds_client, self.user_computed_profile)
+        self.user_doc = DalUserDoc(ds_client, self.doc)
+        self.topic_model = DalTopicModelDescription(ds_client)
 
 
 class DalFeatureSet(object):

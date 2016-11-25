@@ -9,8 +9,12 @@ from .structinit import UserCreator
 # keep low case name because it seems flask / blueprint standard
 handlers = Blueprint('handlers', __name__, template_folder='templates')  # pylint: disable=invalid-name
 
-DAL = Dal()
 USER_CREATOR = UserCreator()
+
+
+def get_dal():
+    # Indirection to enable mocking
+    return Dal()
 
 
 class Link(object):
@@ -28,10 +32,13 @@ def unset_connected_user():
     session.pop('email', None)
 
 
-def get_connected_user():
-    if 'email' in session:
-        return DAL.user.get_user(session['email'])
-    return None
+def get_connected_user_email():
+    return session.get('email')
+
+
+def get_connected_user(dal):
+    email = get_connected_user_email()
+    return dal.user.get_user(email) if email else None
 
 
 @handlers.route('/login', methods=['GET', 'POST'])
@@ -40,14 +47,14 @@ def login():
         email = request.form['email']
         password = request.form['password']
 
-        (user, hashed_password) = DAL.user.get_user_and_hash_password(email)
+        (user, hashed_password) = get_dal().user.get_user_and_hash_password(email)
         if user is not None and crypto.verify_password(password, hashed_password):
             set_connected_user(user)
             return redirect('/')
         else:
             return render_template('login.html', error_message='Unknown email or invalid password')
     else:
-        user = get_connected_user()
+        user = get_connected_user(get_dal())
         if user is None:
             return render_template('login.html')
         else:
@@ -56,9 +63,10 @@ def login():
 
 @handlers.route('/')
 def home():
-    user = get_connected_user()
+    dal = get_dal()
+    user = get_connected_user(dal)
     if user is not None:
-        user_docs = DAL.user_doc.get_user_docs(user)
+        user_docs = dal.user_doc.get_user_docs(user)
         links = [Link(url_hash=user_doc.document.url_hash, text=user_doc.document.title) for user_doc in user_docs]
         actions_mapping = {'click_link': struct.UserActionTypeOnDoc.click_link,
                            'up_vote': struct.UserActionTypeOnDoc.up_vote,
@@ -72,14 +80,15 @@ def home():
 @handlers.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        connected_user = get_connected_user()
-        if connected_user is None:
+        email = get_connected_user_email()
+        if email is None:
             email = request.form['email']
             password = request.form['password']
             interests = request.form['interests'].splitlines()
-            user = DAL.user.get_user(email)
+            dal = get_dal()
+            user = dal.user.get_user(email)
             if user is None:
-                user = USER_CREATOR.create_user_in_db(email, interests, password, DAL)
+                user = USER_CREATOR.create_user_in_db(email, interests, password, dal)
                 set_connected_user(user)
                 return redirect('/')
             else:
@@ -87,7 +96,7 @@ def register():
         else:
             return redirect('/')
     else:
-        user = get_connected_user()
+        user = get_connected_user_email()
         if user is None:
             return render_template('register.html')
         else:
@@ -96,18 +105,19 @@ def register():
 
 @handlers.route('/disconnect')
 def disconnect():
-    user = get_connected_user()
-    if user is not None:
+    email = get_connected_user_email()
+    if email is not None:
         unset_connected_user()
     return redirect('/login')
 
 
 @handlers.route('/link/<int:action_type_on_doc>/<url_hash>')
 def link(action_type_on_doc, url_hash):
-    user = get_connected_user()
+    dal = get_dal()
+    user = get_connected_user(dal)
     if user is not None:
-        document = DAL.doc.get_doc(url_hash)
-        DAL.user_action.save_user_action_on_doc(user, document, action_type_on_doc)
+        document = dal.doc.get_doc(url_hash)
+        dal.user_action.save_user_action_on_doc(user, document, action_type_on_doc)
         if action_type_on_doc == struct.UserActionTypeOnDoc.click_link:
             return redirect(document.url.encode('utf-8'))
         else:

@@ -137,7 +137,7 @@ class HandlersTests(unittest.TestCase):
         self.app = test_app.test_client()
         test_app.config['TESTING'] = True
         self.dal = DalMock()
-        handlers.DAL = self.dal
+        handlers.get_dal = lambda: self.dal
 
     def test_home_without_user_render_login(self):
         response = self.app.get('/', follow_redirects=True)

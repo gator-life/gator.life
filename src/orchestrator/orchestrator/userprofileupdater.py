@@ -5,8 +5,6 @@ from learner.userprofiler import UserProfiler, ActionOnDoc
 import server.frontendstructs as struct
 from server.dal import Dal
 
-DAL = Dal()
-
 
 def update_profiles_in_database(users):
     """
@@ -18,16 +16,17 @@ def update_profiles_in_database(users):
 def _update_profiles_in_database(users, profiler, now):
     if len(users) == 0:
         return  # no profile to update
-    old_profiles = DAL.user_computed_profile.get_user_computed_profiles(users)
-    actions_by_user = _get_new_actions(users, old_profiles)
+    dal = Dal()
+    old_profiles = dal.user_computed_profile.get_user_computed_profiles(users)
+    actions_by_user = _get_new_actions(dal, users, old_profiles)
     new_profiles = _build_updated_profiles(profiler, zip(old_profiles, actions_by_user), now)
-    DAL.user_computed_profile.save_user_computed_profiles(zip(users, new_profiles))
+    dal.user_computed_profile.save_user_computed_profiles(zip(users, new_profiles))
 
 
-def _get_new_actions(users, old_profiles):
+def _get_new_actions(dal, users, old_profiles):
     # min requests date is unique for all users, we need to request all from this date
     min_datetime_request = min(old_profiles, key=lambda item: item.datetime).datetime
-    return DAL.user_action.get_user_actions_on_docs(users, min_datetime_request)
+    return dal.user_action.get_user_actions_on_docs(users, min_datetime_request)
 
 
 def _build_updated_profiles(profiler, old_profile_to_actions_list, now):

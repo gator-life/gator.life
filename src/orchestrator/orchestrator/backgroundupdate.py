@@ -22,8 +22,6 @@ def update_model_profiles_userdocs():
     if test_mode and not IS_TEST_ENV:
         print "'TEST_ENV' environment variable should be set when 'test' arguments are specified"
 
-    dal = Dal()
-
     if test_mode:
         vcr_cassette_file = sys.argv[2]
         users_prefix = sys.argv[3]
@@ -36,15 +34,15 @@ def update_model_profiles_userdocs():
         nb_docs_before_users_reload = 100
         start_cache_date = utcnow() - datetime.timedelta(days=14)
 
-    users = _get_users(dal, keep_user_func)
     model_updater = ModelUpdater()
     topic_modeller = TopicModeller.make_with_html_tokenizer()
     topic_modeller.load(topic_model_directory)
-    model_updater.update_model_in_db(topic_modeller, users)
 
     with use_cassette(vcr_cassette_file, record_mode='none', ignore_localhost=True) if vcr_cassette_file else NoContext():
         while True:
+            dal = Dal()
             users = _get_users(dal, keep_user_func)
+            model_updater.update_model_in_db(topic_modeller, users)
             update_profiles_in_database(users)
             scrap_learn(topic_modeller, users, nb_docs_before_users_reload, start_cache_date)
             if vcr_cassette_file:  # only one loop for run from a cassette
