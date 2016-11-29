@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import logging
+from common.log import init_gcloud_log
 from orchestrator.backgroundupdate import update_model_profiles_userdocs
+from server.environment import IS_TEST_ENV, GCLOUD_PROJECT
 
-logging.basicConfig(format=u'%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO, filename='scrap_and_learn.log')
-
+init_gcloud_log(GCLOUD_PROJECT, u'background_update', IS_TEST_ENV)
 update_model_profiles_userdocs()

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import logging
 from flask import Blueprint, render_template, redirect, session, request
 import common.crypto as crypto
 from .dal import Dal
@@ -8,7 +8,7 @@ from .structinit import UserCreator
 
 # keep low case name because it seems flask / blueprint standard
 handlers = Blueprint('handlers', __name__, template_folder='templates')  # pylint: disable=invalid-name
-
+LOGGER = logging.getLogger(__name__)
 USER_CREATOR = UserCreator()
 
 
@@ -89,6 +89,7 @@ def register():
             user = dal.user.get_user(email)
             if user is None:
                 user = USER_CREATOR.create_user_in_db(email, interests, password, dal)
+                LOGGER.info('new user created, email {%s}', email)
                 set_connected_user(user)
                 return redirect('/')
             else:

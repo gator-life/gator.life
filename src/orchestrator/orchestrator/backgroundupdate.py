@@ -1,5 +1,6 @@
 import sys
 import datetime
+import logging
 from vcr import use_cassette
 from common.datehelper import utcnow
 from topicmodeller.topicmodeller import TopicModeller
@@ -8,6 +9,8 @@ from server.environment import IS_TEST_ENV
 from .userprofileupdater import update_profiles_in_database
 from .updatemodel import ModelUpdater
 from .scrap_and_learn import scrap_learn
+
+LOGGER = logging.getLogger(__name__)
 
 
 def update_model_profiles_userdocs():
@@ -37,6 +40,15 @@ def update_model_profiles_userdocs():
     model_updater = ModelUpdater()
     topic_modeller = TopicModeller.make_with_html_tokenizer()
     topic_modeller.load(topic_model_directory)
+
+    LOGGER.info(
+        u'Start update_model_profiles_userdocs, '
+        u'topic_model_directory[%s] '
+        u'test_mode[%s] '
+        u'vcr_cassette_file[%s] '
+        u'nb_docs_before_users_reload[%s] '
+        u'start_cache_date[%s]',
+        topic_model_directory, test_mode, vcr_cassette_file, nb_docs_before_users_reload, start_cache_date)
 
     with use_cassette(vcr_cassette_file, record_mode='none', ignore_localhost=True) if vcr_cassette_file else NoContext():
         while True:
