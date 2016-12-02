@@ -1,4 +1,5 @@
 import sys
+from time import sleep
 import datetime
 import logging
 from vcr import use_cassette
@@ -52,11 +53,16 @@ def update_model_profiles_userdocs():
 
     with use_cassette(vcr_cassette_file, record_mode='none', ignore_localhost=True) if vcr_cassette_file else NoContext():
         while True:
-            dal = Dal()
-            users = _get_users(dal, keep_user_func)
-            model_updater.update_model_in_db(topic_modeller, users)
-            update_profiles_in_database(users)
-            scrap_learn(topic_modeller, users, nb_docs_before_users_reload, start_cache_date)
+            try:
+                LOGGER.info("start new scrap_learn loop")
+                dal = Dal()
+                users = _get_users(dal, keep_user_func)
+                model_updater.update_model_in_db(topic_modeller, users)
+                update_profiles_in_database(users)
+                scrap_learn(topic_modeller, users, nb_docs_before_users_reload, start_cache_date)
+            except:  # pylint: disable=bare-except
+                LOGGER.exception(u'Exception in update_model_profiles_userdocs main loop, restarting')
+                sleep(30)
             if vcr_cassette_file:  # only one loop for run from a cassette
                 return
 
@@ -76,4 +82,5 @@ class NoContext(object):
 def _get_users(dal, keep_user_func):
     all_users = dal.user.get_all_users()
     users = [user for user in all_users if keep_user_func(user)]  # to filter in tests
+    LOGGER.info("get_users: %s users found", len(users))
     return users

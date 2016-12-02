@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import praw
 import urllib3.contrib.pyopenssl
 from .scraperstructs import LinkElement, OriginInfo
+
+LOGGER = logging.getLogger(__name__)
 
 
 def reddit_link_elements_generator(disconnected):
@@ -11,9 +14,10 @@ def reddit_link_elements_generator(disconnected):
         if _is_valid_submission(submission):
             try:
                 elt = _make_link_element(submission)
+                LOGGER.debug('yield link elt, url[%s]', elt.url)
                 yield elt
             except UnicodeError:
-                pass
+                LOGGER.info(u'unicode error in submission')
 
 
 def _make_submissions_generator(disconnected):
