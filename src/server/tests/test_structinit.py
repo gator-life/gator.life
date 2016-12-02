@@ -90,7 +90,7 @@ class ProfileInitializerTests(unittest.TestCase):
         self.assertEquals(0, model_data.positive_feedback_sum_coeff)
         self.assertEquals(0, model_data.negative_feedback_sum_coeff)
         self.assertEquals([0, 0], model_data.positive_feedback_vector)
-        self.assertEquals([0, 0], model_data.positive_feedback_vector)
+        self.assertEquals([0, 0], model_data.negative_feedback_vector)
         self.assertEquals(2, len(explicit_vec))
         self.assertTrue(explicit_vec[1] > explicit_vec[0] > 0)
         self.assertEquals(explicit_vec[1] / explicit_vec[0], feature_vec.vector[1] / feature_vec.vector[0])
