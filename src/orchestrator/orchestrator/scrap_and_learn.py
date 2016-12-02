@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import datetime
 import common.crypto as crypto
 from common.technical import get_process_memory
+from common.datehelper import utcnow
 import learner.learner as lrn
 from scraper.scraper import Scraper
 from server.frontendstructs import Document, UserDocument, FeatureVector
@@ -161,7 +163,10 @@ class DocBuilder(object):
 def _build_user_docs_accumulator(users, user_docs_max_size):
 
     def build_learner_user_data(user_feature_vector, user_docs):
-        learner_user_docs = (lrn.UserDoc(user_doc.document, user_doc.grade) for user_doc in user_docs)
+        # Exclude old docs from user docs
+        min_doc_date = utcnow() - datetime.timedelta(days=2)
+        learner_user_docs = (lrn.UserDoc(user_doc.document, user_doc.grade)
+                             for user_doc in user_docs if user_doc.document.datetime > min_doc_date)
         return lrn.UserData(user_feature_vector, learner_user_docs)
 
     dal = Dal()

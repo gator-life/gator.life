@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+import datetime
 from orchestrator.scrap_and_learn import _scrap_and_learn
 from common.datehelper import utcnow
 import scraper.scraperstructs as scrap
@@ -70,12 +71,15 @@ class ScrapAndLearnTests(unittest.TestCase):
         self.dal.user.save_user(user2, "password2")
         self._save_dummy_profile_for_user(user2)
         # I.2) doc
+        doc_old = struct.Document.make_from_scratch('', 'hash_old', 't', "s", self.dummy_feat_vec)
+        doc_old.datetime = utcnow() - datetime.timedelta(days=2, seconds=1)
         doc1 = struct.Document.make_from_scratch("url1", 'hash1', 'title1', "sum1", self.dummy_feat_vec)
         doc2 = struct.Document.make_from_scratch("url2", 'hash2', 'title2', "sum2", self.dummy_feat_vec)
-        self.dal.doc.save_documents([doc1, doc2])
+        self.dal.doc.save_documents([doc1, doc2, doc_old])
         # I.3) userDoc
         user1_user_docs = [
-            struct.UserDocument.make_from_scratch(doc1, grade=0.0),  # this one should be removed
+            struct.UserDocument.make_from_scratch(doc_old, grade=1.1),  # should be removed (too old)
+            struct.UserDocument.make_from_scratch(doc1, grade=0.0),  # should be removed (bad rating)
             struct.UserDocument.make_from_scratch(doc2, grade=1.0)]
         self.dal.user_doc.save_users_docs([(user1, user1_user_docs)])
         # II) Orchestrate
