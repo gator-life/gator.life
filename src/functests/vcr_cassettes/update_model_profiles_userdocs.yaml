@@ -31777,4 +31777,598 @@ interactions:
       vary: [Accept-Encoding]
       x-fmm-hermes-f24-version: [v1.47.13]
     status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://thehistoryofhiphop.net/
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      accept-ranges: [bytes]
+      connection: ['Upgrade, Keep-Alive']
+      content-length: ['103768']
+      content-type: [text/html]
+      date: ['Tue, 06 Dec 2016 21:09:19 GMT']
+      keep-alive: ['timeout=3, max=20']
+      last-modified: ['Wed, 23 Nov 2016 11:48:49 GMT']
+      server: [Apache]
+      upgrade: [h2]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://www.aljazeera.com/programmes/talktojazeera/2016/09/peter-szijjarto-migration-security-threat-160923114524255.html
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      access-control-allow-origin: ['http://live.aljazeera.com']
+      cache-control: ['public, max-age=181']
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-type: [text/html]
+      date: ['Tue, 06 Dec 2016 21:09:23 GMT']
+      expires: ['Tue, 06 Dec 2016 21:12:24 GMT']
+      publisher: [Al Jazeera (ORYX CMS) - OA]
+      server: [Microsoft-IIS/8.0]
+      x-method: [GET]
+      x-powered-by: [VSH-O-1]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://www.forbes.com/sites/mattconnolly/2016/09/23/interview-former-pride-boss-nobuyuki-sakakibara-talks-rizin-grand-prix-japanese-mma-future-plans/
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      accept-ranges: [bytes]
+      backend: [templates]
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-language: [en-US]
+      content-length: ['15803']
+      content-type: [text/html;charset=utf-8]
+      date: ['Tue, 06 Dec 2016 21:09:23 GMT']
+      server: ['']
+      vary: [Accept-Encoding]
+      x-cnection: [close]
+      x-frame-options: [SAMEORIGIN]
+      x-yourttl: ['86400.000']
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://cashortrade.org/profile/daylimeo/posts/270010
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      cache-control: ['no-store, no-cache, must-revalidate, post-check=0, pre-check=0']
+      connection: [Keep-Alive]
+      content-type: [text/html]
+      date: ['Tue, 06 Dec 2016 21:09:08 GMT']
+      expires: ['Thu, 19 Nov 1981 08:52:00 GMT']
+      keep-alive: ['timeout=5, max=95']
+      pragma: [no-cache]
+      server: [Apache/2.4.7 (Ubuntu)]
+      set-cookie: [X-Mapping-fjhppofk=D40F630D77CE0EA14FBCF17A6549CFF7; path=/, PHPSESSID=1plosk28m5bpkq1kdo0jmhcps4;
+          path=/]
+      x-powered-by: [PHP/5.5.9-1ubuntu4.20]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://www.people.com/article/steven-avery-making-a-murderer-engaged?xid=rss-topheadlines
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      connection: [keep-alive]
+      content-length: ['178']
+      content-type: [text/html]
+      date: ['Tue, 06 Dec 2016 21:09:50 GMT']
+      location: ['http://people.com/article/steven-avery-making-a-murderer-engaged?xid=rss-topheadlines']
+      server: [nginx]
+      x-ac: [1.fra _dfw]
+    status: {code: 301, message: Moved Permanently}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://www.espn.com/college-football/story/_/id/17625866/alabama-rb-damien-harris-helped-field
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      access-control-allow-origin: ['*']
+      cache-control: [max-age=300]
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-type: [text/html;charset=UTF-8]
+      date: ['Tue, 06 Dec 2016 21:09:51 GMT']
+      p3p: [CP="CAO DSP COR CURa ADMa DEVa TAIa PSAa PSDa IVAi IVDi CONi OUR SAMo
+          OTRo BUS PHY ONL UNI PUR COM NAV INT DEM CNT STA PRE"]
+      set-cookie: ['SWID=7C484171-6EC0-41BE-87EC-C44182B6B343; path=/; expires=Mon,
+          01 Dec 2036 21:09:51 GMT; domain=espn.com;', 'device=pc; path=/; Expires=Thu,
+          05 Jan 2017 21:09:51 GMT;', 'userab=0; path=/; Expires=Thu, 05 Jan 2017
+          21:09:51 GMT;']
+      vary: ['User-Agent,Cookie']
+      x-ua-compatible: [IE=Edge]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://www.espn.com/nfl/story/_/id/17626171/atlanta-falcons-wr-julio-jones-calf-says-play-vs-new-orleans-saints
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      access-control-allow-origin: ['*']
+      cache-control: [max-age=300]
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-type: [text/html;charset=UTF-8]
+      date: ['Tue, 06 Dec 2016 21:10:02 GMT']
+      p3p: [CP="CAO DSP COR CURa ADMa DEVa TAIa PSAa PSDa IVAi IVDi CONi OUR SAMo
+          OTRo BUS PHY ONL UNI PUR COM NAV INT DEM CNT STA PRE"]
+      set-cookie: ['SWID=134BEF67-9755-448A-ACC1-BE0ABC9EC9E6; path=/; expires=Mon,
+          01 Dec 2036 21:10:02 GMT; domain=espn.com;', 'device=pc; path=/; Expires=Thu,
+          05 Jan 2017 21:10:02 GMT;', 'userab=0; path=/; Expires=Thu, 05 Jan 2017
+          21:10:02 GMT;']
+      vary: ['User-Agent,Cookie']
+      x-ua-compatible: [IE=Edge]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://www.cracked.com/blog/4-insane-details-cough-syrup-addiction-an-inside-look/
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      cache-control: [no-cache]
+      connection: [keep-alive]
+      content-length: ['0']
+      content-type: [text/html; charset=utf-8]
+      date: ['Tue, 06 Dec 2016 21:10:12 GMT']
+      server: [Apache]
+      set-cookie: ['dmp=desktop:test1; expires=Tue, 13-Dec-2016 21:10:12 GMT; path=/;
+          domain=.cracked.com']
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: https://blog.instantgo.com/why-ratings-play-such-an-essential-part-of-the-expert-score-15de1981a5b0
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      cache-control: ['no-cache, no-store, max-age=0, must-revalidate']
+      connection: [keep-alive]
+      content-length: ['4850']
+      content-security-policy: ['default-src ''self''; connect-src https://localhost
+          https://*.instapaper.com https://*.stripe.com https://getpocket.com https://blog.instantgo.com
+          https://*.blog.instantgo.com https://*.medium.com https://medium.com https://*.medium.com
+          https://*.algolia.net https://cdn-static-1.medium.com https://dnqgz544uhbo8.cloudfront.net
+          https://*.lightstep.com ''self''; font-src data: https://*.amazonaws.com
+          https://*.medium.com https://*.gstatic.com https://dnqgz544uhbo8.cloudfront.net
+          https://use.typekit.net https://cdn-static-1.medium.com ''self''; frame-src
+          chromenull: https: webviewprogressproxy: medium: ''self''; img-src blob:
+          data: https: ''self''; media-src https://*.cdn.vine.co https://d1fcbxp97j4nb2.cloudfront.net
+          https://d262ilb51hltx0.cloudfront.net https://medium2.global.ssl.fastly.net
+          https://*.medium.com https://gomiro.medium.com https://miro.medium.com https://pbs.twimg.com
+          ''self''; object-src ''self''; script-src ''unsafe-eval'' ''unsafe-inline''
+          about: https: ''self''; style-src ''unsafe-inline'' data: https: ''self'';
+          report-uri https://csp.medium.com']
+      content-type: [text/html; charset=utf-8]
+      date: ['Tue, 06 Dec 2016 21:10:18 GMT']
+      expires: ['Thu, 09 Sep 1999 09:09:09 GMT']
+      link: ['<https://medium.com/humans.txt>; rel="humans"']
+      pragma: [no-cache]
+      server: [openresty]
+      set-cookie: ['uid=; path=/; expires=Tue, 06 Dec 2016 21:10:17 GMT; domain=blog.instantgo.com;
+          secure; httponly', 'sid=; path=/; expires=Tue, 06 Dec 2016 21:10:17 GMT;
+          domain=blog.instantgo.com; secure; httponly', 'uid=; path=/; expires=Tue,
+          06 Dec 2016 21:10:17 GMT; domain=.blog.instantgo.com; secure; httponly',
+        'sid=; path=/; expires=Tue, 06 Dec 2016 21:10:17 GMT; domain=.blog.instantgo.com;
+          secure; httponly', 'uid=; path=/; expires=Tue, 06 Dec 2016 21:10:17 GMT;
+          secure; httponly', 'sid=; path=/; expires=Tue, 06 Dec 2016 21:10:17 GMT;
+          secure; httponly']
+      x-content-type-options: [nosniff]
+      x-frame-options: ['']
+      x-obvious-info: ['26532-ed304d7,6fdbc9c']
+      x-obvious-tid: ['1481058618124:37d7e252d316']
+      x-powered-by: [Medium]
+      x-ua-compatible: ['IE=edge, Chrome=1']
+      x-xss-protection: [1; mode=block]
+    status: {code: 409, message: Conflict}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://www.cfl.ca/games/2329/toronto-argonauts-vs-ottawa-redblacks/
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-type: [text/html; charset=UTF-8]
+      date: ['Tue, 06 Dec 2016 21:10:23 GMT']
+      link: ['<http://www.cfl.ca/wp-json/>; rel="https://api.w.org/"']
+      server: [nginx]
+      vary: [Accept-Encoding]
+      via: [1.1 17fbe2e6aa5682781b6ee23bfab1fd28.cloudfront.net (CloudFront)]
+      x-amz-cf-id: [vWTgJogKyPKqG4cFnyVnjiDrVExbfIW_5KFWpCK3SvPD5HFhbnWcwQ==]
+      x-cache: [Miss from cloudfront]
+      x-platform-server: [i-786e54ba]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: https://blogs.nasa.gov/spacestation/2016/09/21/u-s-and-russia-targeting-mid-october-cargo-missions/
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      cache-control: ['max-age=120, public']
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-type: [text/html; charset=UTF-8]
+      date: ['Tue, 06 Dec 2016 21:10:30 GMT']
+      link: ['<https://blogs.nasa.gov/spacestation/wp-json/>; rel="https://api.w.org/"',
+        '<https://blogs.nasa.gov/spacestation/?p=3428>; rel=shortlink']
+      server: [nginx/1.10.1]
+      vary: [Accept-Encoding]
+      x-pingback: ['https://blogs.nasa.gov/spacestation/xmlrpc.php']
+      x-powered-by: [WESTPrime]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://www.nytimes.com/2016/09/25/sports/soccer/wayne-rooney-manchester-united-leicester-city.html?partner=rss&emc=rss&_r=1
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      accept-ranges: [bytes]
+      connection: [close]
+      content-length: ['0']
+      date: ['Tue, 06 Dec 2016 21:10:35 GMT']
+      location: ['http://www.nytimes.com/glogin?URI=http%3A%2F%2Fwww.nytimes.com%2F2016%2F09%2F25%2Fsports%2Fsoccer%2Fwayne-rooney-manchester-united-leicester-city.html%3Fpartner%3Drss%26emc%3Drss%26_r%3D2']
+      retry-after: ['0']
+      server: [Varnish]
+      set-cookie: ['nyt-a=84e419a9bc2f3d6d34563e4128cd511270ed88b5899dc6c1ad27b86097b5f7df;
+          Expires=Wed, 06 Dec 2017 21:10:35 GMT; Path=/; Domain=.nytimes.com']
+      x-api-version: [F-0]
+      x-cache: [HIT]
+      x-cache-hits: ['0']
+      x-frame-options: [DENY]
+      x-pagetype: [article]
+      x-served-by: [cache-lhr6348-LHR]
+    status: {code: 303, message: See Other}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://www.rawstory.com/2016/09/here-are-7-awful-bands-we-can-blame-nirvana-for-inspiring/
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      connection: [keep-alive]
+      content-length: ['162']
+      content-type: [text/html]
+      date: ['Tue, 06 Dec 2016 21:10:35 GMT']
+      keep-alive: [timeout=20]
+      server: [nginx]
+      set-cookie: [X-Mapping-fjhppofk=A9F6AF6B7C803CA54963D722D8688F86; path=/]
+    status: {code: 403, message: Forbidden}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://www.ignant.de/2016/09/19/faces-of-bangkok/
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      connection: [Keep-Alive]
+      content-encoding: [gzip]
+      content-length: ['20']
+      content-type: [text/html; charset=iso-8859-1]
+      date: ['Tue, 06 Dec 2016 21:10:36 GMT']
+      keep-alive: ['timeout=2, max=1000']
+      location: ['http://www.ignant.com/2016/09/19/faces-of-bangkok/']
+      server: [Apache]
+      vary: [Accept-Encoding]
+    status: {code: 301, message: Moved Permanently}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: https://www.zotero.org/groups/nba2k17vccode550
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      cache-control: ['no-store, no-cache, must-revalidate, post-check=0, pre-check=0']
+      content-type: [text/html; charset=utf-8]
+      date: ['Tue, 06 Dec 2016 21:10:37 GMT']
+      expires: ['Thu, 19 Nov 1981 08:52:00 GMT']
+      pragma: [no-cache]
+      server: [Apache/2.4.16 (Amazon)]
+      set-cookie: [zotero_www_session_v2=62rnrbnk0j5l6l734so7bdiul6; path=/; domain=.zotero.org]
+      strict-transport-security: [max-age=31536000; includeSubDomains; preload]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://www.mediaite.com/online/when-are-the-trumpclinton-presidential-debates-2/
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-type: [text/html; charset=UTF-8]
+      date: ['Tue, 06 Dec 2016 21:10:42 GMT']
+      link: ['<http://www.mediaite.com/wp-json/>; rel="https://api.w.org/"']
+      server: [nginx]
+      vary: [Accept-Encoding, Cookie]
+      x-powered-by: [PleskLin]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: https://docs.google.com/forms/d/e/1FAIpQLScGHM2qz3_dW4lVQLwlBRlNdh804VeQXBZh_vh4y4SLdCIhvw/viewform?c=0&w=1
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      alt-svc: ['quic=":443"; ma=2592000; v="35,34"']
+      cache-control: ['no-cache, no-store, max-age=0, must-revalidate']
+      content-length: ['131986']
+      content-type: [text/html; charset=utf-8]
+      date: ['Tue, 06 Dec 2016 21:10:43 GMT']
+      expires: ['Mon, 01 Jan 1990 00:00:00 GMT']
+      p3p: ['CP="This is not a P3P policy! See https://support.google.com/accounts/answer/151657?hl=en
+          for more info."', 'CP="This is not a P3P policy! See https://support.google.com/accounts/answer/151657?hl=en
+          for more info."']
+      pragma: [no-cache]
+      server: [GSE]
+      set-cookie: ['NID=91=CK1ffJdz8LZ_2kIhwn87AmFeGERveg_64JB9ieT6ffhKQ3Bhtt6I0SFuHOHENzYXcbZerPSv-pZtMxqGW8u4LjhQFSLNZNLxfIj3T3z5osyHkUZErnAVDH8Xku9pefCF;Domain=.google.com;Path=/;Expires=Wed,
+          07-Jun-2017 21:10:43 GMT;HttpOnly', 'NID=91=AthORsKcESs1mbLPphM2OSRdk5pu-6YSxD5I9dkYCyA2bkbob9hv3Vw2gMUSCFbkAgaBxAiwKEz7S_hiZwxSujYCtOy7oW9W2LxT3e-2eTr-pvFDS_2CYpH4NKS7qqNx;Domain=.google.com;Path=/;Expires=Wed,
+          07-Jun-2017 21:10:43 GMT;HttpOnly', 'S=spreadsheet_forms=CBkC3AAioNkT4HN4j46jkg2kGDqF_TQg;
+          Domain=.docs.google.com; Expires=Tue, 06-Dec-2016 22:10:43 GMT; Path=/forms/d/e/1FAIpQLScGHM2qz3_dW4lVQLwlBRlNdh804VeQXBZh_vh4y4SLdCIhvw;
+          Secure; HttpOnly']
+      x-content-type-options: [nosniff]
+      x-robots-tag: ['noindex, nofollow, nosnippet']
+      x-xss-protection: [1; mode=block]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://newyork.cbslocal.com/2016/09/23/studen-beat-up-by-teacher/
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-type: [text/html; charset=UTF-8]
+      date: ['Tue, 06 Dec 2016 21:10:44 GMT']
+      link: ['<http://wp.me/pZawQ-5nXL>; rel=shortlink']
+      server: [nginx]
+      set-cookie: [wordpress_test_cookie=WP+Cookie+check; path=/]
+      vary: [Accept-Encoding, Cookie]
+      x-ac: [4.fra _dfw]
+      x-hacker: ['If you''re reading this, you should visit automattic.com/jobs and
+          apply to join the fun, mention this header.']
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://www.mediaite.com/tv/former-president-george-w-bush-makes-president-obama-take-cellphone-pic-of-him/
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-type: [text/html; charset=UTF-8]
+      date: ['Tue, 06 Dec 2016 21:10:44 GMT']
+      link: ['<http://www.mediaite.com/wp-json/>; rel="https://api.w.org/"']
+      server: [nginx]
+      vary: [Accept-Encoding, Cookie]
+      x-powered-by: [PleskLin]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://www.latimes.com/la-fg-china-spy-museum-snap-story.html
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      cache-control: ['public, max-age=296']
+      connection: [keep-alive]
+      content-length: ['299']
+      content-type: [text/html;charset=UTF-8]
+      date: ['Tue, 06 Dec 2016 21:10:51 GMT']
+      httpd-identifier: [web-38b7bb63fece26102954185e88abcee2]
+      location: [/world/asia/la-fg-china-spy-museum-snap-story.html]
+      no-redirect: ['true']
+      server: [Apache-Coyote/1.1]
+      x-instance-name: [i13prod-a5a9c8f-10-82.1]
+      x-ua-compatible: [IE=Edge]
+    status: {code: 301, message: Moved Permanently}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://mashable.com/2016/09/24/eastport-canneries/?utm_campaign=Mash-Prod-RSS-Feedburner-All-Partial&utm_cid=Mash-Prod-RSS-Feedburner-All-Partial
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      accept-ranges: [bytes]
+      cache-control: ['public, private, must-revalidate, max-age=1882091']
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-length: ['28664']
+      content-type: [text/html; charset=utf-8]
+      date: ['Tue, 06 Dec 2016 21:10:56 GMT']
+      server: [nginx/1.8.1]
+      status: [200 OK]
+      vary: [Accept-Encoding]
+      x-akamai-mashable-country: [US]
+      x-cache-hits: ['0']
+      x-cacheable: ['Yes']
+      x-featherlite: ['0']
+      x-request-id: [f25800c74ed9202a797eba324eaa3ec4]
+      x-runtime: ['0.261159']
+      x-served-by: [web4-vir]
+      x-ua-compatible: ['IE=edge,chrome=1,IE=Edge,chrome=1']
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.12.0]
+    method: HEAD
+    uri: http://www.independent.co.uk/sport/rugby/rugby-union/club-rugby/northampton-vs-wasps-match-report-wasps-fine-form-continues-as-they-secure-fourth-consecutive-win-a7327981.html
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      accept-ranges: [bytes]
+      age: ['51200']
+      cache-control: ['no-cache, no-store, max-age=0, must-revalidate']
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-language: [en]
+      content-length: ['17742']
+      content-type: [text/html; charset=utf-8]
+      date: ['Tue, 06 Dec 2016 21:11:02 GMT']
+      etag: ['"1481007461-1"']
+      expires: ['Sun, 19 Nov 1978 05:00:00 GMT']
+      last-modified: ['Wed, 05 Oct 2016 14:21:56 GMT']
+      link: ['<http://www.independent.co.uk/sport/rugby/rugby-union/club-rugby/northampton-vs-wasps-match-report-wasps-fine-form-continues-as-they-secure-fourth-consecutive-win-a7327981.html>;
+          rel="canonical",</sites/all/themes/ines_themes/independent_theme/favicon.ico>;
+          rel="shortcut icon",</sites/all/themes/ines_themes/independent_theme/img/apple-icon-60x60.png>;
+          rel="apple-touch-icon",</sites/all/themes/ines_themes/independent_theme/img/apple-icon-72x72.png>;
+          rel="apple-touch-icon_72x72",</sites/all/themes/ines_themes/independent_theme/img/apple-icon-76x76.png>;
+          rel="apple-touch-icon_76x76",</sites/all/themes/ines_themes/independent_theme/img/apple-icon-114x114.png>;
+          rel="apple-touch-icon_114x114",</sites/all/themes/ines_themes/independent_theme/img/apple-icon-120x120.png>;
+          rel="apple-touch-icon_120x120",</sites/all/themes/ines_themes/independent_theme/img/apple-icon-144x144.png>;
+          rel="apple-touch-icon_144x144",</sites/all/themes/ines_themes/independent_theme/img/apple-icon-152x152.png>;
+          rel="apple-touch-icon_152x152",</sites/all/themes/ines_themes/independent_theme/img/apple-icon-180x180.png>;
+          rel="apple-touch-icon_180x180",</sites/all/themes/ines_themes/independent_theme/img/android-icon-36x36.png>;
+          rel="android-icon_36x36",</sites/all/themes/ines_themes/independent_theme/img/android-icon-48x48.png>;
+          rel="android-icon_48x48",</sites/all/themes/ines_themes/independent_theme/img/android-icon-72x72.png>;
+          rel="android-icon_72x72",</sites/all/themes/ines_themes/independent_theme/img/android-icon-96x96.png>;
+          rel="android-icon_96x96",</sites/all/themes/ines_themes/independent_theme/img/android-icon-114x114.png>;
+          rel="android-icon_114x114",</sites/all/themes/ines_themes/independent_theme/img/android-icon-192x192.png>;
+          rel="android-icon_192x192",</sites/all/themes/ines_themes/independent_theme/img/ms-icon-70x70.png>;
+          rel="ms-icon_70x70",</sites/all/themes/ines_themes/independent_theme/img/ms-icon-144x144.png>;
+          rel="ms-icon_144x144",</sites/all/themes/ines_themes/independent_theme/img/ms-icon-150x150.png>;
+          rel="ms-icon_150x150",</sites/all/themes/ines_themes/independent_theme/img/ms-icon-310x310.png>;
+          rel="ms-icon_310x310"']
+      server: [nginx]
+      set-cookie: [Locale=UK]
+      vary: ['Accept-Encoding, Locale']
+      via: [1.1 varnish, 1.1 varnish]
+      x-ah-environment: [prod]
+      x-cache: ['MISS, HIT']
+      x-cache-hits: ['1']
+      x-content-type-options: [nosniff]
+      x-drupal-cache: [MISS]
+      x-frame-options: [SAMEORIGIN]
+      x-generator: ['Drupal 7 (http://drupal.org)']
+      x-request-id: [v-47d55b08-bb81-11e6-a21b-22000b0a13de]
+      x-served-by: [cache-lhr6343-LHR]
+      x-timer: ['S1481058662.336688,VS0,VE1']
+    status: {code: 200, message: OK}
 version: 1

@@ -15,7 +15,7 @@ class ScraperIntegrationTests(unittest.TestCase):
     #   delete test_run_scraper.yaml
     #   set record_mode='once'
     def test_scrap(self):
-        nb_doc = 12  # <20 to keep test under 2sec, 20 minus 8 filtered
+        nb_doc = 4  # to keep test short
         curr_doc = 0
         scraper = Scraper(disconnected=True)
         directory = os.path.dirname(os.path.abspath(__file__))
@@ -30,7 +30,8 @@ class ScraperIntegrationTests(unittest.TestCase):
                 if curr_doc == nb_doc:
                     break
             else:
-                self.fail('error: not enough docs extracted from cassette, should be ' + str(nb_doc) + ', was ' + curr_doc)
+                self.fail('error: not enough docs extracted from cassette, should be '
+                          + str(nb_doc) + ', was ' + str(curr_doc))
 
 if __name__ == '__main__':
     unittest.main()

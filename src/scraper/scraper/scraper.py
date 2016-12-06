@@ -33,9 +33,13 @@ class _HtmlExtractor(object):
         # set field instead of direct static call to be able to mock/override imported 'requests' module in some tests
         self._requests = requests
 
-    def try_get_html(self, url):
+    def try_get_html(self, url):  # pylint: disable=too-many-return-statements
         try:
             LOGGER.debug('get html from url[%s]', url)
+            head_response = self._requests.head(url, timeout=0.5)
+            if not "text/html" in head_response.headers["Content-Type"]:
+                LOGGER.info('filtered: not html, url:%s', url)
+                return None
             data = self._requests.get(url, timeout=2)  # make the http request
             header_encoding = data.encoding
             if not header_encoding:
@@ -88,7 +92,7 @@ def _get_invalid_regex():
 
 def _scrap(disconnected):
     invalid_paths_regex = _get_invalid_regex()
-    invalid_extensions = ['.jpg', '.gif', '.png', '.webm']
+    invalid_extensions = ['.jpg', '.gif', '.png', '.webm', '.zip']
     links_elts = reddit_link_elements_generator(disconnected)
     filtered_links = (link for link in links_elts if _is_valid_link(link, invalid_paths_regex, invalid_extensions))
     docs = _get_doc_generator(filtered_links)
