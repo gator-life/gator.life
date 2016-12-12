@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import logging
 from common.log import init_gcloud_log
 from flask import Flask
 from server.environment import IS_TEST_ENV, GCLOUD_PROJECT
@@ -13,6 +14,8 @@ if not IS_TEST_ENV:
         sys.path += f.readlines()
 
 init_gcloud_log(GCLOUD_PROJECT, u'server', IS_TEST_ENV)
+logging.getLogger().setLevel(logging.DEBUG)
+logging.getLogger().info('start server logging')
 # This variable is referenced by gunicorn in
 #  - entrypoint section of app.yaml file,
 #  - tools/start_server.sh

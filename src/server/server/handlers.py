@@ -125,3 +125,21 @@ def link(action_type_on_doc, url_hash):
             return redirect('/')
     else:
         return redirect('/login')
+
+
+@handlers.errorhandler(404)
+def page_not_found(exception):
+    LOGGER.exception('Error 404')
+    return str(exception)
+
+
+@handlers.errorhandler(500)
+def internal_server_error(exception):
+    LOGGER.exception('Error 500')
+    return str(exception)
+
+
+@handlers.errorhandler(Exception)
+def unhandled_exception(exception):
+    LOGGER.exception('Error exception')
+    return str(exception)

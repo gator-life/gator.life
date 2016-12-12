@@ -50,6 +50,7 @@ class DalUserDocMock(object):
     def save_user_docs(user, user_docs):  # pylint: disable=unused-argument
         pass
 
+
 class DalFeatureSetMock(object):
 
     @staticmethod
@@ -80,17 +81,11 @@ class DalDocMock(object):
         return None
 
     @staticmethod
-    def get_recent_doc_url_hashes(from_datetime, max_nb_docs):  # pylint: disable=unused-argument
+    def get_recent_docs(from_datetime, max_nb_docs):  # pylint: disable=unused-argument
         if max_nb_docs != 1000:
             raise ValueError(max_nb_docs)
-        return ['url_hash']
-
-    @staticmethod
-    def get_docs(url_hashes):
-        if len(url_hashes) == 1 and url_hashes[0] == 'url_hash':
-            feature_vector = struct.FeatureVector.make_from_scratch([1, 1], DalFeatureSetMock.get_ref_feature_set_id())
-            return [struct.Document.make_from_scratch('url', 'urh_hash', 'title', 's', feature_vector)]
-        raise ValueError(url_hashes)
+        feature_vector = struct.FeatureVector.make_from_scratch([1, 1], DalFeatureSetMock.get_ref_feature_set_id())
+        return [struct.Document.make_from_scratch('url', 'urh_hash', 'title', 's', feature_vector)]
 
 
 class DalUserActionMock(object):
