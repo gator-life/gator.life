@@ -37,6 +37,9 @@ class _HtmlExtractor(object):
         try:
             LOGGER.debug('get html from url[%s]', url)
             head_response = self._requests.head(url, timeout=0.5)
+            if "Content-Type" not in head_response.headers:
+                LOGGER.info('filtered: missing Content-Type header, url:%s', url)
+                return None
             if not "text/html" in head_response.headers["Content-Type"]:
                 LOGGER.info('filtered: not html, url:%s', url)
                 return None
