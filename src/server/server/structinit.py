@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import logging
 import common.crypto as crypto
 from common.datehelper import utcnow
 from learner.topicmodelapprox import TopicModelApproxClassifier
@@ -7,6 +8,9 @@ from learner.userprofiler import UserProfiler
 from learner.learner import UserDocumentsAccumulator, UserData
 import nltk
 from . import frontendstructs as struct
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class UserCreator(object):
@@ -46,9 +50,13 @@ class _ProfileInitializer(object):
 
     def get_new_profile(self, interests):
         words = []
+        if LOGGER.isEnabledFor(logging.DEBUG):
+            LOGGER.debug('tokenize interests [%s]', '-'.join(interests))
         for sentence in interests:
             words_this_sentence = nltk.word_tokenize(sentence)
             words += [word.lower()for word in words_this_sentence]
+        if LOGGER.isEnabledFor(logging.DEBUG):
+            LOGGER.debug('classify interests [%s]', '-'.join(words))
         explicit_vector = self._classifier.compute_classified_vector(words)
         zero_vec = [0] * self._nb_topics
         model_data = struct.UserProfileModelData.make_from_scratch(explicit_vector, zero_vec, zero_vec, 0, 0)
@@ -61,10 +69,11 @@ class _ProfileInitializer(object):
 
 def _get_user_docs(dal, user_feature_vector, min_date_docs, nb_user_docs):
     # limit to 1000 so we can call dal.doc.get_docs (fails above 1000 in datastore)
-    url_hashes = dal.doc.get_recent_doc_url_hashes(min_date_docs, max_nb_docs=1000)
-    docs = dal.doc.get_docs(url_hashes)
+    LOGGER.debug('get user docs, nb_user_docs[%s] min_date_docs[%s]', nb_user_docs, min_date_docs)
+    docs = dal.doc.get_recent_docs(min_date_docs, max_nb_docs=1000)
     user_feat_set_id = user_feature_vector.feature_set_id
-    valid_docs = (doc for doc in docs if doc.feature_vector.feature_set_id == user_feat_set_id)
+    valid_docs = [doc for doc in docs if doc.feature_vector.feature_set_id == user_feat_set_id]
+    LOGGER.debug('accumulate docs, nb valid_docs[%s]', len(valid_docs))
     doc_accu = UserDocumentsAccumulator([UserData(user_feature_vector.vector, [])], nb_user_docs)
     for doc in valid_docs:
         doc_accu.add_doc(doc, doc.feature_vector.vector)
