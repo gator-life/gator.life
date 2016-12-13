@@ -8,6 +8,7 @@ import datetime
 import logging
 import httplib2
 import google.cloud.datastore as datastore  # pylint: disable=import-error
+from google.auth.credentials import Credentials
 from .environment import GCLOUD_PROJECT, IS_TEST_ENV
 from . import frontendstructs as struct
 
@@ -98,7 +99,7 @@ def _to_doc(db_doc):
 
 def _datastore_test_client():
 
-    class _EmulatorCreds(object):
+    class _EmulatorCreds(Credentials):
         """
         mock of credentials for local datastore
         cf. https://github.com/GoogleCloudPlatform/gcloud-python/issues/1839
@@ -106,6 +107,9 @@ def _datastore_test_client():
         @staticmethod
         def create_scoped_required():
             return False
+
+        def refresh(self, request):
+            pass
 
     credentials = _EmulatorCreds()
     http = httplib2.Http()  # Un-authorized.
