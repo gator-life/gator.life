@@ -14,7 +14,7 @@ from server.environment import IS_TEST_ENV
 LOGGER = logging.getLogger(__name__)
 
 
-def scrap_learn(topic_model, users, nb_docs, start_cache_date):
+def scrap_learn(topic_model, users, nb_docs, seen_url_hashes_set):
 
     class NoActionSaver(object):
 
@@ -26,12 +26,12 @@ def scrap_learn(topic_model, users, nb_docs, start_cache_date):
     user_docs_max_size = 30
     docs_chunk_size = 1000
 
-    _scrap_and_learn(scraper, doc_saver, topic_model, docs_chunk_size, user_docs_max_size, start_cache_date,
+    _scrap_and_learn(scraper, doc_saver, topic_model, docs_chunk_size, user_docs_max_size, seen_url_hashes_set,
                      users, nb_docs)
 
 
 def _scrap_and_learn(  # pylint: disable=too-many-arguments
-        scraper, scraper_doc_saver, topic_modeller, docs_chunk_size, user_docs_max_size, seen_urls_cache_start_date,
+        scraper, scraper_doc_saver, topic_modeller, docs_chunk_size, user_docs_max_size, seen_url_hashes_set,
         users, nb_docs):
     """
     internal scrap_learn so we can inject mocks
@@ -40,15 +40,15 @@ def _scrap_and_learn(  # pylint: disable=too-many-arguments
     LOGGER.info(u'start scrap_learn, '
                 u'docs_chunk_size[%s]'
                 u'user_docs_max_size[%s]'
-                u'seen_urls_cache_start_date[%s]'
+                u'seen_urls_hashes_set size[%s]'
                 u'nb users[%s]'
                 u'nb_docs[%s]'
                 u'Memory(Mb)[%s]',
-                docs_chunk_size, user_docs_max_size, seen_urls_cache_start_date, len(users), nb_docs,
+                docs_chunk_size, user_docs_max_size, len(seen_url_hashes_set), len(users), nb_docs,
                 get_process_memory())
 
     doc_builder = DocBuilder(topic_modeller)
-    scraper_filtered = ScraperFiltered(scraper, nb_docs, seen_urls_cache_start_date)
+    scraper_filtered = ScraperFiltered(scraper, nb_docs, seen_url_hashes_set)
     doc_saver = UserDocSaverByChunk(docs_chunk_size, UserDocChunkSaver(), scraper_doc_saver)
     user_docs_accumulator = _build_user_docs_accumulator(users, user_docs_max_size)
 
@@ -74,10 +74,10 @@ def _execute_learn_loop(doc_builder, doc_saver, scraper_filtered, user_docs_accu
 
 class ScraperFiltered(object):
 
-    def __init__(self, scraper, nb_docs, seen_urls_cache_start_date):
+    def __init__(self, scraper, nb_docs, seen_url_hashes_set):
         self._scraper = scraper
         self._nb_docs = nb_docs
-        self._url_hashes = set(Dal().doc.get_recent_doc_url_hashes(seen_urls_cache_start_date))
+        self._url_hashes = seen_url_hashes_set
         self._current_doc_count = 0
         LOGGER.info(u'ScraperFiltered constructed with [%s] urls', len(self._url_hashes))
 
