@@ -8,7 +8,7 @@ import server.frontendstructs as struct
 from common.datehelper import utcnow
 
 
-class DalTests(unittest.TestCase):
+class DalFeatureSetTests(unittest.TestCase):
 
     def setUp(self):
         self.dal = sdal.Dal()
@@ -34,6 +34,12 @@ class DalTests(unittest.TestCase):
             feature_set_id=u'test_save_then_get_empty_features_feature_set_id', feature_names=[], model_id=None))
         feature_set = self.dal.feature_set.get_feature_set(u'test_save_then_get_empty_features_feature_set_id')
         self.assertEquals([], feature_set.feature_names)
+
+
+class DalUserTests(unittest.TestCase):
+
+    def setUp(self):
+        self.dal = sdal.Dal()
 
     def test_get_user_with_unknown_user_should_return_none(self):
         self.assertIsNone(self.dal.user.get_user(u'missing_user'))
@@ -72,6 +78,12 @@ class DalTests(unittest.TestCase):
         result = self.dal.user.get_user(email)
         self.assert_users_equals(user2, result)
 
+    def test_get_user_no_interest(self):
+        expected_user = struct.User.make_from_scratch(u"test_get_user_no_interest", [])
+        self.dal.user.save_user(expected_user, u"password")
+        result_user = self.dal.user.get_user(u"test_get_user_no_interest")
+        self.assert_users_equals(expected_user, result_user)
+
     def assert_users_equals(self, expected_user, result_user):
         self.assertEquals(expected_user.email, result_user.email)
         self.assertEquals(expected_user.interests, result_user.interests)
@@ -93,10 +105,16 @@ class DalTests(unittest.TestCase):
         all_users_this_test = [user for user in all_users if user._db_key in all_user_keys]
         self.assertEquals(3, len(all_users_this_test))
 
+
+class DalUserDocTests(unittest.TestCase):
+
+    def setUp(self):
+        self.dal = sdal.Dal()
+
     def test_save_then_get_user_docs_should_be_equals(self):
         # setup : init docs in database
-        doc1 = self.make_dummy_doc(u'test_save_then_get_user_docs_should_be_equals1')
-        doc2 = self.make_dummy_doc(u'test_save_then_get_user_docs_should_be_equals2')
+        doc1 = make_dummy_doc(self.dal, u'test_save_then_get_user_docs_should_be_equals1')
+        doc2 = make_dummy_doc(self.dal, u'test_save_then_get_user_docs_should_be_equals2')
         self.dal.doc.save_documents([doc1, doc2])
 
         expected_user_docs = [
@@ -115,8 +133,52 @@ class DalTests(unittest.TestCase):
             self.assertEquals(expected.grade, result.grade)
             self.assertEquals(expected.document.title, result.document.title)
 
+    def test_save_then_get_users_docs_should_be_equals(self):
+
+        doc1 = make_dummy_doc(self.dal, u'test_save_then_get_users_docs_should_be_equals1')
+        doc2 = make_dummy_doc(self.dal, u'test_save_then_get_users_docs_should_be_equals2')
+        self.dal.doc.save_documents([doc1, doc2])
+
+        # create user and save it to init user_doc_set_key field
+        user1 = struct.User.make_from_scratch(u"test_get_users_docs1", [u"interests1"])
+        user2 = struct.User.make_from_scratch(u"test_get_users_docs2", [u"interests2"])
+        self.dal.user.save_user(user1, u"password1")
+        self.dal.user.save_user(user2, u"password2")
+
+        expected_user1_docs = [
+            struct.UserDocument.make_from_scratch(doc1, 0.1),
+            struct.UserDocument.make_from_scratch(doc2, 0.2)]
+        expected_user2_docs = [
+            struct.UserDocument.make_from_scratch(doc1, 0.3)]
+
+        self.dal.user_doc.save_users_docs([(user1, expected_user1_docs), (user2, expected_user2_docs)])
+        user_docs_by_user = self.dal.user_doc.get_users_docs((user2, user1))
+
+        self.assertEqual(2, len(user_docs_by_user))
+        result_user2 = user_docs_by_user[0]
+        result_user1 = user_docs_by_user[1]
+        self.assertEqual(1, len(result_user2))
+        self.assertEqual(2, len(result_user1))
+        self.assertEqual(0.3, result_user2[0].grade)
+        self.assertEqual(0.1, result_user1[0].grade)
+        self.assertEqual(0.2, result_user1[1].grade)
+        self.assertEqual(result_user1[0].document, result_user2[0].document)  # check that we use the same reference
+        self.assertEqual(doc2.title, result_user1[1].document.title)
+
+    def test_get_users_docs_zero_docs(self):
+        user = struct.User.make_from_scratch(u"test_get_users_docs_zero_docs_user", [u"interests1"])
+        self.dal.user.save_user(user, u"password")
+        docs = self.dal.user_doc.get_users_docs([user])[0]
+        self.assertEquals([], docs)
+
+
+class DalDocTests(unittest.TestCase):
+
+    def setUp(self):
+        self.dal = sdal.Dal()
+
     def test_save_documents(self):
-        feature_set_id = self.build_dummy_db_feature_set()
+        feature_set_id = build_dummy_db_feature_set(self.dal)
         feat_vec1 = struct.FeatureVector.make_from_scratch(vector=[0.5, 0.6], feature_set_id=feature_set_id)
         feat_vec2 = struct.FeatureVector.make_from_scratch(vector=[1.5, 0.6], feature_set_id=feature_set_id)
 
@@ -134,8 +196,8 @@ class DalTests(unittest.TestCase):
             self._assert_doc_equals(expected_doc, result_doc)
 
     def test_save_two_docs_with_same_url_hash_override_first(self):
-        doc1 = self.make_dummy_doc(u'test_save_two_docs_with_same_url_hash_override_first_1')
-        doc2 = self.make_dummy_doc(u'test_save_two_docs_with_same_url_hash_override_first_2')
+        doc1 = make_dummy_doc(self.dal, u'test_save_two_docs_with_same_url_hash_override_first_1')
+        doc2 = make_dummy_doc(self.dal, u'test_save_two_docs_with_same_url_hash_override_first_2')
         doc2.url_hash = doc1.url_hash
 
         self.dal.doc.save_documents([doc1])
@@ -143,6 +205,79 @@ class DalTests(unittest.TestCase):
 
         result_doc = self.dal.doc.get_doc(doc1.url_hash)
         self._assert_doc_equals(doc2, result_doc)
+
+    def test_get_doc(self):
+        doc = make_dummy_doc(self.dal, u'test_get_doc')
+        self.dal.doc.save_documents([doc])
+        result_doc = self.dal.doc.get_doc(doc.url_hash)
+        self._assert_doc_equals(doc, result_doc)
+
+    def test_get_docs(self):
+        doc1 = make_dummy_doc(self.dal, u'test_get_docs_1')
+        doc2 = make_dummy_doc(self.dal, u'test_get_docs_2')
+        self.dal.doc.save_documents([doc1, doc2])
+        result_docs = self.dal.doc.get_docs([doc1.url_hash, doc2.url_hash])
+        self._assert_doc_equals(doc1, result_docs[0])
+        self._assert_doc_equals(doc2, result_docs[1])
+
+    def test_save_doc_with_datetime_keep_it(self):
+        doc = make_dummy_doc(self.dal, u'test_save_doc_with_datetime_keep_it')
+        doc.datetime = utcnow()
+        self.dal.doc.save_documents([doc])
+        saved_doc = self.dal.doc.get_doc(doc.url_hash)
+        self.assertEquals(doc.datetime, saved_doc.datetime)
+
+    def test_get_recent_doc_url_hashes(self):
+
+        doc_before = make_dummy_doc(self.dal, u'get_recent_doc_url_hashes_before')
+        doc_above_nb_max = make_dummy_doc(self.dal, u'get_recent_doc_url_hashes_above_max')
+        doc1 = make_dummy_doc(self.dal, u'get_recent_doc_url_hashes_1')
+        doc2 = make_dummy_doc(self.dal, u'get_recent_doc_url_hashes_2')
+
+        self.dal.doc.save_documents([doc_before])
+        min_datetime = utcnow()
+        self.dal.doc.save_documents([doc_above_nb_max])
+        self.dal.doc.save_documents([doc1])
+        self.dal.doc.save_documents([doc2])
+        url_hashes = self.dal.doc.get_recent_doc_url_hashes(min_datetime, 2)
+        self.assertEquals(2, len(url_hashes))
+        self.assertTrue(doc1.url_hash in url_hashes)
+        self.assertTrue(doc2.url_hash in url_hashes)
+        url_hashes_no_max_nb_docs = self.dal.doc.get_recent_doc_url_hashes(min_datetime)
+        self.assertEquals(3, len(url_hashes_no_max_nb_docs))
+
+    def test_get_recent_docs(self):
+        doc_before = make_dummy_doc(self.dal, u'get_recent_docs_before')
+        doc_above_nb_max = make_dummy_doc(self.dal, u'get_recent_docs_above_max')
+        doc1 = make_dummy_doc(self.dal, u'get_recent_docs_1')
+        doc2 = make_dummy_doc(self.dal, u'get_recent_docs_2')
+
+        self.dal.doc.save_documents([doc_before])
+        min_datetime = utcnow()
+        self.dal.doc.save_documents([doc_above_nb_max])
+        self.dal.doc.save_documents([doc1])
+        self.dal.doc.save_documents([doc2])
+        docs = self.dal.doc.get_recent_docs(min_datetime, 2)
+        self.assertEquals(2, len(docs))
+        url_hashes = [doc.url_hash for doc in docs]
+        self.assertTrue(doc1.url_hash in url_hashes)
+        self.assertTrue(doc2.url_hash in url_hashes)
+        docs_no_max_nb_docs = self.dal.doc.get_recent_docs(min_datetime)
+        self.assertEquals(3, len(docs_no_max_nb_docs))
+
+    def _assert_doc_equals(self, expected_doc, result_doc):
+        self.assertEquals(expected_doc.url, result_doc.url)
+        self.assertEquals(expected_doc.url_hash, result_doc.url_hash)
+        self.assertEquals(expected_doc.title, result_doc.title)
+        self.assertEquals(expected_doc.summary, result_doc.summary)
+        self.assertEquals(expected_doc.feature_vector.vector, result_doc.feature_vector.vector)
+        self.assertEquals(expected_doc.feature_vector.feature_set_id, result_doc.feature_vector.feature_set_id)
+
+
+class DalUserComputedProfileTests(unittest.TestCase):
+
+    def setUp(self):
+        self.dal = sdal.Dal()
 
     def test_save_then_get_user_computed_profiles(self):
         user1, profile1 = self._build_profile(1)
@@ -198,7 +333,7 @@ class DalTests(unittest.TestCase):
         self._assert_feature_vector_equals(profile.feature_vector, vector)
 
     def _build_profile(self, index):
-        feature_set_id = self.build_dummy_db_feature_set()
+        feature_set_id = build_dummy_db_feature_set(self.dal)
         user = struct.User.make_from_scratch(email=u'user' + str(index), interests=[u'interests' + str(index)])
         self.dal.user.save_user(user, u'password' + str(index))
         feature_vector = struct.FeatureVector.make_from_scratch(
@@ -223,61 +358,15 @@ class DalTests(unittest.TestCase):
         self.assertEquals(expected_model_data.positive_feedback_sum_coeff, result_model_data.positive_feedback_sum_coeff)
         self.assertEquals(expected_model_data.negative_feedback_sum_coeff, result_model_data.negative_feedback_sum_coeff)
 
-    def _assert_doc_equals(self, expected_doc, result_doc):
-        self.assertEquals(expected_doc.url, result_doc.url)
-        self.assertEquals(expected_doc.url_hash, result_doc.url_hash)
-        self.assertEquals(expected_doc.title, result_doc.title)
-        self.assertEquals(expected_doc.summary, result_doc.summary)
-        self.assertEquals(expected_doc.feature_vector.vector, result_doc.feature_vector.vector)
-        self.assertEquals(expected_doc.feature_vector.feature_set_id, result_doc.feature_vector.feature_set_id)
 
-    def test_save_then_get_users_docs_should_be_equals(self):
+class DalUserActionOnDocTests(unittest.TestCase):
 
-        doc1 = self.make_dummy_doc(u'test_save_then_get_users_docs_should_be_equals1')
-        doc2 = self.make_dummy_doc(u'test_save_then_get_users_docs_should_be_equals2')
-        self.dal.doc.save_documents([doc1, doc2])
-
-        # create user and save it to init user_doc_set_key field
-        user1 = struct.User.make_from_scratch(u"test_get_users_docs1", [u"interests1"])
-        user2 = struct.User.make_from_scratch(u"test_get_users_docs2", [u"interests2"])
-        self.dal.user.save_user(user1, u"password1")
-        self.dal.user.save_user(user2, u"password2")
-
-        expected_user1_docs = [
-            struct.UserDocument.make_from_scratch(doc1, 0.1),
-            struct.UserDocument.make_from_scratch(doc2, 0.2)]
-        expected_user2_docs = [
-            struct.UserDocument.make_from_scratch(doc1, 0.3)]
-
-        self.dal.user_doc.save_users_docs([(user1, expected_user1_docs), (user2, expected_user2_docs)])
-        user_docs_by_user = self.dal.user_doc.get_users_docs((user2, user1))
-
-        self.assertEqual(2, len(user_docs_by_user))
-        result_user2 = user_docs_by_user[0]
-        result_user1 = user_docs_by_user[1]
-        self.assertEqual(1, len(result_user2))
-        self.assertEqual(2, len(result_user1))
-        self.assertEqual(0.3, result_user2[0].grade)
-        self.assertEqual(0.1, result_user1[0].grade)
-        self.assertEqual(0.2, result_user1[1].grade)
-        self.assertEqual(result_user1[0].document, result_user2[0].document)  # check that we use the same reference
-        self.assertEqual(doc2.title, result_user1[1].document.title)
-
-    def test_get_users_docs_zero_docs(self):
-        user = struct.User.make_from_scratch(u"test_get_users_docs_zero_docs_user", [u"interests1"])
-        self.dal.user.save_user(user, u"password")
-        docs = self.dal.user_doc.get_users_docs([user])[0]
-        self.assertEquals([], docs)
-
-    def test_get_user_no_interest(self):
-        expected_user = struct.User.make_from_scratch(u"test_get_user_no_interest", [])
-        self.dal.user.save_user(expected_user, u"password")
-        result_user = self.dal.user.get_user(u"test_get_user_no_interest")
-        self.assert_users_equals(expected_user, result_user)
+    def setUp(self):
+        self.dal = sdal.Dal()
 
     def test_save_then_get_user_actions_on_doc(self):
-        doc1 = self.make_dummy_doc(u'test_save_then_get_user_actions_on_doc1')
-        doc2 = self.make_dummy_doc(u'test_save_then_get_user_actions_on_doc2')
+        doc1 = make_dummy_doc(self.dal, u'test_save_then_get_user_actions_on_doc1')
+        doc2 = make_dummy_doc(self.dal, u'test_save_then_get_user_actions_on_doc2')
         self.dal.doc.save_documents([doc1, doc2])
         user1 = struct.User.make_from_scratch(u"test_save_then_get_user_actions_on_doc1", [u"interests1"])
         user2 = struct.User.make_from_scratch(u"test_save_then_get_user_actions_on_doc2", [u"interests2"])
@@ -307,56 +396,17 @@ class DalTests(unittest.TestCase):
         self.assertTrue(min_datetime < user2_action.datetime)
         self.assertEquals(2, len(user1_actions))
 
-    def make_dummy_doc(self, str_id):
-        feature_set_id = self.build_dummy_db_feature_set()
-        feat_vec = struct.FeatureVector.make_from_scratch(vector=[0.2], feature_set_id=feature_set_id)
-        return struct.Document.make_from_scratch(
-            url=u'url_' + str_id,
-            url_hash=u'url_hash_' + str_id,
-            title=u'title' + str_id,
-            summary=u's_' + str_id,
-            feature_vector=feat_vec)
-
     # for each static member of the class (remove special fields __***__), check we do a proper round-trip with database
     def test_action_type_on_doc_mapping_with_db(self):
         for enum_name, enum_value in vars(struct.UserActionTypeOnDoc).iteritems():
             if not enum_name.startswith("__"):
                 self.assertEquals(enum_value, sdal._to_user_action_type_on_doc(sdal._to_db_action_type_on_doc(enum_value)))
 
-    def test_get_doc(self):
-        doc = self.make_dummy_doc(u'test_get_doc')
-        self.dal.doc.save_documents([doc])
-        result_doc = self.dal.doc.get_doc(doc.url_hash)
-        self._assert_doc_equals(doc, result_doc)
 
-    def test_get_docs(self):
-        doc1 = self.make_dummy_doc(u'test_get_docs_1')
-        doc2 = self.make_dummy_doc(u'test_get_docs_2')
-        self.dal.doc.save_documents([doc1, doc2])
-        result_docs = self.dal.doc.get_docs([doc1.url_hash, doc2.url_hash])
-        self._assert_doc_equals(doc1, result_docs[0])
-        self._assert_doc_equals(doc2, result_docs[1])
+class DalTopicModelDescriptionTests(unittest.TestCase):
 
-    def test_save_doc_with_datetime_keep_it(self):
-        doc = self.make_dummy_doc(u'test_save_doc_with_datetime_keep_it')
-        doc.datetime = utcnow()
-        self.dal.doc.save_documents([doc])
-        saved_doc = self.dal.doc.get_doc(doc.url_hash)
-        self.assertEquals(doc.datetime, saved_doc.datetime)
-
-    def test_get_recent_doc_url_hashes(self):
-
-        doc_before = self.make_dummy_doc(u'get_recent_doc_url_hashes_before')
-        doc1 = self.make_dummy_doc(u'get_recent_doc_url_hashes_1')
-        doc2 = self.make_dummy_doc(u'get_recent_doc_url_hashes_2')
-
-        self.dal.doc.save_documents([doc_before])
-        min_datetime = utcnow()
-        self.dal.doc.save_documents([doc1, doc2])
-        url_hashes = self.dal.doc.get_recent_doc_url_hashes(min_datetime)
-        self.assertEquals(2, len(url_hashes))
-        self.assertTrue(doc1.url_hash in url_hashes)
-        self.assertTrue(doc2.url_hash in url_hashes)
+    def setUp(self):
+        self.dal = sdal.Dal()
 
     def test_save_then_get_topic_model_description(self):
 
@@ -379,11 +429,22 @@ class DalTests(unittest.TestCase):
                 self.assertEquals(expected_topic_word.word, result_topic_word.word)
                 self.assertEquals(expected_topic_word.weight, result_topic_word.weight)
 
-    def build_dummy_db_feature_set(self):
-        self.dal.feature_set.save_feature_set(
-            struct.FeatureSet.make_from_scratch(feature_set_id=u'set', feature_names=[u'desc2', u'desc1'], model_id=None))
-        return 'set'
 
+def build_dummy_db_feature_set(dal):
+    dal.feature_set.save_feature_set(
+        struct.FeatureSet.make_from_scratch(feature_set_id=u'set', feature_names=[u'desc2', u'desc1'], model_id=None))
+    return 'set'
+
+
+def make_dummy_doc(dal, str_id):
+    feature_set_id = build_dummy_db_feature_set(dal)
+    feat_vec = struct.FeatureVector.make_from_scratch(vector=[0.2], feature_set_id=feature_set_id)
+    return struct.Document.make_from_scratch(
+        url=u'url_' + str_id,
+        url_hash=u'url_hash_' + str_id,
+        title=u'title' + str_id,
+        summary=u's_' + str_id,
+        feature_vector=feat_vec)
 
 if __name__ == '__main__':
     unittest.main()

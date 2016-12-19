@@ -60,3 +60,8 @@ target/
 /google_appengine_1.9.28.zip
 global_env/
 /appengine_env/
+src/server/nltk_data/
+src/server/common/
+src/server/learner/
+
+google-cloud-sdk-*

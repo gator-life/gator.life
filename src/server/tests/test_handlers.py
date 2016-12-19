@@ -30,7 +30,8 @@ class DalUserMock(object):
 
 class DalUserDocMock(object):
 
-    def get_user_docs(self, user):  # pylint: disable=unused-argument, no-self-use
+    @staticmethod
+    def get_user_docs(user):  # pylint: disable=unused-argument
         def build_user_doc(title):
             return struct.UserDocument.make_from_scratch(
                 struct.Document.make_from_scratch(None, None, title, None, None),
@@ -45,6 +46,10 @@ class DalUserDocMock(object):
                 build_user_doc('rocket')]
         return None
 
+    @staticmethod
+    def save_user_docs(user, user_docs):  # pylint: disable=unused-argument
+        pass
+
 
 class DalFeatureSetMock(object):
 
@@ -54,7 +59,7 @@ class DalFeatureSetMock(object):
 
     def get_feature_set(self, feature_set_id):
         if feature_set_id == self.get_ref_feature_set_id():
-            return struct.FeatureSet.make_from_db(feature_set_id, ['label1'], None)
+            return struct.FeatureSet.make_from_db(feature_set_id, ['l1', 'l2'], DalTopicModelMock.topic_model_id)
         return None
 
 
@@ -69,10 +74,18 @@ class DalUserComputedProfileMock(object):
 
 class DalDocMock(object):
 
-    def get_doc(self, url_hash):  # pylint: disable=unused-argument, no-self-use
+    @staticmethod
+    def get_doc(url_hash):
         if url_hash == 'url_hash':
             return struct.Document.make_from_scratch('url3', None, 'title3', None, None)
         return None
+
+    @staticmethod
+    def get_recent_docs(from_datetime, max_nb_docs):  # pylint: disable=unused-argument
+        if max_nb_docs != 1000:
+            raise ValueError(max_nb_docs)
+        feature_vector = struct.FeatureVector.make_from_scratch([1, 1], DalFeatureSetMock.get_ref_feature_set_id())
+        return [struct.Document.make_from_scratch('url', 'urh_hash', 'title', 's', feature_vector)]
 
 
 class DalUserActionMock(object):
@@ -84,6 +97,22 @@ class DalUserActionMock(object):
         self.saved_user_doc_action_tuple = (user, document, action_on_doc)
 
 
+class DalTopicModelMock(object):
+
+    topic_model_id = 'DalTopicModelMock_topic_model_id'
+
+    def __init__(self):
+        self._topic_model = struct.TopicModelDescription.make_from_scratch(self.topic_model_id, [
+            [('word', 1)],
+            [('word2', 1)]
+        ])
+
+    def get(self, model_id):
+        if model_id == self.topic_model_id:
+            return self._topic_model
+        raise ValueError(model_id)
+
+
 class DalMock(object):
 
     def __init__(self):
@@ -93,6 +122,7 @@ class DalMock(object):
         self.feature_set = DalFeatureSetMock()
         self.user_doc = DalUserDocMock()
         self.user = DalUserMock()
+        self.topic_model = DalTopicModelMock()
 
 
 class HandlersTests(unittest.TestCase):
@@ -104,7 +134,7 @@ class HandlersTests(unittest.TestCase):
         self.app = test_app.test_client()
         test_app.config['TESTING'] = True
         self.dal = DalMock()
-        handlers.DAL = self.dal
+        handlers.get_dal = lambda: self.dal
 
     def test_home_without_user_render_login(self):
         response = self.app.get('/', follow_redirects=True)

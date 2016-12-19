@@ -12,11 +12,12 @@ manual_scaling:
 #to get a f1-micro instance
 resources:
   cpu: .5
-  memory_gb: .19
+  memory_gb: 1.0
   disk_size_gb: 10
 
 env_variables:
     GCLOUD_PROJECT: gator-01
+    NLTK_DATA: ./nltk_data
 
 skip_files:
   # gae default (cf. https://cloud.google.com/appengine/docs/python/config/appref#skip_files)

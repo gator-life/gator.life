@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
-
+import logging
 import os
 import numpy as np
 from gensim import corpora, models
 import common.crypto as crypto
+from common.log import shrink
 from .doctokenizer import DocTokenizerFromRawText, DocTokenizerFromHtml
+
+LOGGER = logging.getLogger(__name__)
 
 
 class _MultiIterator(object):
@@ -77,13 +80,21 @@ class TopicModeller(object):
         tokenized_doc = self._tokenizer.tokenize(html_document)
         filtered_doc = self._filter_document(tokenized_doc)
         doc_format_for_lda_model = self._dictionary.doc2bow(filtered_doc)
+        if LOGGER.isEnabledFor(logging.DEBUG):
+            LOGGER.debug(u'doc converted as bag-of-words token_id:token_count[%s]',
+                         u'|'.join(str(tok_id) + ':' + str(count) for tok_id, count in doc_format_for_lda_model[:200]))
         # self.lda LdaModel []-operator return list of (topic_id, topic_probability) 2-tuples
         topic_id_to_probability = self._lda[doc_format_for_lda_model]
         if not any(topic_id_to_probability):
+            LOGGER.info(u'classification failed. doc[%s]', shrink(html_document))
             return False, None
         vector = [0] * self._lda.num_topics
         for topic_id, topic_probability in topic_id_to_probability:
             vector[topic_id] = topic_probability
+        if LOGGER.isEnabledFor(logging.DEBUG):
+            LOGGER.debug(u'html classified. doc[%s], vector[%s]',
+                         shrink(html_document),
+                         u'|'.join(str(topic) + ':' + str(proba) for topic, proba in topic_id_to_probability))
         return True, vector
 
     def load(self, model_data_folder):
@@ -155,7 +166,9 @@ class TopicModeller(object):
 
     def _filter_document(self, document):
         # We want to keep only known words (those on our dictionary)
-        return [word for word in document if word in self._dictionary_words]
+        filtered = [word for word in document if word in self._dictionary_words]
+        LOGGER.debug(u'doc filtered, length before[%s], length after[%s]', len(document), len(filtered))
+        return filtered
 
     def _cache_dictionary_words(self):
         # dictionary.values() is a list, looking into a list is an O(n) operation.

@@ -5,3 +5,5 @@ cd docker_images/gator_deps
 docker build -t gator_deps .
 
 rm requirements.txt
+
+cd ../..

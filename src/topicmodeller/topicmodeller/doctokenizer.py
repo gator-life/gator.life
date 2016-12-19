@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import re
 import nltk
 from nltk.corpus import stopwords
 from readability import Document
 import lxml
+from common.log import shrink
 
-# Extract a readable document from HTML
+LOGGER = logging.getLogger(__name__)
 
 
 def _readable_document(html_document):
@@ -40,7 +42,12 @@ class DocTokenizerFromHtml(object):
 
     @classmethod
     def tokenize(cls, html_document):
-        return DocTokenizerFromRawText.tokenize(_readable_document(html_document))
+        raw_text = _readable_document(html_document)
+        tokens = DocTokenizerFromRawText.tokenize(raw_text)
+        if LOGGER.isEnabledFor(logging.DEBUG):
+            LOGGER.debug(u'html tokenized. tokens[%s], text[%s], html[%s]',
+                         u'|'.join(tokens[:50]), shrink(raw_text), shrink(html_document))
+        return tokens
 
 
 class DocTokenizerFromRawText(object):

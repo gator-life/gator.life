@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import logging
 from server.dal import Dal
 from server.frontendstructs import FeatureSet, UserProfileModelData, UserComputedProfile, FeatureVector, Document,\
     TopicModelDescription
-from learner.topic_model_converter import TopicModelConverter
+from learner.topicmodelapprox import TopicModelConverter
 from learner.userprofiler import UserProfiler
+
+LOGGER = logging.getLogger(__name__)
 
 
 class ModelUpdater(object):
@@ -19,6 +22,7 @@ class ModelUpdater(object):
 
         model_id = topic_modeller.get_model_id()
         if _is_already_ref(dal, model_id):
+            LOGGER.info("skip update_model_in_db, topic model already set as ref (id[%s])", model_id)
             return
 
         target_model = TopicModelDescription.make_from_scratch(model_id, topic_modeller.get_topics())
@@ -38,6 +42,7 @@ class ModelUpdater(object):
         docs = set(user_doc.document for user_docs in user_docs_by_user for user_doc in user_docs)
         updated_docs = _get_updated_docs(docs, converter_dict, target_feature_set_id)
         dal.doc.save_documents(updated_docs)
+        LOGGER.info("save %s updated docs", len(updated_docs))
 
 
 def _is_already_ref(dal, topic_model_id):
@@ -53,6 +58,7 @@ def _save_topic_model_and_feature_set(dal, model_description):  # pylint: disabl
         model_description.topic_model_id, target_feature_names, model_description.topic_model_id)
     dal.feature_set.save_feature_set(target_feature_set)
     dal.feature_set.save_ref_feature_set_id(model_description.topic_model_id)
+    LOGGER.info("ref topic model updated in datastore id[%s]", model_description.topic_model_id)
 
 
 def _get_model_converters(dal, feature_set_ids, target_model):

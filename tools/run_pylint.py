@@ -53,20 +53,23 @@ def add_file_paths(input):
 def main():
     exitcode, output = run_pylint(COMMAND + ' ' + files_list(BASE_PATH, for_tests=False))
     output = add_file_paths(output)
-    print output
 
     if exitcode != 0:
+        print output
         print 'FAIL...Try, try again'
         sys.exit(1)
+    else:
+        print 'code OK'
 
     exitcode_test, output_test = run_pylint(TEST_COMMAND + ' ' + files_list(BASE_PATH, for_tests=True))
     output_test = add_file_paths(output_test)
-    print output_test
 
     if exitcode_test == 0:
+        print 'tests OK'
         print 'You nailed it boy !'
         sys.exit(0)
 
+    print output_test
     print 'Fail (just the tests)'
     sys.exit(1)
 

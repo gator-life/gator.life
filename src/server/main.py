@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-
+import logging
+from common.log import init_gcloud_log
 from flask import Flask
-from server.environment import IS_TEST_ENV
+from server.environment import IS_TEST_ENV, GCLOUD_PROJECT
 from server.handlers import handlers
 
 if not IS_TEST_ENV:
@@ -12,6 +13,9 @@ if not IS_TEST_ENV:
     with open('local_deps.txt') as f:
         sys.path += f.readlines()
 
+init_gcloud_log(GCLOUD_PROJECT, u'server', IS_TEST_ENV)
+logging.getLogger().setLevel(logging.DEBUG)
+logging.getLogger().info('start server logging')
 # This variable is referenced by gunicorn in
 #  - entrypoint section of app.yaml file,
 #  - tools/start_server.sh
@@ -19,6 +23,7 @@ if not IS_TEST_ENV:
 APP = Flask(__name__, static_folder='server/static')
 APP.register_blueprint(handlers)
 APP.secret_key = 'maybe_we_should_generate_a_random_key'
+
 
 if __name__ == '__main__':
     # This is used when running locally. Gunicorn is used to run the

@@ -94,3 +94,4 @@ docker run -i -p 8080:8080 -t whatever_you_want:whatever_you_want
 
 - The app is then accessible at
 http://localhost:8080/
+

@@ -5,34 +5,39 @@ abstract database scheme and datastore API to communicate with the rest of the p
 through objects uncoupled from gcloud datastore API
 """
 import datetime
+import logging
 import httplib2
 import google.cloud.datastore as datastore  # pylint: disable=import-error
+from google.auth.credentials import Credentials
 from .environment import GCLOUD_PROJECT, IS_TEST_ENV
 from . import frontendstructs as struct
 
 
+LOGGER = logging.getLogger(__name__)
+
+
 def _to_user_action_type_on_doc(user_action_on_doc_db_string):
-    if user_action_on_doc_db_string == 'up_vote':
+    if user_action_on_doc_db_string == u'up_vote':
         return struct.UserActionTypeOnDoc.up_vote
-    if user_action_on_doc_db_string == 'down_vote':
+    if user_action_on_doc_db_string == u'down_vote':
         return struct.UserActionTypeOnDoc.down_vote
-    if user_action_on_doc_db_string == 'click_link':
+    if user_action_on_doc_db_string == u'click_link':
         return struct.UserActionTypeOnDoc.click_link
-    if user_action_on_doc_db_string == 'view_link':
+    if user_action_on_doc_db_string == u'view_link':
         return struct.UserActionTypeOnDoc.view_link
-    raise ValueError(user_action_on_doc_db_string + ' has no matching for Enum UserActionTypeOnDoc')
+    raise ValueError(user_action_on_doc_db_string + u' has no matching for Enum UserActionTypeOnDoc')
 # NB: when struct.UserActionTypeOnDoc become an Enum, we can just call user_action_on_doc_enum.name
 
 
 def _to_db_action_type_on_doc(user_action_on_doc_enum):
     if user_action_on_doc_enum == struct.UserActionTypeOnDoc.up_vote:
-        return 'up_vote'
+        return u'up_vote'
     if user_action_on_doc_enum == struct.UserActionTypeOnDoc.down_vote:
-        return 'down_vote'
+        return u'down_vote'
     if user_action_on_doc_enum == struct.UserActionTypeOnDoc.click_link:
-        return 'click_link'
+        return u'click_link'
     if user_action_on_doc_enum == struct.UserActionTypeOnDoc.view_link:
-        return 'view_link'
+        return u'view_link'
     raise ValueError(str(user_action_on_doc_enum) + ' has not string matching for database')
 
 
@@ -69,8 +74,13 @@ def _to_user_action_on_doc(doc, db_user_action_on_doc):
 
 
 def _to_feature_vector(db_feature_vector):
-    vector = db_feature_vector.get('vector', [])
     feature_set_id = db_feature_vector['feature_set_key'].name
+    indexes = db_feature_vector.get('vector_indexes', [])
+    values = db_feature_vector.get('vector_values', [])
+    length = db_feature_vector['vector_length']
+    vector = [0] * length
+    for index, value in zip(indexes, values):
+        vector[index] = value
     return struct.FeatureVector.make_from_scratch(vector=vector, feature_set_id=feature_set_id)
 
 
@@ -87,9 +97,9 @@ def _to_doc(db_doc):
         datetime=db_doc['datetime'], feature_vector=_to_feature_vector(db_doc['feature_vector']))
 
 
-def _datastore_client():
+def _datastore_test_client():
 
-    class _EmulatorCreds(object):
+    class _EmulatorCreds(Credentials):
         """
         mock of credentials for local datastore
         cf. https://github.com/GoogleCloudPlatform/gcloud-python/issues/1839
@@ -98,12 +108,12 @@ def _datastore_client():
         def create_scoped_required():
             return False
 
-    if IS_TEST_ENV:
-        credentials = _EmulatorCreds()
-        http = httplib2.Http()  # Un-authorized.
-        return datastore.Client(project=GCLOUD_PROJECT, credentials=credentials, http=http)
-    else:
-        return datastore.Client(GCLOUD_PROJECT)
+        def refresh(self, request):
+            pass
+
+    credentials = _EmulatorCreds()
+    http = httplib2.Http()  # Un-authorized.
+    return datastore.Client(project=GCLOUD_PROJECT, credentials=credentials, http=http)
 
 
 def _make_entity(datastore_client, entity_type, not_indexed):
@@ -129,20 +139,20 @@ def _get_multi(datastore_client, keys):
 
 
 class Dal(object):  # pylint: disable= too-many-instance-attributes
-    # Dal is a class rather than plain module functions to enable init logic in the future,
-    # but datastore client is slow to initialize, so we share it between Dal instances
 
-    _ds_client = _datastore_client()
+    # re-use same connection for tests to improve perfs. In prod, client should have a short life
+    _ds_singleton_test_client = _datastore_test_client() if IS_TEST_ENV else None
 
     def __init__(self):
-        self.feature_set = DalFeatureSet(self._ds_client)
-        self.feature_vector = DalFeatureVector(self._ds_client)
-        self.doc = DalDoc(self._ds_client, self.feature_vector)
-        self.user_action = DalUserActionOnDoc(self._ds_client, self.doc)
-        self.user_computed_profile = DalUserComputedProfile(self._ds_client, self.feature_vector)
-        self.user = DalUser(self._ds_client, self.user_computed_profile)
-        self.user_doc = DalUserDoc(self._ds_client, self.doc)
-        self.topic_model = DalTopicModelDescription(self._ds_client)
+        ds_client = self._ds_singleton_test_client if IS_TEST_ENV else datastore.Client(GCLOUD_PROJECT)
+        self.feature_set = DalFeatureSet(ds_client)
+        self.feature_vector = DalFeatureVector(ds_client)
+        self.doc = DalDoc(ds_client, self.feature_vector)
+        self.user_action = DalUserActionOnDoc(ds_client, self.doc)
+        self.user_computed_profile = DalUserComputedProfile(ds_client, self.feature_vector)
+        self.user = DalUser(ds_client, self.user_computed_profile)
+        self.user_doc = DalUserDoc(ds_client, self.doc)
+        self.topic_model = DalTopicModelDescription(ds_client)
 
 
 class DalFeatureSet(object):
@@ -192,7 +202,10 @@ class DalFeatureVector(object):
     def _to_db_feature_vector(self, feature_vector):
         db_feature_vector = _make_entity(self._ds_client, u'FeatureVector', not_indexed=('vector',))
         db_feature_vector['feature_set_key'] = self._ds_client.key(u'FeatureSet', feature_vector.feature_set_id)
-        db_feature_vector['vector'] = feature_vector.vector
+        non_zero_entries = [(ind, elt) for ind, elt in enumerate(feature_vector.vector) if elt != 0]
+        db_feature_vector['vector_indexes'] = [ind for ind, _ in non_zero_entries]
+        db_feature_vector['vector_values'] = [elt for _, elt in non_zero_entries]
+        db_feature_vector['vector_length'] = len(feature_vector.vector)
         return db_feature_vector
 
 
@@ -236,20 +249,39 @@ class DalDoc(object):
         :param url_hashes: list of string corresponding to the field 'url_hash' of a struct.Document
         :return: list of struct.Document matching url_hashes list
         """
+        LOGGER.debug('get docs nb_docs[%s]', len(url_hashes))
         db_keys = [self._ds_client.key('Document', url_hash) for url_hash in url_hashes]
         db_docs = _get_multi(self._ds_client, db_keys)
         return [_to_doc(db_doc) for db_doc in db_docs]
 
-    def get_recent_doc_url_hashes(self, from_datetime):
+    def get_recent_doc_url_hashes(self, from_datetime, max_nb_docs=None):
         """
         :param from_datetime: datetime
-        :return: the list of hashes of docs whose datetime is after from_datetime
+        :param max_nb_docs: int, set 1000 if you want to use get_multi on result
+        :return: list of hashes of max_nb_docs most recent docs whose datetime is after from_datetime
         """
-        query = self._ds_client.query(kind='Document')
+        # nb: query is ordered as a way to ensure we get the max_nb_docs most recent
+        # but it's a implementation detail, order on returned hashes is not needed / specified
+        LOGGER.debug('get_recent_doc_url_hashes from[%s], max_nb_docs[%s]', from_datetime, max_nb_docs)
+        query = self._ds_client.query(kind='Document', order=['-datetime'])
         query.keys_only()
         query.add_filter('datetime', '>', from_datetime)
-        db_doc_entities = query.fetch()
+        db_doc_entities = query.fetch(max_nb_docs)
         return [entity.key.name for entity in db_doc_entities]
+
+    def get_recent_docs(self, from_datetime, max_nb_docs=None):
+        """
+        :param from_datetime: datetime
+        :param max_nb_docs: int
+        :return: list of documents of max_nb_docs most recent docs whose datetime is after from_datetime
+        """
+        # nb: query is ordered as a way to ensure we get the max_nb_docs most recent
+        # but it's a implementation detail, order on returned hashes is not needed / specified
+        LOGGER.debug('get_recent_docs from[%s], max_nb_docs[%s]', from_datetime, max_nb_docs)
+        query = self._ds_client.query(kind='Document', order=['-datetime'])
+        query.add_filter('datetime', '>', from_datetime)
+        db_docs = query.fetch(max_nb_docs)
+        return [_to_doc(db_doc) for db_doc in db_docs]
 
 
 class DalUserActionOnDoc(object):
@@ -555,6 +587,7 @@ class DalTopicModelDescription(object):
         :param model_id: string, model unique identifier
         :return: struct.TopicModelDescription
         """
+        LOGGER.debug('get model model_id[%s]', model_id)
         key = self._ds_client.key(u'TopicModelDescription', model_id)
         db_model = self._ds_client.get(key)
         db_topics = db_model['topics']

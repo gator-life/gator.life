@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from server.frontendstructs import TopicModelDescription
-from learner.topic_model_converter import TopicModelConverter
+from learner.topicmodelapprox import TopicModelConverter, TopicModelApproxClassifier
 
 
 class TopicModelConverterTests(unittest.TestCase):
@@ -100,6 +100,47 @@ class TopicModelConverterTests(unittest.TestCase):
         target_vector = converter.compute_target_vector([0.5, 0.5])
         self.assertEquals([0, 0], target_vector)
 
+
+class TopicModelApproxClassifierTest(unittest.TestCase):
+
+    def test_compute_classified_vector_no_shared_word_return_zero(self):
+        model = TopicModelDescription.make_from_scratch('id', [
+            [('t1_w1', 0.5), ('t1_w2', 0.5)],
+            [('t2_w1', 1.0)]
+        ])
+        classifier = TopicModelApproxClassifier(model)
+        classified = classifier.compute_classified_vector(['w3'])
+        self.assertEquals([0, 0], classified)
+
+    @staticmethod
+    def test_compute_classified_vector_shared_word_on_one_topic():
+        model = TopicModelDescription.make_from_scratch('id', [
+            [('t1_w1', 0.5), ('t1_w2', 0.5)],
+            [('t2_w1', 1.0)]
+        ])
+        classifier = TopicModelApproxClassifier(model)
+        classified = classifier.compute_classified_vector(['t1_w1', 'w3'])
+        np.testing.assert_almost_equal([1.0, 0], classified, 10)
+
+    @staticmethod
+    def test_compute_classified_vector_shared_word_on_two_topics_return_biggest_weight():
+        model = TopicModelDescription.make_from_scratch('id', [
+            [('t1_w1', 0.5), ('t1_w2', 0.5)],
+            [('t1_w1', 1.0)]
+        ])
+        classifier = TopicModelApproxClassifier(model)
+        classified = classifier.compute_classified_vector(['t1_w1'])
+        np.testing.assert_almost_equal([0.0, 1.0], classified, 10)
+
+    @staticmethod
+    def test_compute_classified_vector_words_on_two_topics_split():
+        model = TopicModelDescription.make_from_scratch('id', [
+            [('t1_w1', 0.5), ('t1_w2', 0.5)],
+            [('t2_w1', 1.0)]
+        ])
+        classifier = TopicModelApproxClassifier(model)
+        classified = classifier.compute_classified_vector(['t1_w1', 't2_w1'])
+        np.testing.assert_almost_equal([1.0, 1.0], classified, 10)
 
 if __name__ == '__main__':
     unittest.main()

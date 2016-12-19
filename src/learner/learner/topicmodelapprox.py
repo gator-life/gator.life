@@ -20,17 +20,9 @@ class TopicModelConverter(object):
                     for topic_word in topic.topic_words)  # unique words
 
         word_to_index = dict(izip(words, range(len(words))))
-        origin_model_basis = self._build_basis_matrix(word_to_index, origin_model)
-        target_model_basis = self._build_basis_matrix(word_to_index, target_model)
-        self._projector = _VectorSpaceProjector(origin_model_basis, target_model_basis)
-
-    @staticmethod
-    def _build_basis_matrix(word_to_index, model):
-        model_basis = np.zeros((len(word_to_index), len(model.topics)))
-        for index_topic, topic in enumerate(model.topics):
-            for topic_word in topic.topic_words:
-                model_basis[word_to_index[topic_word.word], index_topic] = topic_word.weight
-        return model_basis
+        origin_model_basis = _build_basis_matrix(word_to_index, origin_model)
+        target_model_basis = _build_basis_matrix(word_to_index, target_model)
+        self._projector = _ProjectorBetweenSubspaces(origin_model_basis, target_model_basis)
 
     def compute_target_vector(self, origin_vector):
         """
@@ -45,7 +37,7 @@ class TopicModelConverter(object):
         return target_vector
 
 
-class _VectorSpaceProjector(object):
+class _ProjectorBetweenSubspaces(object):
     """
     Service to project a vector from a subspace to another inside a common vector space
     """
@@ -76,3 +68,57 @@ class _VectorSpaceProjector(object):
         """
         # solve linear equation ( B^T * B ) b = ( B^T * A ) a
         return np.linalg.solve(self._left_hand_side, np.dot(self._right_hand_side, vector_in_origin_basis))
+
+
+class TopicModelApproxClassifier(object):
+
+    def __init__(self, model):
+        """
+        :param model: struct.TopicModelDescription
+        """
+        words = set(topic_word.word
+                    for topic in model.topics
+                    for topic_word in topic.topic_words)  # unique words
+
+        self._word_to_index = dict(izip(words, range(len(words))))
+        model_basis = _build_basis_matrix(self._word_to_index, model)
+        self._projector = _ProjectorOnSubspace(model_basis)
+
+    def compute_classified_vector(self, word_list):
+        """
+        :param word_list: list of words
+        :return: approximation of classification of the word_list, list of double of size model.nb_topics
+        """
+        word_np_array = np.zeros(len(self._word_to_index))
+        for word in word_list:
+            index = self._word_to_index.get(word)
+            if index is not None:
+                word_np_array[index] = 1.0
+
+        classified_np_vector = self._projector.project_on_subspace(word_np_array)
+        classified_vector = classified_np_vector.tolist()
+        return classified_vector
+
+
+class _ProjectorOnSubspace(object):
+
+    def __init__(self, subspace_basis):
+        """
+        :param subspace_basis: numpy matrix dim_global_space * dim_subspace
+        """
+        self._left_hand_side = subspace_basis
+
+    def project_on_subspace(self, vector):
+        """
+        :param vector: numpy vector of size dim_global_space
+        :return: numpy vector or size dim_subspace, projection of vector on subspace
+        """
+        return np.linalg.lstsq(self._left_hand_side, vector)[0]  # first elt of result tuple is projected vector
+
+
+def _build_basis_matrix(word_to_index, model):
+    model_basis = np.zeros((len(word_to_index), len(model.topics)))
+    for index_topic, topic in enumerate(model.topics):
+        for topic_word in topic.topic_words:
+            model_basis[word_to_index[topic_word.word], index_topic] = topic_word.weight
+    return model_basis
