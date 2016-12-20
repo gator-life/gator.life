@@ -138,7 +138,7 @@ class UserDocChunkSaver(object):
         # udm: user doc matching
         udm_users_docs = user_docs_accumulator.build_user_docs()
         user_to_user_docs = (
-            (user, [UserDocument.make_from_scratch(udm_user_doc.doc_id, udm_user_doc.grade)
+            (user, [UserDocument(udm_user_doc.doc_id, udm_user_doc.grade)
                     for udm_user_doc in udm_user_docs])
             for user, udm_user_docs in zip(users, udm_users_docs)
         )
@@ -155,9 +155,9 @@ class DocBuilder(object):
         (classify_ok, topic_feature_vector) = self._topic_modeller.classify(scraper_document.content)
         if not classify_ok:
             return False, None
-        doc = Document.make_from_scratch(
+        doc = Document(
             scraper_document.url, url_hash, scraper_document.title, summary=scraper_document.content[:250],
-            feature_vector=FeatureVector.make_from_scratch(topic_feature_vector, self._ref_feature_set_id))
+            feature_vector=FeatureVector(topic_feature_vector, self._ref_feature_set_id))
         return True, doc
 
 

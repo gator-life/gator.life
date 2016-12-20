@@ -51,18 +51,18 @@ class UserProfileBuilderTests(unittest.TestCase):
     def _build_feature_set(self):
         feature_set_id = 'test_update_user_profiles_in_database'
         self.dal.feature_set.save_feature_set(
-            struct.FeatureSet.make_from_scratch(feature_set_id, ['feature_name'], None))
+            struct.FeatureSet(feature_set_id, ['feature_name'], None))
         return feature_set_id
 
     @staticmethod
     def _build_doc(feature_set_id):
-        feature_vector = struct.FeatureVector.make_from_scratch([1.0], feature_set_id)
-        doc = struct.Document.make_from_scratch('u1', 'h1', 't1', 's1', feature_vector)
+        feature_vector = struct.FeatureVector([1.0], feature_set_id)
+        doc = struct.Document('u1', 'h1', 't1', 's1', feature_vector)
         return doc
 
     @staticmethod
     def _build_profile(feature_set_id):
-        feature_vector = struct.FeatureVector.make_from_scratch([1.0], feature_set_id)
+        feature_vector = struct.FeatureVector([1.0], feature_set_id)
         model_data = struct.UserProfileModelData.make_empty(1)
         return struct.UserComputedProfile.make_from_scratch(feature_vector, model_data)
 

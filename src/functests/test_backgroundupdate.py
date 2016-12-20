@@ -19,7 +19,7 @@ class BackgroundUpdateTests(unittest.TestCase):
         model = TopicModelDescription.make_from_scratch(model_id, [[('w' + str(i), 1)] for i in range(nb_topics)])
         self.dal.topic_model.save(model)
         ref_feature_set_id = 'BackgroundUpdateTests_ref_feature_set_id'
-        self.dal.feature_set.save_feature_set(FeatureSet.make_from_scratch(
+        self.dal.feature_set.save_feature_set(FeatureSet(
             ref_feature_set_id, ['feature_' + str(i) for i in range(nb_topics)], model_id))
         self.dal.feature_set.save_ref_feature_set_id(ref_feature_set_id)
         self.is_coverage = bool(os.environ.get('COVERAGE', None))

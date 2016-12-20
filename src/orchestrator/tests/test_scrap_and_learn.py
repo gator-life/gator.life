@@ -59,7 +59,7 @@ class ScrapAndLearnTests(unittest.TestCase):
         self.dal = Dal()
         self.ref_feature_set_id = 'feature_set_id_ScrapAndLearnTests'
         self.dal.feature_set.save_ref_feature_set_id(self.ref_feature_set_id)
-        self.dummy_feat_vec = struct.FeatureVector.make_from_scratch([], self.ref_feature_set_id)
+        self.dummy_feat_vec = struct.FeatureVector([], self.ref_feature_set_id)
 
     def test_scrap_and_learn(self):
         # I)setup database and mocks
@@ -71,16 +71,16 @@ class ScrapAndLearnTests(unittest.TestCase):
         self.dal.user.save_user(user2, "password2")
         self._save_dummy_profile_for_user(user2)
         # I.2) doc
-        doc_old = struct.Document.make_from_scratch('', 'hash_old', 't', "s", self.dummy_feat_vec)
+        doc_old = struct.Document('', 'hash_old', 't', "s", self.dummy_feat_vec)
         doc_old.datetime = utcnow() - datetime.timedelta(days=2, seconds=1)
-        doc1 = struct.Document.make_from_scratch("url1", 'hash1', 'title1', "sum1", self.dummy_feat_vec)
-        doc2 = struct.Document.make_from_scratch("url2", 'hash2', 'title2', "sum2", self.dummy_feat_vec)
+        doc1 = struct.Document("url1", 'hash1', 'title1', "sum1", self.dummy_feat_vec)
+        doc2 = struct.Document("url2", 'hash2', 'title2', "sum2", self.dummy_feat_vec)
         self.dal.doc.save_documents([doc1, doc2, doc_old])
         # I.3) userDoc
         user1_user_docs = [
-            struct.UserDocument.make_from_scratch(doc_old, grade=1.1),  # should be removed (too old)
-            struct.UserDocument.make_from_scratch(doc1, grade=0.0),  # should be removed (bad rating)
-            struct.UserDocument.make_from_scratch(doc2, grade=1.0)]
+            struct.UserDocument(doc_old, grade=1.1),  # should be removed (too old)
+            struct.UserDocument(doc1, grade=0.0),  # should be removed (bad rating)
+            struct.UserDocument(doc2, grade=1.0)]
         self.dal.user_doc.save_users_docs([(user1, user1_user_docs)])
         # II) Orchestrate
         topic_modeller = MockTopicModeller()
@@ -106,7 +106,7 @@ class ScrapAndLearnTests(unittest.TestCase):
             self.assertEquals(MockScraper.default_content, doc.summary)
 
     def _save_dummy_profile_for_user(self, user):
-        feature_vector = struct.FeatureVector.make_from_scratch([1.0], "featureSetId-test_scrap_learn")
+        feature_vector = struct.FeatureVector([1.0], "featureSetId-test_scrap_learn")
         model_data = struct.UserProfileModelData.make_empty(1)
         self.dal.user_computed_profile.save_user_computed_profile(
             user, struct.UserComputedProfile.make_from_scratch(feature_vector, model_data))
