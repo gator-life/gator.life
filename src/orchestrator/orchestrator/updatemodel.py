@@ -106,7 +106,7 @@ def _get_updated_model_data(converter, model_data_origin):
     explicit_target = converter.compute_target_vector(model_data_origin.explicit_feedback_vector)
     positive_target = converter.compute_target_vector(model_data_origin.positive_feedback_vector)
     negative_target = converter.compute_target_vector(model_data_origin.negative_feedback_vector)
-    model_data_target = UserProfileModelData.make_from_scratch(
+    model_data_target = UserProfileModelData(
         explicit_target, positive_target, negative_target,
         model_data_origin.positive_feedback_sum_coeff, model_data_origin.negative_feedback_sum_coeff)
     return model_data_target

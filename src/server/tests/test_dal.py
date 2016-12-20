@@ -297,7 +297,7 @@ class DalUserComputedProfileTests(unittest.TestCase):
         expected_profile = struct.UserComputedProfile(
             feature_vector=struct.FeatureVector(
                 [], self.dal.user._new_user_feature_set_id),  # pylint: disable=protected-access
-            model_data=struct.UserProfileModelData.make_from_scratch([], [], [], 0, 0)
+            model_data=struct.UserProfileModelData([], [], [], 0, 0)
         )
 
         self._assert_profiles_equals(expected_profile, result_profile)
@@ -338,7 +338,7 @@ class DalUserComputedProfileTests(unittest.TestCase):
         self.dal.user.save_user(user, u'password' + str(index))
         feature_vector = struct.FeatureVector(
             vector=[0.5 + index, 0.6 + index], feature_set_id=feature_set_id)
-        model_data = struct.UserProfileModelData.make_from_scratch(
+        model_data = struct.UserProfileModelData(
             [0.7 + index, 0.8], [0.3 + index, 0.4], [-1.0 + index, -2.0], 5.0 + index, 9.0 + index)
         profile = struct.UserComputedProfile(feature_vector, model_data)
         return user, profile

@@ -114,19 +114,7 @@ class UserProfileModelData(object):
 
     @staticmethod
     def make_empty(size_vector):
-        return UserProfileModelData.make_from_scratch([0] * size_vector, [0] * size_vector, [0] * size_vector, 0.0, 0.0)
-
-    @staticmethod
-    def make_from_scratch(explicit_feedback_vector, positive_feedback_vector, negative_feedback_vector,
-                          positive_feedback_sum_coeff, negative_feedback_sum_coeff):
-        return UserProfileModelData(explicit_feedback_vector, positive_feedback_vector, negative_feedback_vector,
-                                    positive_feedback_sum_coeff, negative_feedback_sum_coeff)
-
-    @staticmethod
-    def make_from_db(explicit_feedback_vector, positive_feedback_vector, negative_feedback_vector,
-                     positive_feedback_sum_coeff, negative_feedback_sum_coeff):
-        return UserProfileModelData(explicit_feedback_vector, positive_feedback_vector, negative_feedback_vector,
-                                    positive_feedback_sum_coeff, negative_feedback_sum_coeff)
+        return UserProfileModelData([0] * size_vector, [0] * size_vector, [0] * size_vector, 0.0, 0.0)
 
     def __init__(self, explicit_feedback_vector,
                  positive_feedback_vector, negative_feedback_vector,

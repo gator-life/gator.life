@@ -59,7 +59,7 @@ class _ProfileInitializer(object):
             LOGGER.debug('classify interests [%s]', '-'.join(words))
         explicit_vector = self._classifier.compute_classified_vector(words)
         zero_vec = [0] * self._nb_topics
-        model_data = struct.UserProfileModelData.make_from_scratch(explicit_vector, zero_vec, zero_vec, 0, 0)
+        model_data = struct.UserProfileModelData(explicit_vector, zero_vec, zero_vec, 0, 0)
         now = utcnow()
         profile = self._profiler.compute_user_profile(model_data, now, [], now)
         feature_vector = struct.FeatureVector(profile.feedback_vector, self._ref_feature_set_id)

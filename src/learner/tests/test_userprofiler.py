@@ -28,7 +28,7 @@ class UserProfilerTests(unittest.TestCase):
         ]
 
         explicit_feedback_vec = [0.5, 2.0]
-        init_model_data = UserProfileModelData.make_from_scratch(explicit_feedback_vec, [0.0, 0.0], [0.0, 0.0], 0.0, 0.0)
+        init_model_data = UserProfileModelData(explicit_feedback_vec, [0.0, 0.0], [0.0, 0.0], 0.0, 0.0)
         new_profile = profiler.compute_user_profile(init_model_data, previous_date, actions, new_date)
 
         # Explicit feedback vector should not change
@@ -86,7 +86,7 @@ class UserProfilerTests(unittest.TestCase):
         vector = profiler._compute_global_feedback_vector(np.asarray([1.0, 1.5]), neg_elt, pos_elt)
         # Here again, what matters is the direction of the vector which should be the same as the the direction of explicit
         # feedback vector
-        self.assertEqual(1.0/1.5, vector[0]/vector[1])
+        self.assertEqual(1.0 / 1.5, vector[0] / vector[1])
 
     def assert_profile_equals(self, expected, result):
         self.assert_model_data_equals(expected.model_data, result.model_data)

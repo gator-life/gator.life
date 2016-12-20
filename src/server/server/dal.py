@@ -42,7 +42,7 @@ def _to_db_action_type_on_doc(user_action_on_doc_enum):
 
 
 def _to_user_profile_model_data(db_user_profile_model_data):
-    return struct.UserProfileModelData.make_from_db(
+    return struct.UserProfileModelData(
         db_user_profile_model_data.get('explicit_feedback_vector', []),
         db_user_profile_model_data.get('positive_feedback_vector', []),
         db_user_profile_model_data.get('negative_feedback_vector', []),
@@ -551,7 +551,7 @@ class DalUser(object):
 
             user_computed_profile = struct.UserComputedProfile(
                 struct.FeatureVector([], self._new_user_feature_set_id),
-                struct.UserProfileModelData.make_from_scratch([], [], [], 0.0, 0.0))
+                struct.UserProfileModelData([], [], [], 0.0, 0.0))
             db_user_computed_profile = \
                 self._dal_user_computed_profile._to_db_user_computed_profile(  # pylint: disable=protected-access
                     user_computed_profile)
