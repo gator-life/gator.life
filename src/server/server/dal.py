@@ -88,7 +88,7 @@ def _to_user_computed_profile(db_user_computed_profile):
     model_data = _to_user_profile_model_data(db_user_computed_profile['model_data'])
     feature_vector = _to_feature_vector(db_user_computed_profile['feature_vector'])
     update_datetime = db_user_computed_profile['datetime']
-    return struct.UserComputedProfile.make_from_db(feature_vector, model_data, update_datetime)
+    return struct.UserComputedProfile(feature_vector, model_data, update_datetime)
 
 
 def _to_doc(db_doc):
@@ -549,7 +549,7 @@ class DalUser(object):
             user._user_doc_set_db_key = user_doc_set_db.key  # pylint: disable=protected-access
         if user._user_computed_profile_db_key is None:  # pylint: disable=protected-access
 
-            user_computed_profile = struct.UserComputedProfile.make_from_scratch(
+            user_computed_profile = struct.UserComputedProfile(
                 struct.FeatureVector([], self._new_user_feature_set_id),
                 struct.UserProfileModelData.make_from_scratch([], [], [], 0.0, 0.0))
             db_user_computed_profile = \

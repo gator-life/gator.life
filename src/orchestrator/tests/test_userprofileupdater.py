@@ -64,7 +64,7 @@ class UserProfileBuilderTests(unittest.TestCase):
     def _build_profile(feature_set_id):
         feature_vector = struct.FeatureVector([1.0], feature_set_id)
         model_data = struct.UserProfileModelData.make_empty(1)
-        return struct.UserComputedProfile.make_from_scratch(feature_vector, model_data)
+        return struct.UserComputedProfile(feature_vector, model_data)
 
 
 if __name__ == '__main__':

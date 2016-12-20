@@ -109,7 +109,7 @@ class ScrapAndLearnTests(unittest.TestCase):
         feature_vector = struct.FeatureVector([1.0], "featureSetId-test_scrap_learn")
         model_data = struct.UserProfileModelData.make_empty(1)
         self.dal.user_computed_profile.save_user_computed_profile(
-            user, struct.UserComputedProfile.make_from_scratch(feature_vector, model_data))
+            user, struct.UserComputedProfile(feature_vector, model_data))
 
 if __name__ == '__main__':
     unittest.main()

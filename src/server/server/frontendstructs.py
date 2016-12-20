@@ -98,15 +98,8 @@ class UserComputedProfile(object):
     """
     Represent the information about the user profile:
     """
-    @staticmethod
-    def make_from_scratch(feature_vector, model_data):
-        return UserComputedProfile(feature_vector, model_data, datetime=None)
 
-    @staticmethod
-    def make_from_db(feature_vector, model_data, datetime):
-        return UserComputedProfile(feature_vector, model_data, datetime)
-
-    def __init__(self, feature_vector, model_data, datetime):
+    def __init__(self, feature_vector, model_data, datetime=None):
         """
         :param feature_vector: FeatureVector, to compute interests of the user for a document in a VSM (Vector Space Model)
         :param model_data: UserProfileModelData, intermediate data to compute this vector at each learning step in profiler

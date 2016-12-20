@@ -120,7 +120,7 @@ class ModelUpdaterTests(unittest.TestCase):
         # (disable pylint, nb of args here seems good trade-off)
         feat_vec_profile = struct.FeatureVector(vec_profile, feature_set_id)
         model_data = struct.UserProfileModelData.make_from_scratch(explicit, positive, negative, pos_sum, neg_sum)
-        profile = struct.UserComputedProfile.make_from_scratch(feat_vec_profile, model_data)
+        profile = struct.UserComputedProfile(feat_vec_profile, model_data)
         self.dal.user_computed_profile.save_user_computed_profile(user, profile)
         profile = self.dal.user_computed_profile.get_user_computed_profiles([user])[0]  # to update profile.datetime
         return profile

@@ -63,7 +63,7 @@ class _ProfileInitializer(object):
         now = utcnow()
         profile = self._profiler.compute_user_profile(model_data, now, [], now)
         feature_vector = struct.FeatureVector(profile.feedback_vector, self._ref_feature_set_id)
-        user_profile = struct.UserComputedProfile.make_from_scratch(feature_vector, profile.model_data)
+        user_profile = struct.UserComputedProfile(feature_vector, profile.model_data)
         return user_profile
 
 

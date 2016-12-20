@@ -95,7 +95,7 @@ def _get_updated_user_to_profile(feature_set_id_to_converter, user_to_profile, t
 
         profiler_profile = user_profiler.compute_user_profile(model_data_target, profile.datetime, [], profile.datetime)
         target_feature_vector = FeatureVector(profiler_profile.feedback_vector, target_feature_set_id)
-        target_profile = UserComputedProfile.make_from_db(
+        target_profile = UserComputedProfile(
             target_feature_vector, model_data_target, profile.datetime)
 
         updated_user_to_profile.append((user, target_profile))

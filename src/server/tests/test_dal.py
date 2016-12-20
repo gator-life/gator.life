@@ -294,7 +294,7 @@ class DalUserComputedProfileTests(unittest.TestCase):
             email=u'test_get_empty_user_computed_profiles', interests=[])
         self.dal.user.save_user(user, u'test_get_empty_user_computed_profiles_password')
         result_profile = self.dal.user_computed_profile.get_user_computed_profiles([user])[0]
-        expected_profile = struct.UserComputedProfile.make_from_scratch(
+        expected_profile = struct.UserComputedProfile(
             feature_vector=struct.FeatureVector(
                 [], self.dal.user._new_user_feature_set_id),  # pylint: disable=protected-access
             model_data=struct.UserProfileModelData.make_from_scratch([], [], [], 0, 0)
@@ -340,7 +340,7 @@ class DalUserComputedProfileTests(unittest.TestCase):
             vector=[0.5 + index, 0.6 + index], feature_set_id=feature_set_id)
         model_data = struct.UserProfileModelData.make_from_scratch(
             [0.7 + index, 0.8], [0.3 + index, 0.4], [-1.0 + index, -2.0], 5.0 + index, 9.0 + index)
-        profile = struct.UserComputedProfile.make_from_scratch(feature_vector, model_data)
+        profile = struct.UserComputedProfile(feature_vector, model_data)
         return user, profile
 
     def _assert_profiles_equals(self, expected_profile, result_profile):
