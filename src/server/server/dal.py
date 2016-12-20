@@ -25,7 +25,7 @@ def _to_user_action_type_on_doc(user_action_on_doc_db_string):
         return struct.UserActionTypeOnDoc.click_link
     if user_action_on_doc_db_string == u'view_link':
         return struct.UserActionTypeOnDoc.view_link
-    raise ValueError(user_action_on_doc_db_string + u' has no matching for Enum UserActionTypeOnDoc')
+    raise ValueError(user_action_on_doc_db_string + u' has no matching for Enum UserActionTypeOnDoc')  # pragma: no cover
 # NB: when struct.UserActionTypeOnDoc become an Enum, we can just call user_action_on_doc_enum.name
 
 
@@ -38,7 +38,7 @@ def _to_db_action_type_on_doc(user_action_on_doc_enum):
         return u'click_link'
     if user_action_on_doc_enum == struct.UserActionTypeOnDoc.view_link:
         return u'view_link'
-    raise ValueError(str(user_action_on_doc_enum) + ' has not string matching for database')
+    raise ValueError(str(user_action_on_doc_enum) + ' has not string matching for database')  # pragma: no cover
 
 
 def _to_user_profile_model_data(db_user_profile_model_data):

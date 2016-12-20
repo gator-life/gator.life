@@ -64,7 +64,7 @@ def _make_submissions_generator(disconnected):
         # cf. http://praw.readthedocs.io/en/stable/pages/faq.html?highlight=cache
         praw.handlers.DefaultHandler.clear_cache()
     else:
-        request_interval = 2
+        request_interval = 2  # pragma: no cover
 
     # bug on me PC, see https://urllib3.readthedocs.org/en/latest/security.html section OpenSSL / PyOpenSSL
     urllib3.contrib.pyopenssl.inject_into_urllib3()

@@ -102,7 +102,7 @@ class TopicModeller(object):
         if os.path.isfile(lda_file_path):
             self._lda = models.LdaModel.load(lda_file_path)
         else:
-            raise IOError(u'Lda model file does not exists : ' + lda_file_path)
+            raise IOError(u'Lda model file does not exists : ' + lda_file_path)  # pragma: no cover
 
     def load_dictionary(self, model_data_folder):
         dictionary_file_path = self._dictionary_file_path(model_data_folder)
@@ -110,7 +110,7 @@ class TopicModeller(object):
             self._dictionary = corpora.Dictionary.load(dictionary_file_path)
             self._cache_dictionary_words()
         else:
-            raise IOError(u'Dictionary file does not exists : ' + dictionary_file_path)
+            raise IOError(u'Dictionary file does not exists : ' + dictionary_file_path)  # pragma: no cover
 
     def save(self, model_data_folder):
         """
