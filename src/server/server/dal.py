@@ -70,7 +70,7 @@ def _to_user_doc(doc, db_user_doc):
 
 def _to_user_action_on_doc(doc, db_user_action_on_doc):
     action_type = _to_user_action_type_on_doc(db_user_action_on_doc['action_type'])
-    return struct.UserActionOnDoc.make_from_db(doc, action_type, db_user_action_on_doc['datetime'])
+    return struct.UserActionOnDoc(doc, action_type, db_user_action_on_doc['datetime'])
 
 
 def _to_feature_vector(db_feature_vector):

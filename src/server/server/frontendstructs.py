@@ -83,15 +83,12 @@ class UserActionTypeOnDoc(object):
 
 class UserActionOnDoc(object):
 
-    @staticmethod
-    def make_from_scratch(document, action_type):
-        return UserActionOnDoc(document, action_type, datetime=None)
-
-    @staticmethod
-    def make_from_db(document, action_type, datetime):
-        return UserActionOnDoc(document, action_type, datetime)
-
     def __init__(self, document, action_type, datetime):
+        """
+        :param document: Document
+        :param action_type: UserActionTypeOnDoc
+        :param datetime: datetime
+        """
         self.document = document
         self.action_type = action_type
         self.datetime = datetime
