@@ -5,7 +5,7 @@ import numpy as np
 from gensim import corpora, models
 import common.crypto as crypto
 from common.log import shrink
-from .doctokenizer import DocTokenizerFromRawText, DocTokenizerFromHtml
+from .doctokenizer import DocTokenizer
 
 LOGGER = logging.getLogger(__name__)
 
@@ -31,21 +31,13 @@ class TopicModeller(object):
     # 30 should be enough to keep relevant info as weight is already very low at 30' word
     _nb_words_by_topic = 30
 
-    @classmethod
-    def make_with_html_tokenizer(cls):
-        return TopicModeller(DocTokenizerFromHtml())
-
-    @classmethod
-    def make_with_rawtext_tokenizer(cls):
-        return TopicModeller(DocTokenizerFromRawText())
-
     # constructor allowing injection of custom tokenizer
-    def __init__(self, document_tokenizer):
+    def __init__(self):
         self._dictionary = None
         self._dictionary_words = None
         self._lda = None
         self._topics = None
-        self._tokenizer = document_tokenizer
+        self._tokenizer = DocTokenizer()
         self._remove_optimizations = False  # can be set to 'True' for testing purpose
         np.random.seed(2406834896)  # to get reproductible results
         # nb: ideally gensim should allow to inject RandomState to not make side effects on other libs using numpy RNG

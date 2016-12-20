@@ -26,7 +26,7 @@ class BackgroundUpdateTests(unittest.TestCase):
 
     def test_update_model_profiles_userdocs(self):
         user_name = 'test_launch_scrap_and_learn'
-        nb_docs = str(10)
+        nb_docs = str(9)
 
         interests = [' w' + str(i) for i in range(200)]  # choose 200 of the 500 words used in topic model description
         user = UserCreator().create_user_in_db(user_name, interests, 'pass', self.dal)

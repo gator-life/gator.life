@@ -61,9 +61,9 @@ def _execute_learn_loop(doc_builder, doc_saver, scraper_filtered, user_docs_accu
 
         (build_ok, doc) = doc_builder.build_doc(scraper_document, url_hash)
         if not build_ok:
-            LOGGER.info(u'doc creation failed, url[%s]', scraper_document.link_element.url)
+            LOGGER.info(u'doc creation failed, url[%s]', scraper_document.url)
             continue
-        LOGGER.debug(u'doc created, url[%s]', scraper_document.link_element.url)
+        LOGGER.debug(u'doc created, url[%s]', scraper_document.url)
         user_docs_accumulator.add_doc(doc, doc.feature_vector.vector)
         doc_saver.save_doc(doc, user_docs_accumulator, users)
 
@@ -83,15 +83,15 @@ class ScraperFiltered(object):
 
     def scrap(self):
         for doc in self._scraper.scrap():
-            LOGGER.debug('scrapped doc[%s]', doc.link_element.url)
+            LOGGER.debug('scrapped doc[%s]', doc.url)
             if self._current_doc_count == self._nb_docs:
                 LOGGER.info(u'nb_docs reached[%s], exit ScraperFiltered.Scrap', self._nb_docs)
                 return
             self._current_doc_count += 1
 
-            url_hash = crypto.hash_str(doc.link_element.url)
+            url_hash = crypto.hash_str(doc.url)
             if url_hash in self._url_hashes:
-                LOGGER.info(u'duplicated url[%s]', doc.link_element.url)
+                LOGGER.info(u'duplicated url[%s]', doc.url)
                 continue
             self._url_hashes.add(url_hash)
             yield doc, url_hash
@@ -152,12 +152,12 @@ class DocBuilder(object):
         self._ref_feature_set_id = Dal().feature_set.get_ref_feature_set_id()
 
     def build_doc(self, scraper_document, url_hash):
-        (classify_ok, topic_feature_vector) = self._topic_modeller.classify(scraper_document.html_content)
+        (classify_ok, topic_feature_vector) = self._topic_modeller.classify(scraper_document.content)
         if not classify_ok:
             return False, None
         doc = Document.make_from_scratch(
-            scraper_document.link_element.url, url_hash, scraper_document.link_element.origin_info.title,
-            summary=None, feature_vector=FeatureVector.make_from_scratch(topic_feature_vector, self._ref_feature_set_id))
+            scraper_document.url, url_hash, scraper_document.title, summary=scraper_document.content[:250],
+            feature_vector=FeatureVector.make_from_scratch(topic_feature_vector, self._ref_feature_set_id))
         return True, doc
 
 

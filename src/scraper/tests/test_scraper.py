@@ -7,9 +7,9 @@ import unittest
 import os
 from collections import namedtuple
 import vcr
-import jsonpickle
-from scraper.scraper import _is_valid_link, _get_invalid_regex, _get_doc_generator, _HtmlExtractor
-from scraper.scraperstructs import LinkElement, Document
+from scraper.scraper import Document, _is_valid_link, _get_invalid_regex, _get_doc_generator, _HtmlExtractor,\
+    _try_get_document
+from scraper.reddit import LinkElement
 
 
 class ScraperTests(unittest.TestCase):
@@ -88,14 +88,14 @@ class ScraperTests(unittest.TestCase):
     def test_get_doc_generator_return_docs_correctly_serializable_as_json(self):
         logging.disable('WARNING')  # this test raise logged exceptions, we disable it to not pollute console output
 
-        chinese = 'http://www.sina.com.cn/'
-        jpg = 'https://scontent-dfw1-1.xx.fbcdn.net/hphotos-xat1/v/t1.0-9/11826008_10153591159909124_7497239512955988899_n.jpg?oh=026fe9cdf68e281f693c56f68f02a88b&oe=565454EE'  # pylint: disable=line-too-long
-        pdf = 'http://www.math.stonybrook.edu/theses/thesis06-1/part1.pdf'
-        russian = 'https://meduza.io/news/2015/08/01/v-administratsii-obamy-obsudili-vozmozhnost-vzloma-velikogo-kitayskogo-fayervola'  # pylint: disable=line-too-long
-        french = 'http://www.liberation.fr/france/2016/12/06/a-new-york-macron-trace-sa-route-a-l-americaine_1533374'
-        fail_decode = 'http://www.washingtonpost.com/news/worldviews/wp/2015/08/01/say-goodbye-to-the-weirdest-border-dispute-in-the-world/'  # pylint: disable=line-too-long
-        fail_decode2 = 'http://happynicetimepeople.com/from-bloodsucking-cars-to-lava-spewing-spiders-syfy-makes-your-tv-dreams-come-true/'  # pylint: disable=line-too-long
-        unicode_decode_error_exception = 'http://www.dezeen.com/2015/08/05/charles-holland-lost-relics-postmodernism-architecture-design/'  # pylint: disable=line-too-long
+        chinese = u'http://www.sina.com.cn/'
+        jpg = u'https://scontent-dfw1-1.xx.fbcdn.net/hphotos-xat1/v/t1.0-9/11826008_10153591159909124_7497239512955988899_n.jpg?oh=026fe9cdf68e281f693c56f68f02a88b&oe=565454EE'  # pylint: disable=line-too-long
+        pdf = u'http://www.math.stonybrook.edu/theses/thesis06-1/part1.pdf'
+        russian = u'https://meduza.io/news/2015/08/01/v-administratsii-obamy-obsudili-vozmozhnost-vzloma-velikogo-kitayskogo-fayervola'  # pylint: disable=line-too-long
+        french = u'http://www.liberation.fr/france/2016/12/06/a-new-york-macron-trace-sa-route-a-l-americaine_1533374'
+        fail_decode = u'http://www.washingtonpost.com/news/worldviews/wp/2015/08/01/say-goodbye-to-the-weirdest-border-dispute-in-the-world/'  # pylint: disable=line-too-long
+        fail_decode2 = u'http://happynicetimepeople.com/from-bloodsucking-cars-to-lava-spewing-spiders-syfy-makes-your-tv-dreams-come-true/'  # pylint: disable=line-too-long
+        unicode_decode_error_exception = u'http://www.dezeen.com/2015/08/05/charles-holland-lost-relics-postmodernism-architecture-design/'  # pylint: disable=line-too-long
 
         urls = [
             french,  # ok
@@ -114,20 +114,67 @@ class ScraperTests(unittest.TestCase):
                               record_mode='none', ignore_localhost=True):
             docs = list(_get_doc_generator(links))
 
-        json_docs = [jsonpickle.encode(d) for d in docs]
-        decoded_docs = [jsonpickle.decode(d) for d in json_docs]
-
-        self.assertEquals(4, len(json_docs))
-        for doc in decoded_docs:
+        self.assertEquals(4, len(docs))
+        for doc in docs:
             self.assertIsInstance(doc, Document)
-            html_content = doc.html_content
-            self.assertIsInstance(html_content, unicode)
+            self.assertIsInstance(doc.content, unicode)
+            self.assertIsInstance(doc.title, unicode)
+            self.assertTrue(doc.url in urls)
 
-        self.assertTrue(u'secrétaire général des Nations-Unies, António Guterres' in decoded_docs[0].html_content)
-        self.assertTrue(u'которого власти Китая' in decoded_docs[1].html_content)
-        self.assertTrue(u'Say goodbye to the weirdest' in decoded_docs[2].html_content)
-        self.assertTrue(u'From bloodsucking cars to' in decoded_docs[3].html_content)
+        self.assertTrue(u'secrétaire général des Nations-Unies, António Guterres' in docs[0].content)
+        self.assertTrue(u'которого власти Китая' in docs[1].content)
+        self.assertTrue(u'but on the ground it is likely to be far more complicated' in docs[2].content)
+        self.assertTrue(u'I could just simply throw you an actual arm and a leg' in docs[3].content)
 
+    def test_try_get_document_valid_input(self):
+        html_doc = u"""
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <title>this is title</title>
+      </head>
+      <body>this is content</body>
+    </html>
+    """
+
+        url = u'url_test_try_get_document_valid_input'
+        scraper_doc = _try_get_document(url, html_doc)
+        self.assertEquals(url, scraper_doc.url)
+        self.assertEquals(u'this is title', scraper_doc.title)
+        self.assertEquals(u'this is content', scraper_doc.content)
+
+    def test_try_get_document_no_title_return_none(self):
+        html_doc = u"""
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <title></title>
+      </head>
+      <body>
+        this is content
+      </body>
+    </html>
+    """
+
+        url = u'url_test_try_get_document_valid_input'
+        self.assertIsNone(_try_get_document(url, html_doc))
+
+    def test_try_get_document_no_content_return_none(self):
+        html_doc = u"""
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <title>this is title</title>
+      </head>
+      <body></body>
+    </html>
+    """
+
+        url = u'url_test_try_get_document_valid_input'
+        self.assertIsNone(_try_get_document(url, html_doc))
 
 if __name__ == '__main__':
     unittest.main()

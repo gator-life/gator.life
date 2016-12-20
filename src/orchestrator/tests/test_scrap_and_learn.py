@@ -5,20 +5,20 @@ import unittest
 import datetime
 from orchestrator.scrap_and_learn import _scrap_and_learn
 from common.datehelper import utcnow
-import scraper.scraperstructs as scrap
+import scraper.scraper as scraper
 from server.dal import Dal
 import server.frontendstructs as struct
 
 
 class MockScraper(object):
 
+    default_content = u'doc_content'
+
     @staticmethod
     def scrap():
-        def scrap_doc(index, content='html'):
+        def scrap_doc(index, content=u'doc_content'):
             str_index = str(index)
-            return scrap.Document(
-                scrap.LinkElement(
-                    "url" + str_index, None, scrap.OriginInfo("title" + str_index, None, None, None, None), None), content)
+            return scraper.Document(u"url" + str_index, u"title" + str_index, content)
 
         return [
             scrap_doc(3),
@@ -26,8 +26,8 @@ class MockScraper(object):
             scrap_doc(5),  # those 3 should be taken in first chunk (chunk_size=3)
             scrap_doc(6),  # taken after first chunk
             scrap_doc(3),  #  other instance of a duplicated url, should be ignored by the url unicity checker
-            scrap_doc(7, 'unclassifiable'),  # should ne ignored as it is returned as unclassifiable by the TopicModeller
-            scrap_doc(8, 'excluded_because_after_nbdocs')  # should not be read because nbdocs = 6
+            scrap_doc(7, u'unclassifiable'),  # should ne ignored as it is returned as unclassifiable by the TopicModeller
+            scrap_doc(8, u'excluded_because_after_nbdocs')  # should not be read because nbdocs = 6
         ]
 
 
@@ -45,9 +45,9 @@ class MockTopicModeller(object):
 
     @staticmethod
     def classify(doc_content):
-        if doc_content == 'unclassifiable':
+        if doc_content == u'unclassifiable':
             return False, None
-        if doc_content == 'html':
+        if doc_content == u'doc_content':
             return True, MockTopicModeller.feature_vector
         else:
             raise ValueError(doc_content)
@@ -103,6 +103,7 @@ class ScrapAndLearnTests(unittest.TestCase):
         for doc in mock_saver.saved_docs:
             self.assertEquals(self.ref_feature_set_id, doc.feature_vector.feature_set_id)
             self.assertEquals(MockTopicModeller.feature_vector, doc.feature_vector.vector)
+            self.assertEquals(MockScraper.default_content, doc.summary)
 
     def _save_dummy_profile_for_user(self, user):
         feature_vector = struct.FeatureVector.make_from_scratch([1.0], "featureSetId-test_scrap_learn")
