@@ -5,7 +5,7 @@ import common.crypto as crypto
 from common.datehelper import utcnow
 from learner.topicmodelapprox import TopicModelApproxClassifier
 from learner.userprofiler import UserProfiler
-from learner.learner import UserDocumentsAccumulator, UserData
+from learner.userdocmatch import UserDocumentsAccumulator, UserData
 import nltk
 from . import frontendstructs as struct
 

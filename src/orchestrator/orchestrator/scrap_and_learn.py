@@ -5,7 +5,7 @@ import datetime
 import common.crypto as crypto
 from common.technical import get_process_memory
 from common.datehelper import utcnow
-import learner.learner as lrn
+import learner.userdocmatch as userdocmatch
 from scraper.scraper import Scraper
 from server.frontendstructs import Document, UserDocument, FeatureVector
 from server.dal import Dal
@@ -135,11 +135,12 @@ class UserDocChunkSaver(object):
 
     @staticmethod
     def _get_users_to_user_docs(users, user_docs_accumulator):
-        lrn_users_docs = user_docs_accumulator.build_user_docs()
+        # udm: user doc matching
+        udm_users_docs = user_docs_accumulator.build_user_docs()
         user_to_user_docs = (
-            (user, [UserDocument.make_from_scratch(lrn_user_doc.doc_id, lrn_user_doc.grade)
-                    for lrn_user_doc in lrn_user_docs])
-            for user, lrn_user_docs in zip(users, lrn_users_docs)
+            (user, [UserDocument.make_from_scratch(udm_user_doc.doc_id, udm_user_doc.grade)
+                    for udm_user_doc in udm_user_docs])
+            for user, udm_user_docs in zip(users, udm_users_docs)
         )
         return user_to_user_docs
 
@@ -165,9 +166,9 @@ def _build_user_docs_accumulator(users, user_docs_max_size):
     def build_learner_user_data(user_feature_vector, user_docs):
         # Exclude old docs from user docs
         min_doc_date = utcnow() - datetime.timedelta(days=2)
-        learner_user_docs = (lrn.UserDoc(user_doc.document, user_doc.grade)
+        learner_user_docs = (userdocmatch.UserDoc(user_doc.document, user_doc.grade)
                              for user_doc in user_docs if user_doc.document.datetime > min_doc_date)
-        return lrn.UserData(user_feature_vector, learner_user_docs)
+        return userdocmatch.UserData(user_feature_vector, learner_user_docs)
 
     dal = Dal()
     users_docs = dal.user_doc.get_users_docs(users)
@@ -175,5 +176,5 @@ def _build_user_docs_accumulator(users, user_docs_max_size):
     user_data_list = (
         build_learner_user_data(feat_vec.vector, docs) for feat_vec, docs in zip(users_feature_vectors, users_docs)
     )
-    user_docs_accumulator = lrn.UserDocumentsAccumulator(user_data_list, user_docs_max_size)
+    user_docs_accumulator = userdocmatch.UserDocumentsAccumulator(user_data_list, user_docs_max_size)
     return user_docs_accumulator
