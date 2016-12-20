@@ -63,7 +63,8 @@ class UserProfileBuilderTests(unittest.TestCase):
     @staticmethod
     def _build_profile(feature_set_id):
         feature_vector = struct.FeatureVector([1.0], feature_set_id)
-        model_data = struct.UserProfileModelData.make_empty(1)
+        size_vector = 1
+        model_data = struct.UserProfileModelData([0] * size_vector, [0] * size_vector, [0] * size_vector, 0.0, 0.0)
         return struct.UserComputedProfile(feature_vector, model_data)
 
 

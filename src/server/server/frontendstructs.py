@@ -112,10 +112,6 @@ class UserComputedProfile(object):
 
 class UserProfileModelData(object):
 
-    @staticmethod
-    def make_empty(size_vector):
-        return UserProfileModelData([0] * size_vector, [0] * size_vector, [0] * size_vector, 0.0, 0.0)
-
     def __init__(self, explicit_feedback_vector,
                  positive_feedback_vector, negative_feedback_vector,
                  positive_feedback_sum_coeff, negative_feedback_sum_coeff):
