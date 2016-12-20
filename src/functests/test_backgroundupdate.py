@@ -39,7 +39,7 @@ class BackgroundUpdateTests(unittest.TestCase):
             model_directory_in_docker_image = "trained_topic_model"
             cassette_path_in_docker_image = "src/functests/vcr_cassettes/update_model_profiles_userdocs.yaml"
 
-            subprocess.call(["tools/build_docker_background_update.sh"], cwd=root_dir, shell=True)
+            subprocess.call(["scripts/build_docker_background_update.sh"], cwd=root_dir, shell=True)
             subprocess.call(['docker', 'run',
                              "--net=host",  # so container can access local datastore address
                              "-e", "TEST_ENV=" + os.environ["TEST_ENV"],  # forward some environment variables

@@ -1,9 +1,9 @@
 #!/bin/bash
 # script must be executed from root git directory
 
-. tools/set_env_vars.sh
+. scripts/set_env_vars.sh
 
-tools/start_server.sh
+scripts/start_server.sh
 
 if [ "$1" = "cover" ]; then
 	export COVERAGE='True'

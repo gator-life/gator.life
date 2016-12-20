@@ -8,10 +8,10 @@ docker rmi -f  gator_deps
 
 virtualenv global_env
 source global_env/bin/activate
-tools/install_envs.sh
-tools/start_tests.sh
+scripts/install_envs.sh
+scripts/start_tests.sh
 
-tools/kill_gunicorn.sh
-tools/kill_gcloud.sh
+scripts/kill_gunicorn.sh
+scripts/kill_gcloud.sh
 
-tools/run_pylint.sh
+scripts/run_pylint.sh
