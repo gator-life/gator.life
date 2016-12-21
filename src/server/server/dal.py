@@ -106,10 +106,10 @@ def _datastore_test_client():
         """
         @staticmethod
         def create_scoped_required():
-            return False
+            return False  # pragma: no cover
 
         def refresh(self, request):
-            pass
+            pass  # pragma: no cover
 
     credentials = _EmulatorCreds()
     http = httplib2.Http()  # Un-authorized.

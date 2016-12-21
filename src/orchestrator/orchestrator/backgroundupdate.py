@@ -32,7 +32,7 @@ def update_model_profiles_userdocs():
         keep_user_func = lambda u: u.email.startswith(users_prefix)
         nb_docs_before_users_reload = int(sys.argv[4])
         start_cache_date = utcnow()
-    else:
+    else:  # pragma: no cover
         vcr_cassette_file = None
         keep_user_func = lambda u: True
         nb_docs_before_users_reload = 100
@@ -62,7 +62,7 @@ def update_model_profiles_userdocs():
                 model_updater.update_model_in_db(topic_modeller, users)
                 update_profiles_in_database(users)
                 scrap_learn(topic_modeller, users, nb_docs_before_users_reload, seen_url_hashes_set)
-            except:  # pylint: disable=bare-except
+            except:  # pylint: disable=bare-except  # pragma: no cover
                 LOGGER.exception(u'Exception in update_model_profiles_userdocs main loop, restarting')
                 sleep(30)
             if vcr_cassette_file:  # only one loop for run from a cassette
@@ -72,13 +72,13 @@ def update_model_profiles_userdocs():
 class NoContext(object):
 
     def __init__(self):
-        pass
+        pass  # pragma: no cover
 
     def __enter__(self):
-        return None
+        return None  # pragma: no cover
 
     def __exit__(self, exc_type, exc_value, traceback):
-        return False
+        return False  # pragma: no cover
 
 
 def _get_users(dal, keep_user_func):
