@@ -5,7 +5,7 @@ import common.crypto as crypto
 from common.datehelper import utcnow
 from learner.topicmodelapprox import TopicModelApproxClassifier
 from learner.userprofiler import UserProfiler
-from learner.learner import UserDocumentsAccumulator, UserData
+from learner.userdocmatch import UserDocumentsAccumulator, UserData
 import nltk
 from . import frontendstructs as struct
 
@@ -59,11 +59,11 @@ class _ProfileInitializer(object):
             LOGGER.debug('classify interests [%s]', '-'.join(words))
         explicit_vector = self._classifier.compute_classified_vector(words)
         zero_vec = [0] * self._nb_topics
-        model_data = struct.UserProfileModelData.make_from_scratch(explicit_vector, zero_vec, zero_vec, 0, 0)
+        model_data = struct.UserProfileModelData(explicit_vector, zero_vec, zero_vec, 0, 0)
         now = utcnow()
         profile = self._profiler.compute_user_profile(model_data, now, [], now)
-        feature_vector = struct.FeatureVector.make_from_scratch(profile.feedback_vector, self._ref_feature_set_id)
-        user_profile = struct.UserComputedProfile.make_from_scratch(feature_vector, profile.model_data)
+        feature_vector = struct.FeatureVector(profile.feedback_vector, self._ref_feature_set_id)
+        user_profile = struct.UserComputedProfile(feature_vector, profile.model_data)
         return user_profile
 
 
@@ -78,6 +78,6 @@ def _get_user_docs(dal, user_feature_vector, min_date_docs, nb_user_docs):
     for doc in valid_docs:
         doc_accu.add_doc(doc, doc.feature_vector.vector)
     lrn_docs = doc_accu.build_user_docs()[0]
-    to_user_doc = lambda lrn_doc: struct.UserDocument.make_from_scratch(lrn_doc.doc_id, lrn_doc.grade)
+    to_user_doc = lambda lrn_doc: struct.UserDocument(lrn_doc.doc_id, lrn_doc.grade)
     user_docs = [to_user_doc(lrn_doc) for lrn_doc in lrn_docs]
     return user_docs

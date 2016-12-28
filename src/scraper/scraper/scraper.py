@@ -8,11 +8,24 @@ import logging
 import urlparse
 import cchardet
 import requests
-
+import lxml
+import readability
 from .reddit import reddit_link_elements_generator
-from .scraperstructs import Document
 
 LOGGER = logging.getLogger(__name__)
+
+
+class Document(object):
+
+    def __init__(self, url, title, content):
+        """
+        :param url: Unicode
+        :param title: Unicode. Title of the article
+        :param content: Unicode. Content of the article (html markup already cleaned)
+        """
+        self.url = url
+        self.title = title
+        self.content = content
 
 
 def _is_valid_link(link_element, invalid_paths_regex, invalid_extensions):
@@ -104,9 +117,24 @@ def _scrap(disconnected):
 
 def _get_doc_generator(link_elts):
     html_extractor = _HtmlExtractor()
-    links_and_htmls = ((link, html_extractor.try_get_html(link.url)) for link in link_elts)
-    documents = (Document(link, html) for link, html in links_and_htmls if html is not None)
-    return documents
+    for link_elt in link_elts:
+        html = html_extractor.try_get_html(link_elt.url)
+        if html is None:
+            continue
+        doc = _try_get_document(link_elt.url, html)
+        if doc is None:
+            continue
+        yield doc
+
+
+def _try_get_document(url, html):
+    readability_doc = readability.Document(html)
+    text_without_useless_parts = readability_doc.summary()
+    content_without_html_markup = unicode(lxml.html.fromstring(text_without_useless_parts).text_content())
+    title = unicode(readability_doc.short_title())
+    if content_without_html_markup is None or title is None or content_without_html_markup == u'' or title == u'':
+        return None
+    return Document(unicode(url), title, content_without_html_markup)
 
 
 class Scraper(object):

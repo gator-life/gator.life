@@ -60,6 +60,6 @@ git checkout feature/Feature-EnvEnhs
 virtualenv global_env
 source global_env/bin/activate
 
-tools/install_envs.sh
+scripts/install_envs.sh
 
-tools/start_tests.sh
+scripts/start_tests.sh

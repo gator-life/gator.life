@@ -5,7 +5,7 @@ import numpy as np
 from gensim import corpora, models
 import common.crypto as crypto
 from common.log import shrink
-from .doctokenizer import DocTokenizerFromRawText, DocTokenizerFromHtml
+from .doctokenizer import DocTokenizer
 
 LOGGER = logging.getLogger(__name__)
 
@@ -31,21 +31,13 @@ class TopicModeller(object):
     # 30 should be enough to keep relevant info as weight is already very low at 30' word
     _nb_words_by_topic = 30
 
-    @classmethod
-    def make_with_html_tokenizer(cls):
-        return TopicModeller(DocTokenizerFromHtml())
-
-    @classmethod
-    def make_with_rawtext_tokenizer(cls):
-        return TopicModeller(DocTokenizerFromRawText())
-
     # constructor allowing injection of custom tokenizer
-    def __init__(self, document_tokenizer):
+    def __init__(self):
         self._dictionary = None
         self._dictionary_words = None
         self._lda = None
         self._topics = None
-        self._tokenizer = document_tokenizer
+        self._tokenizer = DocTokenizer()
         self._remove_optimizations = False  # can be set to 'True' for testing purpose
         np.random.seed(2406834896)  # to get reproductible results
         # nb: ideally gensim should allow to inject RandomState to not make side effects on other libs using numpy RNG
@@ -110,7 +102,7 @@ class TopicModeller(object):
         if os.path.isfile(lda_file_path):
             self._lda = models.LdaModel.load(lda_file_path)
         else:
-            raise IOError(u'Lda model file does not exists : ' + lda_file_path)
+            raise IOError(u'Lda model file does not exists : ' + lda_file_path)  # pragma: no cover
 
     def load_dictionary(self, model_data_folder):
         dictionary_file_path = self._dictionary_file_path(model_data_folder)
@@ -118,7 +110,7 @@ class TopicModeller(object):
             self._dictionary = corpora.Dictionary.load(dictionary_file_path)
             self._cache_dictionary_words()
         else:
-            raise IOError(u'Dictionary file does not exists : ' + dictionary_file_path)
+            raise IOError(u'Dictionary file does not exists : ' + dictionary_file_path)  # pragma: no cover
 
     def save(self, model_data_folder):
         """

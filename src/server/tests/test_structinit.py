@@ -10,8 +10,8 @@ from server.frontendstructs import FeatureSet, TopicModelDescription, Document, 
 
 
 def make_doc(vector, feature_set_id, url_hash):
-    feat_vec = FeatureVector.make_from_scratch(vector, feature_set_id)
-    doc = Document.make_from_scratch('u', url_hash, '', '', feat_vec)
+    feat_vec = FeatureVector(vector, feature_set_id)
+    doc = Document('u', url_hash, '', '', feat_vec)
     return doc
 
 
@@ -23,7 +23,7 @@ class UserCreatorTests(unittest.TestCase):
     def _save_dummy_feature_set(self, feature_set_id):
         model_id = 'UserCreatorTests_save_dummy_feature_set_model_id'
         self.dal.feature_set.save_feature_set(
-            FeatureSet.make_from_scratch(feature_set_id, feature_names=['f1, f2'], model_id=model_id))
+            FeatureSet(feature_set_id, feature_names=['f1, f2'], model_id=model_id))
         self.dal.feature_set.save_ref_feature_set_id(feature_set_id)
         self.dal.topic_model.save(TopicModelDescription.make_from_scratch(model_id, [
             [('w1', 1)],
@@ -66,7 +66,7 @@ class UserCreatorTests(unittest.TestCase):
         doc_bad = make_doc([0.9, 0.1], 'bad_set_id', 'url_bad_det')
 
         self.dal.doc.save_documents([doc_low, doc_high, doc_bad])
-        feat_user = FeatureVector.make_from_scratch([1, 0], ref_feature_set_id)
+        feat_user = FeatureVector([1, 0], ref_feature_set_id)
         user_docs = _get_user_docs(self.dal, feat_user, date_min, 1)
         self.assertEqual(1, len(user_docs))
         self.assertEqual('url_high', user_docs[0].document.url_hash)

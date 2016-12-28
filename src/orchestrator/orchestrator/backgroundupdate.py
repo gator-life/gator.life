@@ -48,8 +48,9 @@ def update_model_profiles_userdocs():
         topic_model_directory, test_mode, vcr_cassette_file, nb_docs_before_users_reload, start_cache_date)
 
     model_updater = ModelUpdater()
-    topic_modeller = TopicModeller.make_with_html_tokenizer()
+    topic_modeller = TopicModeller()
     topic_modeller.load(topic_model_directory)
+
     seen_url_hashes_set = set(Dal().doc.get_recent_doc_url_hashes(start_cache_date))
 
     with use_cassette(vcr_cassette_file, record_mode='none', ignore_localhost=True) if vcr_cassette_file else NoContext():

@@ -19,14 +19,14 @@ class BackgroundUpdateTests(unittest.TestCase):
         model = TopicModelDescription.make_from_scratch(model_id, [[('w' + str(i), 1)] for i in range(nb_topics)])
         self.dal.topic_model.save(model)
         ref_feature_set_id = 'BackgroundUpdateTests_ref_feature_set_id'
-        self.dal.feature_set.save_feature_set(FeatureSet.make_from_scratch(
+        self.dal.feature_set.save_feature_set(FeatureSet(
             ref_feature_set_id, ['feature_' + str(i) for i in range(nb_topics)], model_id))
         self.dal.feature_set.save_ref_feature_set_id(ref_feature_set_id)
         self.is_coverage = bool(os.environ.get('COVERAGE', None))
 
     def test_update_model_profiles_userdocs(self):
         user_name = 'test_launch_scrap_and_learn'
-        nb_docs = str(10)
+        nb_docs = str(9)
 
         interests = [' w' + str(i) for i in range(200)]  # choose 200 of the 500 words used in topic model description
         user = UserCreator().create_user_in_db(user_name, interests, 'pass', self.dal)
@@ -39,7 +39,7 @@ class BackgroundUpdateTests(unittest.TestCase):
             model_directory_in_docker_image = "trained_topic_model"
             cassette_path_in_docker_image = "src/functests/vcr_cassettes/update_model_profiles_userdocs.yaml"
 
-            subprocess.call(["tools/build_docker_background_update.sh"], cwd=root_dir, shell=True)
+            subprocess.call(["scripts/build_docker_background_update.sh"], cwd=root_dir, shell=True)
             subprocess.call(['docker', 'run',
                              "--net=host",  # so container can access local datastore address
                              "-e", "TEST_ENV=" + os.environ["TEST_ENV"],  # forward some environment variables

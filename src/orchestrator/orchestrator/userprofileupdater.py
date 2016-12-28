@@ -43,8 +43,8 @@ def _compute_new_user_profile(profiler, old_profile, user_actions, now):
     actions_profiler_format = (_to_action_in_profiler_format(action) for action in new_actions)
     new_profile = profiler.compute_user_profile(old_profile.model_data, old_profile.datetime, actions_profiler_format, now)
     feature_set_id = old_profile.feature_vector.feature_set_id
-    new_feature_vector = struct.FeatureVector.make_from_scratch(new_profile.feedback_vector, feature_set_id)
-    return struct.UserComputedProfile.make_from_scratch(new_feature_vector, new_profile.model_data)
+    new_feature_vector = struct.FeatureVector(new_profile.feedback_vector, feature_set_id)
+    return struct.UserComputedProfile(new_feature_vector, new_profile.model_data)
 
 
 def _to_action_in_profiler_format(action):

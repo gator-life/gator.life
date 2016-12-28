@@ -1,15 +1,15 @@
 #!/bin/bash
 # script must be executed from root git directory
 
-. tools/set_env_vars.sh
+. scripts/set_env_vars.sh
 
-tools/start_server.sh
+scripts/start_server.sh
 
 if [ "$1" = "cover" ]; then
 	export COVERAGE='True'
-	coverage run --source=src --omit=*tests* -m py.test src
+	coverage run --source=src --omit=*tests* -m py.test src -s -vvvv
 else
-	py.test src
+	py.test src -s -vvvv
 fi
 
 #the if was quite painfull to get right, for memory:
