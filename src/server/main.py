@@ -18,7 +18,7 @@ logging.getLogger().setLevel(logging.DEBUG)
 logging.getLogger().info('start server logging')
 # This variable is referenced by gunicorn in
 #  - entrypoint section of app.yaml file,
-#  - tools/start_server.sh
+#  - scripts/start_server.sh
 # if changed, gunicorn command must be updated accordingly.
 APP = Flask(__name__, static_folder='server/static')
 APP.register_blueprint(handlers)

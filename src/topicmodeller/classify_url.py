@@ -8,7 +8,7 @@ def classify_url():
     root_dir = directory + '/../..'
     topic_model_directory = root_dir + '/docker_images/gator_deps/trained_topic_model'
 
-    topic_modeller = TopicModeller.make_with_html_tokenizer()
+    topic_modeller = TopicModeller()
     topic_modeller.load(topic_model_directory)
 
     url = u'https://www.washingtonpost.com/entertainment/books/spanish-author-mendoza-wins-2016-cervantes-literature-prize' \

@@ -50,7 +50,7 @@ Tested on Ubuntu 14.04 and 16.04. For more details on how the setup was done on 
 3. Under repo root directory, run setup script:
 
 	```sh
-	$ tools/setup_local.sh
+	$ scripts/setup_local.sh
 	```
 
 	This script will:
@@ -70,13 +70,13 @@ Thank you for your interest for the open source projet *Gator Life*. For now we 
 		* Passes all unit tests
 
 			```sh
-			$ tools/start_tests.sh
+			$ scripts/start_tests.sh
 			```
 
 		* Passes linter:
 
 			```sh
-			$ tools/run_pylint.sh
+			$ scripts/run_pylint.sh
 			```
 	* Test coverage should be close to 100%:
 		* Unit tests for a package are in directory *tests* besides the package.

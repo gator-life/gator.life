@@ -25,7 +25,7 @@ def _to_user_action_type_on_doc(user_action_on_doc_db_string):
         return struct.UserActionTypeOnDoc.click_link
     if user_action_on_doc_db_string == u'view_link':
         return struct.UserActionTypeOnDoc.view_link
-    raise ValueError(user_action_on_doc_db_string + u' has no matching for Enum UserActionTypeOnDoc')
+    raise ValueError(user_action_on_doc_db_string + u' has no matching for Enum UserActionTypeOnDoc')  # pragma: no cover
 # NB: when struct.UserActionTypeOnDoc become an Enum, we can just call user_action_on_doc_enum.name
 
 
@@ -38,11 +38,11 @@ def _to_db_action_type_on_doc(user_action_on_doc_enum):
         return u'click_link'
     if user_action_on_doc_enum == struct.UserActionTypeOnDoc.view_link:
         return u'view_link'
-    raise ValueError(str(user_action_on_doc_enum) + ' has not string matching for database')
+    raise ValueError(str(user_action_on_doc_enum) + ' has not string matching for database')  # pragma: no cover
 
 
 def _to_user_profile_model_data(db_user_profile_model_data):
-    return struct.UserProfileModelData.make_from_db(
+    return struct.UserProfileModelData(
         db_user_profile_model_data.get('explicit_feedback_vector', []),
         db_user_profile_model_data.get('positive_feedback_vector', []),
         db_user_profile_model_data.get('negative_feedback_vector', []),
@@ -65,12 +65,12 @@ def _to_user_password(db_user):
 
 
 def _to_user_doc(doc, db_user_doc):
-    return struct.UserDocument.make_from_scratch(document=doc, grade=db_user_doc['grade'])
+    return struct.UserDocument(document=doc, grade=db_user_doc['grade'])
 
 
 def _to_user_action_on_doc(doc, db_user_action_on_doc):
     action_type = _to_user_action_type_on_doc(db_user_action_on_doc['action_type'])
-    return struct.UserActionOnDoc.make_from_db(doc, action_type, db_user_action_on_doc['datetime'])
+    return struct.UserActionOnDoc(doc, action_type, db_user_action_on_doc['datetime'])
 
 
 def _to_feature_vector(db_feature_vector):
@@ -81,20 +81,20 @@ def _to_feature_vector(db_feature_vector):
     vector = [0] * length
     for index, value in zip(indexes, values):
         vector[index] = value
-    return struct.FeatureVector.make_from_scratch(vector=vector, feature_set_id=feature_set_id)
+    return struct.FeatureVector(vector=vector, feature_set_id=feature_set_id)
 
 
 def _to_user_computed_profile(db_user_computed_profile):
     model_data = _to_user_profile_model_data(db_user_computed_profile['model_data'])
     feature_vector = _to_feature_vector(db_user_computed_profile['feature_vector'])
     update_datetime = db_user_computed_profile['datetime']
-    return struct.UserComputedProfile.make_from_db(feature_vector, model_data, update_datetime)
+    return struct.UserComputedProfile(feature_vector, model_data, update_datetime)
 
 
 def _to_doc(db_doc):
-    return struct.Document.make_from_db(
+    return struct.Document(
         url=db_doc['url'], url_hash=db_doc.key.name, title=db_doc['title'], summary=db_doc['summary'],
-        datetime=db_doc['datetime'], feature_vector=_to_feature_vector(db_doc['feature_vector']))
+        feature_vector=_to_feature_vector(db_doc['feature_vector']), datetime=db_doc['datetime'])
 
 
 def _datastore_test_client():
@@ -181,7 +181,7 @@ class DalFeatureSet(object):
         db_feature_set = self._ds_client.get(db_feature_set_key)
         feature_names = db_feature_set.get('features', [])
         model_id = db_feature_set['model_id']
-        return struct.FeatureSet.make_from_db(feature_set_id, feature_names, model_id)
+        return struct.FeatureSet(feature_set_id, feature_names, model_id)
 
     def save_feature_set(self, feature_set):
         """
@@ -549,9 +549,9 @@ class DalUser(object):
             user._user_doc_set_db_key = user_doc_set_db.key  # pylint: disable=protected-access
         if user._user_computed_profile_db_key is None:  # pylint: disable=protected-access
 
-            user_computed_profile = struct.UserComputedProfile.make_from_scratch(
-                struct.FeatureVector.make_from_scratch([], self._new_user_feature_set_id),
-                struct.UserProfileModelData.make_from_scratch([], [], [], 0.0, 0.0))
+            user_computed_profile = struct.UserComputedProfile(
+                struct.FeatureVector([], self._new_user_feature_set_id),
+                struct.UserProfileModelData([], [], [], 0.0, 0.0))
             db_user_computed_profile = \
                 self._dal_user_computed_profile._to_db_user_computed_profile(  # pylint: disable=protected-access
                     user_computed_profile)

@@ -39,7 +39,7 @@ def update_model_profiles_userdocs():
         start_cache_date = utcnow() - datetime.timedelta(days=14)
 
     model_updater = ModelUpdater()
-    topic_modeller = TopicModeller.make_with_html_tokenizer()
+    topic_modeller = TopicModeller()
     topic_modeller.load(topic_model_directory)
 
     LOGGER.info(

@@ -14,7 +14,7 @@ USER_CREATOR = UserCreator()
 
 def get_dal():
     # Indirection to enable mocking
-    return Dal()
+    return Dal()  # pragma: no cover
 
 
 class Link(object):

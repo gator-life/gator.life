@@ -95,9 +95,9 @@ class UserProfiler(object):
         global_vec = self._compute_global_feedback_vector(np.asarray(previous_model_data.explicit_feedback_vector),
                                                           neg_elt, pos_elt)
 
-        updated_model_data = UserProfileModelData.make_from_scratch(previous_model_data.explicit_feedback_vector,
-                                                                    pos_elt.sum_vec.tolist(), neg_elt.sum_vec.tolist(),
-                                                                    pos_elt.sum_coeff, neg_elt.sum_coeff)
+        updated_model_data = UserProfileModelData(previous_model_data.explicit_feedback_vector,
+                                                  pos_elt.sum_vec.tolist(), neg_elt.sum_vec.tolist(),
+                                                  pos_elt.sum_coeff, neg_elt.sum_coeff)
 
         return UserProfile(updated_model_data, global_vec.tolist())
 
@@ -113,7 +113,7 @@ class UserProfiler(object):
         if explicit_feedback_norm == 0:
             explicit_feedback_norm = 1
 
-        global_vec = (diff_pos_neg_vec/diff_pos_neg_vec_norm + explicit_feedback_vec/explicit_feedback_norm) / 2
+        global_vec = (diff_pos_neg_vec / diff_pos_neg_vec_norm + explicit_feedback_vec / explicit_feedback_norm) / 2
 
         return global_vec
 

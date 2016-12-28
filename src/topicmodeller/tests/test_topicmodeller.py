@@ -21,7 +21,8 @@ class TopicModellerTests(unittest.TestCase):
         doc2 = u'Green is cool, green is nice, green is swag, orange not so much'
         docs = [doc1, doc2]
 
-        topic_modeller = TopicModeller(self.MockTokenizer())
+        topic_modeller = TopicModeller()
+        topic_modeller._tokenizer = self.MockTokenizer()
         topic_modeller._remove_optimizations = True  # pylint: disable=protected-access
         topic_modeller.initialize(docs, num_topics=2)
 
@@ -57,7 +58,8 @@ class TopicModellerTests(unittest.TestCase):
         directory = os.path.dirname(os.path.abspath(__file__))
         topic_modeller.save(directory)
 
-        deserialized_topic_modeller = TopicModeller(self.MockTokenizer())
+        deserialized_topic_modeller = TopicModeller()
+        deserialized_topic_modeller._tokenizer = self.MockTokenizer()
         deserialized_topic_modeller.load(directory)
 
         (ok1_reload, classification_after_load_doc1) = deserialized_topic_modeller.classify(doc1)
@@ -98,7 +100,8 @@ class TopicModellerTests(unittest.TestCase):
 
         directory = os.path.dirname(os.path.abspath(__file__))
         topic_modeller.save(directory)
-        deserialized_topic_modeller = TopicModeller(self.MockTokenizer())
+        deserialized_topic_modeller = TopicModeller()
+        deserialized_topic_modeller._tokenizer = self.MockTokenizer()
         deserialized_topic_modeller.load(directory)
         model_id_after_load = deserialized_topic_modeller.get_model_id()
         self.assertEquals(model_id, model_id_after_load)
@@ -111,7 +114,8 @@ class TopicModellerTests(unittest.TestCase):
             for _ in range(nb_words_by_doc):
                 doc += " " + random.choice(words)
             docs.append(doc)
-        topic_modeller = TopicModeller(self.MockTokenizer())
+        topic_modeller = TopicModeller()
+        topic_modeller._tokenizer = self.MockTokenizer()
         topic_modeller._remove_optimizations = True  # pylint: disable=protected-access
         topic_modeller.initialize(docs, num_topics=nb_topics)
         return topic_modeller

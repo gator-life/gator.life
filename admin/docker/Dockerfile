@@ -16,4 +16,4 @@ WORKDIR /home/gator.life
 
 RUN virtualenv global_env && \
     . global_env/bin/activate && \
-    tools/install_envs.sh
+    scripts/install_envs.sh

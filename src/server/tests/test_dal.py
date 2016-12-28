@@ -21,7 +21,7 @@ class DalFeatureSetTests(unittest.TestCase):
 
     def test_save_then_get_feature_set(self):
         self.dal.feature_set.save_feature_set(
-            struct.FeatureSet.make_from_scratch(
+            struct.FeatureSet(
                 feature_set_id=u'set', feature_names=[u'desc1', u'desc2'], model_id=u'model_test_save_then_get_feature_set'))
         feature_set = self.dal.feature_set.get_feature_set(u'set')
         self.assertEquals(u'set', feature_set.feature_set_id)
@@ -30,7 +30,7 @@ class DalFeatureSetTests(unittest.TestCase):
         self.assertEquals(u'desc2', feature_set.feature_names[1])
 
     def test_save_then_get_empty_features(self):
-        self.dal.feature_set.save_feature_set(struct.FeatureSet.make_from_scratch(
+        self.dal.feature_set.save_feature_set(struct.FeatureSet(
             feature_set_id=u'test_save_then_get_empty_features_feature_set_id', feature_names=[], model_id=None))
         feature_set = self.dal.feature_set.get_feature_set(u'test_save_then_get_empty_features_feature_set_id')
         self.assertEquals([], feature_set.feature_names)
@@ -118,8 +118,8 @@ class DalUserDocTests(unittest.TestCase):
         self.dal.doc.save_documents([doc1, doc2])
 
         expected_user_docs = [
-            struct.UserDocument.make_from_scratch(doc1, 0.1),
-            struct.UserDocument.make_from_scratch(doc2, 0.2)]
+            struct.UserDocument(doc1, 0.1),
+            struct.UserDocument(doc2, 0.2)]
 
         # create user and save it to init user_doc_set_key field
         user = struct.User.make_from_scratch(u"test_save_then_get_user_docs_should_be_equals", [u"interests1"])
@@ -146,10 +146,10 @@ class DalUserDocTests(unittest.TestCase):
         self.dal.user.save_user(user2, u"password2")
 
         expected_user1_docs = [
-            struct.UserDocument.make_from_scratch(doc1, 0.1),
-            struct.UserDocument.make_from_scratch(doc2, 0.2)]
+            struct.UserDocument(doc1, 0.1),
+            struct.UserDocument(doc2, 0.2)]
         expected_user2_docs = [
-            struct.UserDocument.make_from_scratch(doc1, 0.3)]
+            struct.UserDocument(doc1, 0.3)]
 
         self.dal.user_doc.save_users_docs([(user1, expected_user1_docs), (user2, expected_user2_docs)])
         user_docs_by_user = self.dal.user_doc.get_users_docs((user2, user1))
@@ -179,13 +179,13 @@ class DalDocTests(unittest.TestCase):
 
     def test_save_documents(self):
         feature_set_id = build_dummy_db_feature_set(self.dal)
-        feat_vec1 = struct.FeatureVector.make_from_scratch(vector=[0.5, 0.6], feature_set_id=feature_set_id)
-        feat_vec2 = struct.FeatureVector.make_from_scratch(vector=[1.5, 0.6], feature_set_id=feature_set_id)
+        feat_vec1 = struct.FeatureVector(vector=[0.5, 0.6], feature_set_id=feature_set_id)
+        feat_vec2 = struct.FeatureVector(vector=[1.5, 0.6], feature_set_id=feature_set_id)
 
-        expected_doc1 = struct.Document.make_from_scratch(
+        expected_doc1 = struct.Document(
             url=u'url1_test_save_documents', url_hash=u'url_hash1_test_save_documents',
             title=u'title1_test_save_documents', summary=u's1', feature_vector=feat_vec1)
-        expected_doc2 = struct.Document.make_from_scratch(
+        expected_doc2 = struct.Document(
             url=u'url2_test_save_documents', url_hash=u'url_hash2_test_save_documents',
             title=u'title2_test_save_documents', summary=u's2', feature_vector=feat_vec2)
         expected_docs = [expected_doc1, expected_doc2]
@@ -294,10 +294,10 @@ class DalUserComputedProfileTests(unittest.TestCase):
             email=u'test_get_empty_user_computed_profiles', interests=[])
         self.dal.user.save_user(user, u'test_get_empty_user_computed_profiles_password')
         result_profile = self.dal.user_computed_profile.get_user_computed_profiles([user])[0]
-        expected_profile = struct.UserComputedProfile.make_from_scratch(
-            feature_vector=struct.FeatureVector.make_from_scratch(
+        expected_profile = struct.UserComputedProfile(
+            feature_vector=struct.FeatureVector(
                 [], self.dal.user._new_user_feature_set_id),  # pylint: disable=protected-access
-            model_data=struct.UserProfileModelData.make_from_scratch([], [], [], 0, 0)
+            model_data=struct.UserProfileModelData([], [], [], 0, 0)
         )
 
         self._assert_profiles_equals(expected_profile, result_profile)
@@ -336,11 +336,11 @@ class DalUserComputedProfileTests(unittest.TestCase):
         feature_set_id = build_dummy_db_feature_set(self.dal)
         user = struct.User.make_from_scratch(email=u'user' + str(index), interests=[u'interests' + str(index)])
         self.dal.user.save_user(user, u'password' + str(index))
-        feature_vector = struct.FeatureVector.make_from_scratch(
+        feature_vector = struct.FeatureVector(
             vector=[0.5 + index, 0.6 + index], feature_set_id=feature_set_id)
-        model_data = struct.UserProfileModelData.make_from_scratch(
+        model_data = struct.UserProfileModelData(
             [0.7 + index, 0.8], [0.3 + index, 0.4], [-1.0 + index, -2.0], 5.0 + index, 9.0 + index)
-        profile = struct.UserComputedProfile.make_from_scratch(feature_vector, model_data)
+        profile = struct.UserComputedProfile(feature_vector, model_data)
         return user, profile
 
     def _assert_profiles_equals(self, expected_profile, result_profile):
@@ -432,14 +432,14 @@ class DalTopicModelDescriptionTests(unittest.TestCase):
 
 def build_dummy_db_feature_set(dal):
     dal.feature_set.save_feature_set(
-        struct.FeatureSet.make_from_scratch(feature_set_id=u'set', feature_names=[u'desc2', u'desc1'], model_id=None))
+        struct.FeatureSet(feature_set_id=u'set', feature_names=[u'desc2', u'desc1'], model_id=None))
     return 'set'
 
 
 def make_dummy_doc(dal, str_id):
     feature_set_id = build_dummy_db_feature_set(dal)
-    feat_vec = struct.FeatureVector.make_from_scratch(vector=[0.2], feature_set_id=feature_set_id)
-    return struct.Document.make_from_scratch(
+    feat_vec = struct.FeatureVector(vector=[0.2], feature_set_id=feature_set_id)
+    return struct.Document(
         url=u'url_' + str_id,
         url_hash=u'url_hash_' + str_id,
         title=u'title' + str_id,

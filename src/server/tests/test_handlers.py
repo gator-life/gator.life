@@ -33,8 +33,8 @@ class DalUserDocMock(object):
     @staticmethod
     def get_user_docs(user):  # pylint: disable=unused-argument
         def build_user_doc(title):
-            return struct.UserDocument.make_from_scratch(
-                struct.Document.make_from_scratch(None, None, title, None, None),
+            return struct.UserDocument(
+                struct.Document(None, None, title, None, None),
                 0.0)
 
         if user.email == 'mark':
@@ -59,7 +59,7 @@ class DalFeatureSetMock(object):
 
     def get_feature_set(self, feature_set_id):
         if feature_set_id == self.get_ref_feature_set_id():
-            return struct.FeatureSet.make_from_db(feature_set_id, ['l1', 'l2'], DalTopicModelMock.topic_model_id)
+            return struct.FeatureSet(feature_set_id, ['l1', 'l2'], DalTopicModelMock.topic_model_id)
         return None
 
 
@@ -77,15 +77,15 @@ class DalDocMock(object):
     @staticmethod
     def get_doc(url_hash):
         if url_hash == 'url_hash':
-            return struct.Document.make_from_scratch('url3', None, 'title3', None, None)
+            return struct.Document('url3', None, 'title3', None, None)
         return None
 
     @staticmethod
     def get_recent_docs(from_datetime, max_nb_docs):  # pylint: disable=unused-argument
         if max_nb_docs != 1000:
             raise ValueError(max_nb_docs)
-        feature_vector = struct.FeatureVector.make_from_scratch([1, 1], DalFeatureSetMock.get_ref_feature_set_id())
-        return [struct.Document.make_from_scratch('url', 'urh_hash', 'title', 's', feature_vector)]
+        feature_vector = struct.FeatureVector([1, 1], DalFeatureSetMock.get_ref_feature_set_id())
+        return [struct.Document('url', 'urh_hash', 'title', 's', feature_vector)]
 
 
 class DalUserActionMock(object):

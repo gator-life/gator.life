@@ -21,10 +21,11 @@ class ScraperIntegrationTests(unittest.TestCase):
         directory = os.path.dirname(os.path.abspath(__file__))
         with vcr.use_cassette(directory + '/vcr_cassettes/test_run_scraper.yaml', record_mode='none', ignore_localhost=True):
             for doc in scraper.scrap():
-                self.assertIsNotNone(doc.html_content)  # we don't return unavailable pages
-                self.assertIsInstance(doc.html_content, unicode)  # 'str' sucks, must use unicode (python 3 str versions)
-                self.assertNotIn('.gif', doc.link_element.url)  # check extension filter
-                self.assertNotIn('youtu', doc.link_element.url)  # check regex filter
+                self.assertIsInstance(doc.url, unicode)
+                self.assertIsInstance(doc.title, unicode)
+                self.assertIsInstance(doc.content, unicode)
+                self.assertNotIn(u'.gif', doc.url)  # check extension filter
+                self.assertNotIn(u'youtu', doc.url)  # check regex filter
 
                 curr_doc += 1
                 if curr_doc == nb_doc:
