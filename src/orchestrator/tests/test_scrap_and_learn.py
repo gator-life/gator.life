@@ -87,7 +87,7 @@ class ScrapAndLearnTests(unittest.TestCase):
         mock_saver = MockSaver()
         users = [user1, user2]
         _scrap_and_learn(MockScraper(), mock_saver, topic_modeller, docs_chunk_size=3,
-                         user_docs_max_size=5, seen_urls_cache_start_date=utcnow(),
+                         user_docs_max_size=5, seen_url_hashes_set=set(),
                          users=users, nb_docs=6)
 
         # III) check database and mocks

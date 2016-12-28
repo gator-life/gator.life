@@ -38,10 +38,6 @@ def update_model_profiles_userdocs():
         nb_docs_before_users_reload = 100
         start_cache_date = utcnow() - datetime.timedelta(days=14)
 
-    model_updater = ModelUpdater()
-    topic_modeller = TopicModeller()
-    topic_modeller.load(topic_model_directory)
-
     LOGGER.info(
         u'Start update_model_profiles_userdocs, '
         u'topic_model_directory[%s] '
@@ -51,6 +47,12 @@ def update_model_profiles_userdocs():
         u'start_cache_date[%s]',
         topic_model_directory, test_mode, vcr_cassette_file, nb_docs_before_users_reload, start_cache_date)
 
+    model_updater = ModelUpdater()
+    topic_modeller = TopicModeller()
+    topic_modeller.load(topic_model_directory)
+
+    seen_url_hashes_set = set(Dal().doc.get_recent_doc_url_hashes(start_cache_date))
+
     with use_cassette(vcr_cassette_file, record_mode='none', ignore_localhost=True) if vcr_cassette_file else NoContext():
         while True:
             try:
@@ -59,7 +61,7 @@ def update_model_profiles_userdocs():
                 users = _get_users(dal, keep_user_func)
                 model_updater.update_model_in_db(topic_modeller, users)
                 update_profiles_in_database(users)
-                scrap_learn(topic_modeller, users, nb_docs_before_users_reload, start_cache_date)
+                scrap_learn(topic_modeller, users, nb_docs_before_users_reload, seen_url_hashes_set)
             except:  # pylint: disable=bare-except
                 LOGGER.exception(u'Exception in update_model_profiles_userdocs main loop, restarting')
                 sleep(30)
