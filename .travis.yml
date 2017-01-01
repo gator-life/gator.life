@@ -37,10 +37,10 @@ script:
 # functional tests of web app work on built version of server
 - ./scripts/build_server.sh
 - ./scripts/start_tests.sh
+- ./scripts/start_tests.sh cover
 # server build needs to be cleaned before lint (copy code into server creating false duplication)
 - ./scripts/clean_server_build.sh
 - python scripts/run_pylint.py src
-- ./scripts/start_tests.sh cover
 after_success:
 - coveralls
 deploy:
