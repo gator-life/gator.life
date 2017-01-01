@@ -62,7 +62,7 @@ def update_model_profiles_userdocs():
                 model_updater.update_model_in_db(topic_modeller, users)
                 update_profiles_in_database(users)
                 scrap_learn(topic_modeller, users, nb_docs_before_users_reload, seen_url_hashes_set)
-            except:  # pylint: disable=bare-except  # pragma: no cover
+            except:  # pylint: disable=bare-except
                 LOGGER.exception(u'Exception in update_model_profiles_userdocs main loop, restarting')
                 sleep(30)
             if vcr_cassette_file:  # only one loop for run from a cassette

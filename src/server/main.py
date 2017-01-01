@@ -7,6 +7,8 @@ from common.log import init_gcloud_log
 from flask import Flask
 from server.environment import IS_TEST_ENV, GCLOUD_PROJECT
 from server.handlers import handlers
+from server.reactapp import react
+from server.api import api_blueprint
 
 if not IS_TEST_ENV:
     import sys
@@ -21,7 +23,10 @@ logging.getLogger().info('start server logging')
 #  - scripts/start_server.sh
 # if changed, gunicorn command must be updated accordingly.
 APP = Flask(__name__, static_folder='server/static')
+
 APP.register_blueprint(handlers)
+APP.register_blueprint(react)
+APP.register_blueprint(api_blueprint)
 APP.secret_key = 'maybe_we_should_generate_a_random_key'
 
 

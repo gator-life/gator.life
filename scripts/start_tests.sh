@@ -10,6 +10,7 @@ if [ "$1" = "cover" ]; then
 	coverage run --source=src --omit=*tests* -m py.test src -s -vvvv
 else
 	py.test src -s -vvvv
+	( cd src/client && npm test )
 fi
 
 #the if was quite painfull to get right, for memory:

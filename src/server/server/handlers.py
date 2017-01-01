@@ -72,7 +72,9 @@ def home():
                            'up_vote': struct.UserActionTypeOnDoc.up_vote,
                            'down_vote': struct.UserActionTypeOnDoc.down_vote}
 
-        return render_template('index.html', email=user.email, links=links, actions_mapping=actions_mapping)
+        # renamed to index_legacy to not interfere with generated react index.html
+        # http://stackoverflow.com/questions/22190881/flask-multiple-blueprints-interfere-with-each-other
+        return render_template('index_legacy.html', email=user.email, links=links, actions_mapping=actions_mapping)
     else:
         return redirect('/login')
 
