@@ -24,6 +24,8 @@ before_install:
   -in client-secret.json.enc -out client-secret.json -d
 # https://cloud.google.com/solutions/continuous-delivery-with-travis-ci#continuous_deployment_on_app_engine_flexible_environment_instances
 - ssh-keygen -q -N "" -f ~/.ssh/google_compute_engine
+# version of npm on travis is very old
+- npm install npm@latest -g
 install:
 - scripts/install_envs.sh
 - gcloud auth activate-service-account --key-file client-secret.json
