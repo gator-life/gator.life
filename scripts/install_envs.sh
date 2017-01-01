@@ -9,6 +9,8 @@ wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk
 tar zxf google-cloud-sdk-134.0.0-linux-x86_64.tar.gz -C lib
 rm google-cloud-sdk-134.0.0-linux-x86_64.tar.gz
 
+(cd src/client && npm install)
+
 pip install -U pip # we need a recent version of pip so that pip install scipy/numpy works
 pip install -r requirements.txt
 pip install -r test_requirements.txt

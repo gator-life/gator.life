@@ -3,7 +3,9 @@ addons:
   apt:
     packages:
       - oracle-java8-set-default
-cache: pip
+cache:
+- pip
+- client/node_modules
 services:
   - docker
 python:
