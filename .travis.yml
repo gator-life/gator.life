@@ -34,13 +34,12 @@ install:
 - gcloud config set compute/zone us-central1-f
 - pip install coveralls
 script:
+# pylint must run before build_server because it copy-paste JS code in server and create false duplication errors 
+- python scripts/run_pylint.py src
 # functional tests of web app work on built version of server
 - ./scripts/build_server.sh
 - ./scripts/start_tests.sh
 - ./scripts/start_tests.sh cover
-# server build needs to be cleaned before lint (copy code into server creating false duplication)
-- ./scripts/clean_server_build.sh
-- python scripts/run_pylint.py src
 after_success:
 - coveralls
 deploy:

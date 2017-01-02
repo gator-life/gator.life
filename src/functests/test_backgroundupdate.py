@@ -4,6 +4,7 @@
 import unittest
 import os
 import subprocess32 as subprocess
+from server.environment import IS_DEV_ENV, IS_COVERAGE
 from server.dal import Dal
 from server.frontendstructs import FeatureSet, TopicModelDescription
 from server.structinit import UserCreator
@@ -22,7 +23,7 @@ class BackgroundUpdateTests(unittest.TestCase):
         self.dal.feature_set.save_feature_set(FeatureSet(
             ref_feature_set_id, ['feature_' + str(i) for i in range(nb_topics)], model_id))
         self.dal.feature_set.save_ref_feature_set_id(ref_feature_set_id)
-        self.is_coverage = bool(os.environ.get('COVERAGE', None))
+        self.bypass_docker = IS_DEV_ENV or IS_COVERAGE
 
     def test_update_model_profiles_userdocs(self):
         user_name = 'test_launch_scrap_and_learn'
@@ -34,7 +35,7 @@ class BackgroundUpdateTests(unittest.TestCase):
         directory = os.path.dirname(os.path.abspath(__file__))
         root_dir = directory + '/../..'
 
-        if not self.is_coverage:
+        if not self.bypass_docker:
             docker_image_name = "background_update"
             model_directory_in_docker_image = "trained_topic_model"
             cassette_path_in_docker_image = "src/functests/vcr_cassettes/update_model_profiles_userdocs.yaml"

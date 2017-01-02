@@ -1,11 +1,14 @@
 import logging
 import google.cloud.logging  # pylint: disable=import-error
 from google.cloud.logging.handlers import CloudLoggingHandler, setup_logging  # pylint: disable=import-error
+from server.environment import IS_DEV_ENV, IS_TEST_ENV
 
 
-def init_gcloud_log(project_id, logger_name, is_test_env):
+def init_gcloud_log(project_id, logger_name):
     log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    if not is_test_env:
+    if IS_DEV_ENV or IS_TEST_ENV:
+        logging.basicConfig(filename=logger_name + u'.log', level=logging.DEBUG, format=log_format)
+    else:
         # see: https://googlecloudplatform.github.io/google-cloud-python/latest/logging-usage.html#cloud-logging-handler
         # and https://github.com/GoogleCloudPlatform/getting-started-python/blob/master/6-pubsub/bookshelf/__init__.py#L40
         client = google.cloud.logging.Client(project_id)
@@ -16,8 +19,6 @@ def init_gcloud_log(project_id, logger_name, is_test_env):
         setup_logging(handler)
         logging.getLogger().setLevel(logging.INFO)
         logging.getLogger("readability.readability").setLevel(logging.WARNING)  # very verbose package
-    else:
-        logging.basicConfig(filename=logger_name + u'.log', level=logging.DEBUG, format=log_format)
 
 
 def shrink(string, max_length=500):

@@ -8,6 +8,8 @@ scripts/start_server.sh
 if [ "$1" = "cover" ]; then
 	export COVERAGE='True'
 	coverage run --source=src --omit=*tests* -m py.test src
+	( cd src/client && npm test -- --coverage )
+
 else
 	py.test src
 	( cd src/client && npm test )
