@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     # to not risk to pollute database
     if not IS_DEV_ENV:
-        raise Exception("TEST_ENV environment variable should be set for testing")
+        raise Exception("debug server only valid for development, DEV_ENV environment variable should be set")
     if os.environ["DATASTORE_EMULATOR_HOST"] != "localhost:33001":
         raise Exception("DATASTORE_EMULATOR_HOST environment variable should be set to localhost:33001 for testing")
 
