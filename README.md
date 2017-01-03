@@ -40,6 +40,7 @@ Tested on Ubuntu 14.04 and 16.04. For more details on how the setup was done on 
 	* `Docker`
 	* `PhantomJS`
 	* `Java` 7+ JRE
+	* `Node.js` 7, `npm`
 
 2. Clone this repository:
 
@@ -88,7 +89,7 @@ Thank you for your interest for the open source projet *Gator Life*. For now we 
 
 The project contains the following python packages:
 * `common`: shared tools (serialization, testing helpers, logging...) between packages. Should be kept minimal. No internal dependency.
-* `server`: **gator.life** website backend. Uses `Flask` framework and is deployed on `Google Cloud Platform`. No internal dependency.
+* `server`: **gator.life** website backend. Uses `Flask` framework and is deployed on `Google Cloud Platform`. Depends on `common` and `learner`.
 * `scraper`: scraping of the web to extract documents. Depends on `common` package only.
 * `topicmodeller`: classification of the extracted documents. Depends on `common` package only.
 * `learner`: machine learning algorithms to learn users preferences and match classified documents and users. Depends on `common` package only.
