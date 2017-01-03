@@ -35,7 +35,7 @@ install:
 - pip install coveralls
 script:
 # lint must run before build_server because build_server copy-paste JS code in server package creating false duplications 
-- ./run_lint.sh
+- ./scripts/run_lint.sh
 # functional tests of web app work on built version of server
 - ./scripts/build_server.sh
 - ./scripts/start_tests.sh
