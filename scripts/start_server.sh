@@ -1,6 +1,5 @@
 #!/bin/bash
 # script must be executed from root git directory
-set -e
 . scripts/set_env_vars.sh
 
 # kill previous instance of gunicorn server and free port if needed
