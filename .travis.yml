@@ -33,6 +33,7 @@ install:
 # https://cloud.google.com/compute/docs/gcloud-compute/#default-properties
 - gcloud config set compute/zone us-central1-f
 - pip install coveralls
+- npm install --save-dev coveralls
 script:
 # pylint must run before build_server because it copy-paste JS code in server and create false duplication errors 
 - python scripts/run_pylint.py src
@@ -41,6 +42,7 @@ script:
 - ./scripts/start_tests.sh
 - ./scripts/start_tests.sh cover
 after_success:
+- cat src/client/coverage/lcov.info | src/client/node_modules/coveralls/bin/coveralls.js
 - coveralls
 deploy:
   provider: script
