@@ -1,6 +1,6 @@
 #!/bin/bash
 # script must be executed from root git directory
-set -e
+
 # copy local package dependencies to server folder
 { cat src/server/local_deps.txt; echo; } | while read line; do cp -R "src/$line/$line" src/server; done
 

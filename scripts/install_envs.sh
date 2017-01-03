@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+
 # script must be executed from root git directory
 
 mkdir -p lib

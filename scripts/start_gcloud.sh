@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+
 . scripts/set_env_vars.sh
 
 # kill previous instance of gcloud

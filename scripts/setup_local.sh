@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+
 rm -rf global_env
 rm -rf appengine_env
 rm -rf lib

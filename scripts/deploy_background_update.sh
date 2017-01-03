@@ -1,5 +1,6 @@
 #!/bin/bash
 # script must be executed from root git directory
+
 # 1) Build docker image
 scripts/build_docker_gator_deps.sh
 scripts/build_docker_background_update.sh
