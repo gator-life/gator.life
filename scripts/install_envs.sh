@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 # script must be executed from root git directory
 
 mkdir -p lib
@@ -9,6 +9,7 @@ wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk
 tar zxf google-cloud-sdk-134.0.0-linux-x86_64.tar.gz -C lib
 rm google-cloud-sdk-134.0.0-linux-x86_64.tar.gz
 
+# install javascript / create-react-app dependencies
 (cd src/client && npm install)
 
 pip install -U pip # we need a recent version of pip so that pip install scipy/numpy works

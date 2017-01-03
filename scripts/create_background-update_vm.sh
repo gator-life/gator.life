@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 #This script create compute engine VM to host background_update docker container  
 
 #we use gci image (--image-family gci-stable --image-project google-containers)

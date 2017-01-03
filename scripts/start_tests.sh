@@ -1,6 +1,6 @@
 #!/bin/bash
 # script must be executed from root git directory
-
+set -e
 . scripts/set_env_vars.sh
 
 scripts/start_server.sh
