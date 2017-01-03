@@ -11,6 +11,10 @@ if [ "$1" = "cover" ]; then
 
 else
 	py.test src
+	OUT=$?
+	if [ ! $OUT -eq 0 ];then
+		exit 1
+	fi	
 	( cd src/client && npm test )
 fi
 
