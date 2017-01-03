@@ -1,6 +1,6 @@
 #!/bin/bash
 # script must be executed from root git directory
-set -e
+
 # start_gcoud.sh is blocking. This script wraps it to exit as soon
 # as initialization is done (replace unreliable and slow wait call)
 rm -f start_gcloud.log
