@@ -10,3 +10,5 @@ scipy
 nltk
 pytz
 flask-restful
+PyJWT
+cryptography
