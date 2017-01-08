@@ -3,7 +3,6 @@
 
 import unittest
 from common.datehelper import utcnow
-import common.crypto as crypto
 from server.structinit import UserCreator, _ProfileInitializer, _get_user_docs
 from server.dal import Dal
 from server.frontendstructs import FeatureSet, TopicModelDescription, Document, FeatureVector
@@ -31,25 +30,23 @@ class UserCreatorTests(unittest.TestCase):
         ]))
 
     def test_create_user_in_db(self):
-        email = 'email_test_create_user_in_db'
+        user_id = 'user_id_test_create_user_in_db'
         interests = ['w1', 'w2']
-        password = 'password_test_create_user_in_db'
         ref_feature_set_id = 'test_create_user_in_db'
 
         self._save_dummy_feature_set(ref_feature_set_id)
         doc = make_doc([1, 1], ref_feature_set_id, 'url_test_create_user_in_db')
         self.dal.doc.save_documents([doc])
         user_creator = UserCreator()
-        user = user_creator.create_user_in_db(email, interests, password, self.dal)
+        user = user_creator.create_user_in_db(user_id, interests, self.dal)
 
-        user_from_db, hash_password_from_db = self.dal.user.get_user_and_hash_password(email)
+        user_from_db = self.dal.user.get_user(user_id)
         profile = self.dal.user_computed_profile.get_user_computed_profiles([user])[0]
 
-        self.assertEquals(email, user.email)
-        self.assertEquals(email, user_from_db.email)
+        self.assertEquals(user_id, user.user_id)
+        self.assertEquals(user_id, user_from_db.user_id)
         self.assertEquals(interests, user.interests)
         self.assertEquals(interests, user_from_db.interests)
-        self.assertTrue(crypto.verify_password(password, hash_password_from_db))
         self.assertEquals(ref_feature_set_id, profile.feature_vector.feature_set_id)
         self.assertEqual(1, len(self.dal.user_doc.get_user_docs(user)))
 

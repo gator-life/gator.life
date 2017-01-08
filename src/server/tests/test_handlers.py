@@ -5,7 +5,34 @@ import unittest
 from flask import Flask
 import server.frontendstructs as struct
 import server.handlers as handlers
+from server.dalaccount import Account
 import common.crypto as crypto
+
+
+class DalAccountMock(object):
+
+    def __init__(self):
+        self.saved_account = None
+
+    def exists(self, email):
+        return self.try_get(email) is not None
+
+    def create(self, account):
+        account.account_id = account.email + '_id'
+        self.saved_account = account
+
+    @staticmethod
+    def modify(account_id, new_account):  # pylint: disable=unused-argument
+        raise ValueError('Not used yet')
+
+    @staticmethod
+    def delete(email):  # pylint: disable=unused-argument
+        raise ValueError('Not used yet')
+
+    def try_get(self, email):
+        if email == 'mark':
+            return Account(email, crypto.hash_password('dadada'), email + "_id")
+        return self.saved_account
 
 
 class DalUserMock(object):
@@ -14,18 +41,13 @@ class DalUserMock(object):
         self.saved_user = None
         self.saved_password = None
 
-    def get_user(self, email):  # pylint: disable=unused-argument, no-self-use
-        if email == 'mark':
-            return struct.User.make_from_scratch(email, ['soccer', 'tuning'])
+    def get_user(self, user_id):  # pylint: disable=unused-argument, no-self-use
+        if user_id == 'mark_id':
+            return struct.User.make_from_scratch(user_id, ['soccer', 'tuning'])
         return self.saved_user
 
-    def save_user(self, user, password):
+    def save_user(self, user):
         self.saved_user = user
-        self.saved_password = password
-
-    def get_user_and_hash_password(self, email):  # pylint: disable=unused-argument, no-self-use
-        if email == 'mark':
-            return (self.get_user(email), crypto.hash_password('dadada'))
 
 
 class DalUserDocMock(object):
@@ -37,11 +59,11 @@ class DalUserDocMock(object):
                 struct.Document(None, None, title, None, None),
                 0.0)
 
-        if user.email == 'mark':
+        if user.user_id == 'mark_id':
             return \
                 [build_user_doc('title1'),
                  build_user_doc('title2')]
-        if user.email == 'elon':
+        if user.user_id == 'elon_id':
             return [
                 build_user_doc('rocket')]
         return None
@@ -134,7 +156,9 @@ class HandlersTests(unittest.TestCase):
         self.app = test_app.test_client()
         test_app.config['TESTING'] = True
         self.dal = DalMock()
+        self.dal_account = DalAccountMock()
         handlers.get_dal = lambda: self.dal
+        handlers.get_dal_account = lambda: self.dal_account
 
     def test_home_without_user_render_login(self):
         response = self.app.get('/', follow_redirects=True)
@@ -164,6 +188,7 @@ class HandlersTests(unittest.TestCase):
         response = self.app.get('/disconnect', follow_redirects=True)
         with self.app.session_transaction() as session:
             self.assertFalse('email' in session)
+            self.assertFalse('user_id' in session)
         self._assert_is_login(response)
 
     def test_disconnect_not_connected_redirect_login(self):
@@ -192,10 +217,11 @@ class HandlersTests(unittest.TestCase):
     def test_register_post_with_new_email_save_profile_redirect_homepage(self):
         post_data = dict(email='elon', password='elon', interests='rockets\r\ncars')
         response = self.app.post('/register', data=post_data, follow_redirects=True)
-        self.assertEquals('elon', self.dal.user.saved_user.email)
+        self.assertEquals('elon_id', self.dal.user.saved_user.user_id)
+        self.assertEquals('elon_id', self.dal_account.saved_account.account_id)
         self.assertEquals(['rockets', 'cars'], self.dal.user.saved_user.interests)
         self.assertEquals(1, len(self.dal.user_computed_profile.user_computed_profiles))
-        self.assertTrue(crypto.verify_password('elon', self.dal.user.saved_password))
+        self.assertTrue(crypto.verify_password('elon', self.dal_account.saved_account.password_hash))
         self._assert_is_home_elon(response)
 
     def test_link_with_user_not_connected_redirect_login(self):
@@ -218,13 +244,14 @@ class HandlersTests(unittest.TestCase):
         doc = self.dal.user_action.saved_user_doc_action_tuple[1]
         action = self.dal.user_action.saved_user_doc_action_tuple[2]
 
-        self.assertEquals('mark', user.email)
+        self.assertEquals('mark_id', user.user_id)
         self.assertEquals('title3', doc.title)
         self.assertEquals(struct.UserActionTypeOnDoc.down_vote, action)
         self._assert_is_home(response)
 
     def _login(self):
         with self.app.session_transaction() as session:
+            session['user_id'] = 'mark_id'
             session['email'] = 'mark'
 
     def _assert_is_register(self, response):

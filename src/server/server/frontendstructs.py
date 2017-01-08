@@ -34,16 +34,15 @@ class UserDocument(object):
 class User(object):
 
     @staticmethod
-    def make_from_db(db_key, email, interests, user_doc_set_db_key, user_computed_profile_db_key):
-        return User(db_key, email, interests, user_doc_set_db_key, user_computed_profile_db_key)
+    def make_from_db(user_id, interests, user_doc_set_db_key, user_computed_profile_db_key):
+        return User(user_id, interests, user_doc_set_db_key, user_computed_profile_db_key)
 
     @staticmethod
-    def make_from_scratch(email, interests):
-        return User(None, email, interests, None, None)
+    def make_from_scratch(user_id, interests):
+        return User(user_id, interests, None, None)
 
-    def __init__(self, db_key, email, interests, user_doc_set_db_key, user_computed_profile_db_key):
-        self._db_key = db_key
-        self.email = email
+    def __init__(self, user_id, interests, user_doc_set_db_key, user_computed_profile_db_key):
+        self.user_id = user_id
         self.interests = interests
         self._user_doc_set_db_key = user_doc_set_db_key
         self._user_computed_profile_db_key = user_computed_profile_db_key

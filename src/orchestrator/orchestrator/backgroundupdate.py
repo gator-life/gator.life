@@ -29,7 +29,7 @@ def update_model_profiles_userdocs():
     if test_mode:
         vcr_cassette_file = sys.argv[2]
         users_prefix = sys.argv[3]
-        keep_user_func = lambda u: u.email.startswith(users_prefix)
+        keep_user_func = lambda u: u.user_id.startswith(users_prefix)
         nb_docs_before_users_reload = int(sys.argv[4])
         start_cache_date = utcnow()
     else:  # pragma: no cover

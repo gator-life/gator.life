@@ -30,7 +30,7 @@ class BackgroundUpdateTests(unittest.TestCase):
         nb_docs = str(9)
 
         interests = [' w' + str(i) for i in range(200)]  # choose 200 of the 500 words used in topic model description
-        user = UserCreator().create_user_in_db(user_name, interests, 'pass', self.dal)
+        user = UserCreator().create_user_in_db(user_name, interests, self.dal)
 
         directory = os.path.dirname(os.path.abspath(__file__))
         root_dir = directory + '/../..'

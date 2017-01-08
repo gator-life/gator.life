@@ -65,10 +65,10 @@ class ScrapAndLearnTests(unittest.TestCase):
         # I)setup database and mocks
         # I.1) user
         user1 = struct.User.make_from_scratch("test_scrap_and_learn_user1", ["interests1"])
-        self.dal.user.save_user(user1, "password1")
+        self.dal.user.save_user(user1)
         self._save_dummy_profile_for_user(user1)
         user2 = struct.User.make_from_scratch("test_scrap_and_learn_user2", ["interests2"])
-        self.dal.user.save_user(user2, "password2")
+        self.dal.user.save_user(user2)
         self._save_dummy_profile_for_user(user2)
         # I.2) doc
         doc_old = struct.Document('', 'hash_old', 't', "s", self.dummy_feat_vec)

@@ -3,6 +3,7 @@ import logging
 from flask import Blueprint, render_template, redirect, session, request
 import common.crypto as crypto
 from .dal import Dal
+from .dalaccount import DalAccount, Account
 from . import frontendstructs as struct
 from .structinit import UserCreator
 
@@ -17,6 +18,10 @@ def get_dal():
     return Dal()  # pragma: no cover
 
 
+def get_dal_account():
+    return DalAccount()
+
+
 class Link(object):
 
     def __init__(self, url_hash, text):
@@ -24,12 +29,18 @@ class Link(object):
         self.text = text
 
 
-def set_connected_user(user):
-    session['email'] = user.email
+def set_connected_user(user, email):
+    session['user_id'] = user.user_id
+    session['email'] = email
 
 
 def unset_connected_user():
+    session.pop('user_id', None)
     session.pop('email', None)
+
+
+def get_connected_user_id():
+    return session.get('user_id')
 
 
 def get_connected_user_email():
@@ -37,8 +48,8 @@ def get_connected_user_email():
 
 
 def get_connected_user(dal):
-    email = get_connected_user_email()
-    return dal.user.get_user(email) if email else None
+    user_id = get_connected_user_id()
+    return dal.user.get_user(user_id) if user_id else None
 
 
 @handlers.route('/login', methods=['GET', 'POST'])
@@ -46,10 +57,10 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-
-        (user, hashed_password) = get_dal().user.get_user_and_hash_password(email)
-        if user is not None and crypto.verify_password(password, hashed_password):
-            set_connected_user(user)
+        account = get_dal_account().try_get(email)
+        if account is not None and crypto.verify_password(password, account.password_hash):
+            user = get_dal().user.get_user(account.account_id)
+            set_connected_user(user, email)
             return redirect('/')
         else:
             return render_template('login.html', error_message='Unknown email or invalid password')
@@ -74,7 +85,8 @@ def home():
 
         # renamed to index_legacy to not interfere with generated react index.html
         # http://stackoverflow.com/questions/22190881/flask-multiple-blueprints-interfere-with-each-other
-        return render_template('index_legacy.html', email=user.email, links=links, actions_mapping=actions_mapping)
+        return render_template(
+            'index_legacy.html', email=get_connected_user_email(), links=links, actions_mapping=actions_mapping)
     else:
         return redirect('/login')
 
@@ -82,25 +94,27 @@ def home():
 @handlers.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        email = get_connected_user_email()
-        if email is None:
+        user_id = get_connected_user_id()
+        if user_id is None:
             email = request.form['email']
             password = request.form['password']
             interests = request.form['interests'].splitlines()
-            dal = get_dal()
-            user = dal.user.get_user(email)
-            if user is None:
-                user = USER_CREATOR.create_user_in_db(email, interests, password, dal)
+            dal_account = get_dal_account()
+            if not dal_account.exists(email):
+                account = Account(email, crypto.hash_password(password))
+                dal_account.create(account)
+                dal = get_dal()
+                user = USER_CREATOR.create_user_in_db(account.account_id, interests, dal)
                 LOGGER.info('new user created, email {%s}', email)
-                set_connected_user(user)
+                set_connected_user(user, email)
                 return redirect('/')
             else:
                 return render_template('register.html', error_message='This account already exists')
         else:
             return redirect('/')
     else:
-        user = get_connected_user_email()
-        if user is None:
+        user_id = get_connected_user_id()
+        if user_id is None:
             return render_template('register.html')
         else:
             return redirect('/')
@@ -108,8 +122,8 @@ def register():
 
 @handlers.route('/disconnect')
 def disconnect():
-    email = get_connected_user_email()
-    if email is not None:
+    user_id = get_connected_user_id()
+    if user_id is not None:
         unset_connected_user()
     return redirect('/login')
 

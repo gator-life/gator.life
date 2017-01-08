@@ -94,11 +94,6 @@ class NewVisitorTests(unittest.TestCase):
         interests_str = 'finance\npython\ncomputer science'
         self._register(email, 'password', interests_str)
 
-        user = self.dal.user.get_user(email)
-        self.assertIsNotNone(user)
-        self.assertItemsEqual(user.interests, interests_str.splitlines())
-        self.assertItemsEqual(user.interests, interests_str.splitlines())
-
         # If the user as been successfully registered, it should be redirected to home page
         self.assertEqual('http://localhost:8080/', self.browser.current_url)
 

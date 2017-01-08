@@ -17,10 +17,10 @@ class UserProfileBuilderTests(unittest.TestCase):
         update_profiles_in_database([])
 
     def test_update_profiles_in_database(self):
-        user1 = struct.User.make_from_scratch(email='user1-test_update_user_profiles_in_database', interests=['interests1'])
-        user2 = struct.User.make_from_scratch(email='user2-test_update_user_profiles_in_database', interests=['interests2'])
-        self.dal.user.save_user(user1, 'password1')
-        self.dal.user.save_user(user2, 'password2')
+        user1 = struct.User.make_from_scratch('user1-test_update_user_profiles_in_database', interests=['interests1'])
+        user2 = struct.User.make_from_scratch('user2-test_update_user_profiles_in_database', interests=['interests2'])
+        self.dal.user.save_user(user1)
+        self.dal.user.save_user(user2)
         feature_set_id = self._build_feature_set()
         doc = self._build_doc(feature_set_id)
         self.dal.doc.save_documents([doc])

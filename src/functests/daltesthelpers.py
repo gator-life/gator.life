@@ -2,9 +2,14 @@
 
 import server.frontendstructs as struct
 from server.dal import Dal
+from server.dalaccount import DalAccount, Account
 
 
-def create_user_dummy(user_id, password, interests):
+def create_user_dummy(email, password_hash, interests):
+    dalaccount = DalAccount()
+    account = Account(email, password_hash)
+    dalaccount.create(account)
+    user_id = account.account_id
     dal = Dal()
     ref_feature_set_id = dal.feature_set.get_ref_feature_set_id()
     dummy_doc1 = struct.Document(
@@ -16,8 +21,8 @@ def create_user_dummy(user_id, password, interests):
         feature_vector=struct.FeatureVector([1, 1, 1, 1], ref_feature_set_id))
     dal.doc.save_documents([dummy_doc1, dummy_doc2])
 
-    new_user = struct.User.make_from_scratch(email=user_id, interests=interests)
-    dal.user.save_user(new_user, password)
+    new_user = struct.User.make_from_scratch(user_id=user_id, interests=interests)
+    dal.user.save_user(new_user)
     user_doc1 = struct.UserDocument(document=dummy_doc1, grade=1.0)
     user_doc2 = struct.UserDocument(document=dummy_doc2, grade=0.5)
     dal.user_doc.save_user_docs(new_user, [user_doc1, user_doc2])
