@@ -6,8 +6,8 @@ import datetime
 from orchestrator.scrap_and_learn import _scrap_and_learn
 from common.datehelper import utcnow
 import scraper.scraper as scraper
-from server.dal import Dal
-import server.frontendstructs as struct
+from userdocmatch.dal import Dal
+import userdocmatch.frontendstructs as struct
 
 
 class MockScraper(object):

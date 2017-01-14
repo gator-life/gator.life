@@ -1,7 +1,7 @@
 import logging
 import google.cloud.logging  # pylint: disable=import-error
 from google.cloud.logging.handlers import CloudLoggingHandler, setup_logging  # pylint: disable=import-error
-from server.environment import IS_DEV_ENV, IS_TEST_ENV
+from common.environment import IS_DEV_ENV, IS_TEST_ENV
 
 
 def init_gcloud_log(project_id, logger_name):

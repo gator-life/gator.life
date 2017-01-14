@@ -3,8 +3,8 @@
 
 import unittest
 import itertools
-import server.dal as sdal
-import server.frontendstructs as struct
+import userdocmatch.dal as sdal
+import userdocmatch.frontendstructs as struct
 from common.datehelper import utcnow
 
 
@@ -363,16 +363,16 @@ class DalUserActionOnDocTests(unittest.TestCase):
         self.dal.user.save_user(user2)
         self.dal.user.save_user(user3)
         self.dal.user_action.save_user_action_on_doc(
-            user1, doc2, struct.UserActionTypeOnDoc.up_vote)  # before min_datetime, filtered
+            user1.user_id, doc2.url_hash, struct.UserActionTypeOnDoc.up_vote)  # before min_datetime, filtered
 
         min_datetime = utcnow()
-        self.dal.user_action.save_user_action_on_doc(user1, doc1, struct.UserActionTypeOnDoc.up_vote)
-        self.dal.user_action.save_user_action_on_doc(user2, doc1, struct.UserActionTypeOnDoc.down_vote)
-        self.dal.user_action.save_user_action_on_doc(user1, doc2, struct.UserActionTypeOnDoc.click_link)
+        self.dal.user_action.save_user_action_on_doc(user1.user_id, doc1.url_hash, struct.UserActionTypeOnDoc.up_vote)
+        self.dal.user_action.save_user_action_on_doc(user2.user_id, doc1.url_hash, struct.UserActionTypeOnDoc.down_vote)
+        self.dal.user_action.save_user_action_on_doc(user1.user_id, doc2.url_hash, struct.UserActionTypeOnDoc.click_link)
         self.dal.user_action.save_user_action_on_doc(
-            user3, doc2, struct.UserActionTypeOnDoc.click_link)  # not in user list, filtered
+            user3.user_id, doc2.url_hash, struct.UserActionTypeOnDoc.click_link)  # not in user list, filtered
 
-        result = self.dal.user_action.get_user_actions_on_docs([user2, user1], min_datetime)
+        result = self.dal.user_action.get_user_actions_on_docs([user2.user_id, user1.user_id], min_datetime)
 
         self.assertEquals(2, len(result))
         user2_actions = result[0]

@@ -5,11 +5,11 @@ import datetime
 import common.crypto as crypto
 from common.technical import get_process_memory
 from common.datehelper import utcnow
-import learner.userdocmatch as userdocmatch
+from common.environment import IS_TEST_ENV
 from scraper.scraper import Scraper
-from server.frontendstructs import Document, UserDocument, FeatureVector
-from server.dal import Dal
-from server.environment import IS_TEST_ENV
+from userdocmatch.frontendstructs import Document, UserDocument, FeatureVector
+from userdocmatch.dal import Dal
+import learner.userdocaccumulator as userdocaccu
 
 LOGGER = logging.getLogger(__name__)
 
@@ -166,9 +166,9 @@ def _build_user_docs_accumulator(users, user_docs_max_size):
     def build_learner_user_data(user_feature_vector, user_docs):
         # Exclude old docs from user docs
         min_doc_date = utcnow() - datetime.timedelta(days=2)
-        learner_user_docs = (userdocmatch.UserDoc(user_doc.document, user_doc.grade)
+        learner_user_docs = (userdocaccu.UserDoc(user_doc.document, user_doc.grade)
                              for user_doc in user_docs if user_doc.document.datetime > min_doc_date)
-        return userdocmatch.UserData(user_feature_vector, learner_user_docs)
+        return userdocaccu.UserData(user_feature_vector, learner_user_docs)
 
     dal = Dal()
     users_docs = dal.user_doc.get_users_docs(users)
@@ -176,5 +176,5 @@ def _build_user_docs_accumulator(users, user_docs_max_size):
     user_data_list = (
         build_learner_user_data(feat_vec.vector, docs) for feat_vec, docs in zip(users_feature_vectors, users_docs)
     )
-    user_docs_accumulator = userdocmatch.UserDocumentsAccumulator(user_data_list, user_docs_max_size)
+    user_docs_accumulator = userdocaccu.UserDocumentsAccumulator(user_data_list, user_docs_max_size)
     return user_docs_accumulator

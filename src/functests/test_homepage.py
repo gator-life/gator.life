@@ -6,8 +6,8 @@ import unittest
 from _socket import timeout
 from selenium.common.exceptions import TimeoutException
 from selenium import webdriver
-from server import frontendstructs as structs
-from server.dal import Dal
+from userdocmatch import frontendstructs as structs
+from userdocmatch.dal import Dal
 from common.datehelper import utcnow
 import common.crypto as crypto
 import daltesthelpers
@@ -160,7 +160,7 @@ class NewVisitorTests(unittest.TestCase):
         self._click(google_link)
         self.assertEqual("Google", self.browser.title)
 
-        actions_by_user = self.dal.user_action.get_user_actions_on_docs([user], now)
+        actions_by_user = self.dal.user_action.get_user_actions_on_docs([user.user_id], now)
 
         actions = actions_by_user[0]
         self.assertEqual(3, len(actions))

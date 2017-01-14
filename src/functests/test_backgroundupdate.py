@@ -4,10 +4,10 @@
 import unittest
 import os
 import subprocess32 as subprocess
-from server.environment import IS_DEV_ENV, IS_COVERAGE
-from server.dal import Dal
-from server.frontendstructs import FeatureSet, TopicModelDescription
-from server.structinit import UserCreator
+from common.environment import IS_DEV_ENV, IS_COVERAGE
+from userdocmatch.dal import Dal
+from userdocmatch.frontendstructs import FeatureSet, TopicModelDescription
+from userdocmatch.structinit import UserCreator
 
 
 class BackgroundUpdateTests(unittest.TestCase):

@@ -1,6 +1,6 @@
 import os
-from server.dal import Dal
-from server.frontendstructs import TopicModelDescription
+from userdocmatch.dal import Dal
+from userdocmatch.frontendstructs import TopicModelDescription
 from topicmodeller.topicmodeller import TopicModeller
 from orchestrator.updatemodel import _save_topic_model_and_feature_set
 

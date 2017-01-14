@@ -3,9 +3,9 @@
 
 import os
 import logging
-from common.log import init_gcloud_log
 from flask import Flask
-from server.environment import IS_DEV_ENV, GCLOUD_PROJECT
+from common.log import init_gcloud_log
+from common.environment import IS_DEV_ENV, GCLOUD_PROJECT
 from server.handlers import handlers
 from server.reactapp import react
 from server.api import api_blueprint

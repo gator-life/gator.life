@@ -1,6 +1,6 @@
 import google.cloud.datastore as datastore  # pylint: disable=import-error
-from .dal import _datastore_test_client, _make_named_entity, _make_entity
-from .environment import GCLOUD_PROJECT, IS_TEST_ENV
+from userdocmatch.dal import _datastore_test_client, _make_named_entity, _make_entity
+from common.environment import GCLOUD_PROJECT, IS_TEST_ENV
 
 
 class Account(object):

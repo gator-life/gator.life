@@ -6,7 +6,7 @@ import unittest
 from _socket import timeout
 from selenium.common.exceptions import TimeoutException
 from selenium import webdriver
-from server.environment import IS_DEV_ENV
+from common.environment import IS_DEV_ENV
 # pylint: skip-file
 # pylint: disable=duplicate-code doesn't work. Duplication will be removed
 # when all app is migrated to react. Meanwhile we skip file as a workaround

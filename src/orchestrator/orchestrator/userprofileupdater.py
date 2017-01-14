@@ -2,8 +2,8 @@
 
 from common.datehelper import utcnow
 from learner.userprofiler import UserProfiler, ActionOnDoc
-import server.frontendstructs as struct
-from server.dal import Dal
+import userdocmatch.frontendstructs as struct
+from userdocmatch.dal import Dal
 
 
 def update_profiles_in_database(users):
@@ -18,15 +18,16 @@ def _update_profiles_in_database(users, profiler, now):
         return  # no profile to update
     dal = Dal()
     old_profiles = dal.user_computed_profile.get_user_computed_profiles(users)
-    actions_by_user = _get_new_actions(dal, users, old_profiles)
+    user_ids = [user.user_id for user in users]
+    actions_by_user = _get_new_actions(dal, user_ids, old_profiles)
     new_profiles = _build_updated_profiles(profiler, zip(old_profiles, actions_by_user), now)
     dal.user_computed_profile.save_user_computed_profiles(zip(users, new_profiles))
 
 
-def _get_new_actions(dal, users, old_profiles):
+def _get_new_actions(dal, user_ids, old_profiles):
     # min requests date is unique for all users, we need to request all from this date
     min_datetime_request = min(old_profiles, key=lambda item: item.datetime).datetime
-    return dal.user_action.get_user_actions_on_docs(users, min_datetime_request)
+    return dal.user_action.get_user_actions_on_docs(user_ids, min_datetime_request)
 
 
 def _build_updated_profiles(profiler, old_profile_to_actions_list, now):

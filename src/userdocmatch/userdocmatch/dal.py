@@ -9,7 +9,7 @@ import logging
 import httplib2
 import google.cloud.datastore as datastore  # pylint: disable=import-error
 from google.auth.credentials import Credentials
-from .environment import GCLOUD_PROJECT, IS_TEST_ENV
+from common.environment import GCLOUD_PROJECT, IS_TEST_ENV
 from . import frontendstructs as struct
 
 
@@ -286,26 +286,26 @@ class DalUserActionOnDoc(object):
         self._ds_client = datastore_client
         self._dal_doc = dal_doc
 
-    def save_user_action_on_doc(self, user, document, action_on_doc):
+    def save_user_action_on_doc(self, user_id, doc_url_hash, action_on_doc):
         """
-        :param user: frontendstructs.User
+        :param user_id
         :param document: frontendstructs.Document
         :param action_on_doc: frontendstructs.UserActionTypeOnDoc
         """
-        db_action = self._to_db_user_action_on_doc(user, document, action_on_doc)
+        db_action = self._to_db_user_action_on_doc(user_id, doc_url_hash, action_on_doc)
         self._ds_client.put(db_action)
 
-    def _to_db_user_action_on_doc(self, user, document, action_on_doc):
+    def _to_db_user_action_on_doc(self, user_id, doc_url_hash, action_on_doc):
         db_action = _make_entity(self._ds_client, 'UserActionOnDoc', not_indexed=())
-        db_action['user_id'] = user.user_id  # pylint: disable=protected-access
-        db_action['document_url_hash'] = document.url_hash
+        db_action['user_id'] = user_id
+        db_action['document_url_hash'] = doc_url_hash
         db_action['action_type'] = _to_db_action_type_on_doc(action_on_doc)
         db_action['datetime'] = datetime.datetime.utcnow()
         return db_action
 
-    def get_user_actions_on_docs(self, users, from_datetime):
+    def get_user_actions_on_docs(self, user_ids, from_datetime):
         """
-        :param users: list of frontendstructs.User
+        :param user_ids: list of frontendstructs.User.user_id
         :param from_datetime:
         :return: return a list matching users input list, each element is the list of frontendstructs.UserActionOnDoc
          for this user inserted after 'from_datetime'
@@ -328,9 +328,9 @@ class DalUserActionOnDoc(object):
         doc_hash_to_doc = dict(zip(doc_url_hashes, docs))
 
         # 3) build result, from two above database results
-        actions_by_user = [[] for _ in users]
+        actions_by_user = [[] for _ in user_ids]
         user_id_to_index = dict(
-            zip((user.user_id for user in users), range(len(users))))  # pylint: disable=protected-access
+            zip(user_ids, range(len(user_ids))))  # pylint: disable=protected-access
         for db_action in db_actions:
             doc = doc_hash_to_doc[db_action['document_url_hash']]
             action = _to_user_action_on_doc(doc, db_action)

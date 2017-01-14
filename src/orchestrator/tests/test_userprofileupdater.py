@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-import server.frontendstructs as struct
-from server.dal import Dal
+import userdocmatch.frontendstructs as struct
+from userdocmatch.dal import Dal
 from orchestrator.userprofileupdater import update_profiles_in_database
 
 
@@ -29,16 +29,16 @@ class UserProfileBuilderTests(unittest.TestCase):
         self.dal.user_computed_profile.save_user_computed_profile(user1, profile1)
 
         self.dal.user_action.save_user_action_on_doc(
-            user1, doc, struct.UserActionTypeOnDoc.up_vote)  # should be used because after save
+            user1.user_id, doc.url_hash, struct.UserActionTypeOnDoc.up_vote)  # should be used because after save
         self.dal.user_action.save_user_action_on_doc(
-            user2, doc, struct.UserActionTypeOnDoc.up_vote)  # should not be used
+            user2.user_id, doc.url_hash, struct.UserActionTypeOnDoc.up_vote)  # should not be used
 
         profile2 = self._build_profile(feature_set_id)
         self.dal.user_computed_profile.save_user_computed_profile(user2, profile2)
 
         # identical action
-        self.dal.user_action.save_user_action_on_doc(user1, doc, struct.UserActionTypeOnDoc.down_vote)
-        self.dal.user_action.save_user_action_on_doc(user2, doc, struct.UserActionTypeOnDoc.down_vote)
+        self.dal.user_action.save_user_action_on_doc(user1.user_id, doc.url_hash, struct.UserActionTypeOnDoc.down_vote)
+        self.dal.user_action.save_user_action_on_doc(user2.user_id, doc.url_hash, struct.UserActionTypeOnDoc.down_vote)
 
         users = [user1, user2]
         update_profiles_in_database(users)

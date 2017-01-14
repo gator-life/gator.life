@@ -3,8 +3,8 @@
 
 import unittest
 from orchestrator.updatemodel import ModelUpdater
-import server.frontendstructs as struct
-from server.dal import Dal
+import userdocmatch.frontendstructs as struct
+from userdocmatch.dal import Dal
 
 
 class MockTopicModel(object):

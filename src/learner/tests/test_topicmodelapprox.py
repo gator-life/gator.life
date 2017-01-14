@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from server.frontendstructs import TopicModelDescription
+from userdocmatch.frontendstructs import TopicModelDescription
 from learner.topicmodelapprox import TopicModelConverter, TopicModelApproxClassifier
 
 

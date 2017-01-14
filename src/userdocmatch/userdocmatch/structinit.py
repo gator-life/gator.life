@@ -4,7 +4,7 @@ import logging
 from common.datehelper import utcnow
 from learner.topicmodelapprox import TopicModelApproxClassifier
 from learner.userprofiler import UserProfiler
-from learner.userdocmatch import UserDocumentsAccumulator, UserData
+from learner.userdocaccumulator import UserDocumentsAccumulator, UserData
 import nltk
 from . import frontendstructs as struct
 

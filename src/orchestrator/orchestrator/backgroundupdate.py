@@ -4,9 +4,9 @@ import datetime
 import logging
 from vcr import use_cassette
 from common.datehelper import utcnow
+from common.environment import IS_TEST_ENV
 from topicmodeller.topicmodeller import TopicModeller
-from server.dal import Dal
-from server.environment import IS_TEST_ENV
+from userdocmatch.dal import Dal
 from .userprofileupdater import update_profiles_in_database
 from .updatemodel import ModelUpdater
 from .scrap_and_learn import scrap_learn

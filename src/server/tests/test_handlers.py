@@ -3,7 +3,7 @@
 
 import unittest
 from flask import Flask
-import server.frontendstructs as struct
+from userdocmatch.api import Document, ActionTypeOnDoc
 import server.handlers as handlers
 from server.dalaccount import Account
 import common.crypto as crypto
@@ -18,133 +18,46 @@ class DalAccountMock(object):
         return self.try_get(email) is not None
 
     def create(self, account):
-        account.account_id = account.email + '_id'
+        account.account_id = account.email + u'_id'
         self.saved_account = account
 
-    @staticmethod
-    def modify(account_id, new_account):  # pylint: disable=unused-argument
-        raise ValueError('Not used yet')
-
-    @staticmethod
-    def delete(email):  # pylint: disable=unused-argument
-        raise ValueError('Not used yet')
-
     def try_get(self, email):
-        if email == 'mark':
-            return Account(email, crypto.hash_password('dadada'), email + "_id")
+        if email == u'mark':
+            return Account(email, crypto.hash_password(u'dadada'), email + u"_id")
         return self.saved_account
 
 
-class DalUserMock(object):
+class UserDocMatcherMock(object):
 
     def __init__(self):
-        self.saved_user = None
-        self.saved_password = None
-
-    def get_user(self, user_id):  # pylint: disable=unused-argument, no-self-use
-        if user_id == 'mark_id':
-            return struct.User.make_from_scratch(user_id, ['soccer', 'tuning'])
-        return self.saved_user
-
-    def save_user(self, user):
-        self.saved_user = user
-
-
-class DalUserDocMock(object):
-
-    @staticmethod
-    def get_user_docs(user):  # pylint: disable=unused-argument
-        def build_user_doc(title):
-            return struct.UserDocument(
-                struct.Document(None, None, title, None, None),
-                0.0)
-
-        if user.user_id == 'mark_id':
-            return \
-                [build_user_doc('title1'),
-                 build_user_doc('title2')]
-        if user.user_id == 'elon_id':
-            return [
-                build_user_doc('rocket')]
-        return None
-
-    @staticmethod
-    def save_user_docs(user, user_docs):  # pylint: disable=unused-argument
-        pass
-
-
-class DalFeatureSetMock(object):
-
-    @staticmethod
-    def get_ref_feature_set_id():
-        return 'ref_feature_set_DalFeatureSetMock'
-
-    def get_feature_set(self, feature_set_id):
-        if feature_set_id == self.get_ref_feature_set_id():
-            return struct.FeatureSet(feature_set_id, ['l1', 'l2'], DalTopicModelMock.topic_model_id)
-        return None
-
-
-class DalUserComputedProfileMock(object):
-
-    def __init__(self):
-        self.user_computed_profiles = None
-
-    def save_user_computed_profiles(self, user_profile_list):
-        self.user_computed_profiles = user_profile_list
-
-
-class DalDocMock(object):
-
-    @staticmethod
-    def get_doc(url_hash):
-        if url_hash == 'url_hash':
-            return struct.Document('url3', None, 'title3', None, None)
-        return None
-
-    @staticmethod
-    def get_recent_docs(from_datetime, max_nb_docs):  # pylint: disable=unused-argument
-        if max_nb_docs != 1000:
-            raise ValueError(max_nb_docs)
-        feature_vector = struct.FeatureVector([1, 1], DalFeatureSetMock.get_ref_feature_set_id())
-        return [struct.Document('url', 'urh_hash', 'title', 's', feature_vector)]
-
-
-class DalUserActionMock(object):
-
-    def __init__(self):
+        self.saved_user_id = None
+        self.saved_interests = None
         self.saved_user_doc_action_tuple = None
 
-    def save_user_action_on_doc(self, user, document, action_on_doc):
-        self.saved_user_doc_action_tuple = (user, document, action_on_doc)
+    @staticmethod
+    def get_docs(user_id):
+        def build_user_doc(title):
+            return Document(title + u'hash', title + u'url', title, None)
 
+        if user_id == u'mark_id':
+            return \
+                [build_user_doc(u'title1'),
+                 build_user_doc(u'title2')]
+        if user_id == u'elon_id':
+            return [
+                build_user_doc(u'rocket')]
+        return None
 
-class DalTopicModelMock(object):
+    @staticmethod
+    def get_url(url_hash):
+        return url_hash.strip(u'hash') + u'url'
 
-    topic_model_id = 'DalTopicModelMock_topic_model_id'
+    def create_user(self, user_id, interests):
+        self.saved_user_id = user_id
+        self.saved_interests = interests
 
-    def __init__(self):
-        self._topic_model = struct.TopicModelDescription.make_from_scratch(self.topic_model_id, [
-            [('word', 1)],
-            [('word2', 1)]
-        ])
-
-    def get(self, model_id):
-        if model_id == self.topic_model_id:
-            return self._topic_model
-        raise ValueError(model_id)
-
-
-class DalMock(object):
-
-    def __init__(self):
-        self.user_action = DalUserActionMock()
-        self.doc = DalDocMock()
-        self.user_computed_profile = DalUserComputedProfileMock()
-        self.feature_set = DalFeatureSetMock()
-        self.user_doc = DalUserDocMock()
-        self.user = DalUserMock()
-        self.topic_model = DalTopicModelMock()
+    def add_user_action(self, user_id, url_hash, action_type_on_doc):
+        self.saved_user_doc_action_tuple = (user_id, url_hash, action_type_on_doc)
 
 
 class HandlersTests(unittest.TestCase):
@@ -155,9 +68,9 @@ class HandlersTests(unittest.TestCase):
         test_app.secret_key = 'HandlersTests_flask_secret_key'
         self.app = test_app.test_client()
         test_app.config['TESTING'] = True
-        self.dal = DalMock()
+        self.user_doc_matcher = UserDocMatcherMock()
+        handlers.USER_DOC_MATCHER = self.user_doc_matcher
         self.dal_account = DalAccountMock()
-        handlers.get_dal = lambda: self.dal
         handlers.get_dal_account = lambda: self.dal_account
 
     def test_home_without_user_render_login(self):
@@ -175,11 +88,11 @@ class HandlersTests(unittest.TestCase):
         self._assert_is_home(response)
 
     def test_login_post_valid_redirect_home(self):
-        response = self.app.post('/login', data=dict(email='mark', password='dadada'), follow_redirects=True)
+        response = self.app.post('/login', data=dict(email=u'mark', password=u'dadada'), follow_redirects=True)
         self._assert_is_home(response)
 
     def test_login_post_invalid_redirect_login(self):
-        response = self.app.post('/login', data=dict(email='mark', password='JoIsNoOne'), follow_redirects=True)
+        response = self.app.post('/login', data=dict(email=u'mark', password=u'JoIsNoOne'), follow_redirects=True)
         self._assert_is_login(response)
         self.assertTrue('Unknown email or invalid password' in response.data)
 
@@ -210,18 +123,18 @@ class HandlersTests(unittest.TestCase):
         self._assert_is_home(response)
 
     def test_register_post_with_existing_email(self):
-        response = self.app.post('/register', data=dict(email='mark', password='', interests=''), follow_redirects=True)
+        response = self.app.post('/register', data=dict(email=u'mark', password=u'', interests=u''), follow_redirects=True)
         self._assert_is_register(response)
         self.assertTrue('This account already exists' in response.data)
 
     def test_register_post_with_new_email_save_profile_redirect_homepage(self):
-        post_data = dict(email='elon', password='elon', interests='rockets\r\ncars')
+        post_data = dict(email=u'elon', password=u'elon', interests=u'rockets\r\ncars')
         response = self.app.post('/register', data=post_data, follow_redirects=True)
-        self.assertEquals('elon_id', self.dal.user.saved_user.user_id)
-        self.assertEquals('elon_id', self.dal_account.saved_account.account_id)
-        self.assertEquals(['rockets', 'cars'], self.dal.user.saved_user.interests)
-        self.assertEquals(1, len(self.dal.user_computed_profile.user_computed_profiles))
-        self.assertTrue(crypto.verify_password('elon', self.dal_account.saved_account.password_hash))
+
+        self.assertEquals(u'elon_id', self.user_doc_matcher.saved_user_id)
+        self.assertEquals(u'elon_id', self.dal_account.saved_account.account_id)
+        self.assertEquals([u'rockets', u'cars'], self.user_doc_matcher.saved_interests)
+        self.assertTrue(crypto.verify_password(u'elon', self.dal_account.saved_account.password_hash))
         self._assert_is_home_elon(response)
 
     def test_link_with_user_not_connected_redirect_login(self):
@@ -230,29 +143,29 @@ class HandlersTests(unittest.TestCase):
 
     def test_link_with_click_link_save_action_and_redirect(self):
         self._login()
-        response = self.app.get('/link/3/url_hash', follow_redirects=False)
-        action = self.dal.user_action.saved_user_doc_action_tuple[2]
-        self.assertEquals(struct.UserActionTypeOnDoc.click_link, action)
+        response = self.app.get('/link/3/url_redirect_hash', follow_redirects=False)
+        action = self.user_doc_matcher.saved_user_doc_action_tuple[2]
+        self.assertEquals(ActionTypeOnDoc.click_link, action)
         self.assertTrue('redirected' in response.data)
-        self.assertTrue('url3' in response.data)
+        self.assertTrue('url_redirect_url' in response.data)
 
     def test_link_with_down_vote_link_save_action_stay_home(self):
         self._login()
         response = self.app.get('/link/2/url_hash', follow_redirects=True)
 
-        user = self.dal.user_action.saved_user_doc_action_tuple[0]
-        doc = self.dal.user_action.saved_user_doc_action_tuple[1]
-        action = self.dal.user_action.saved_user_doc_action_tuple[2]
+        user_id = self.user_doc_matcher.saved_user_doc_action_tuple[0]
+        doc_url_hash = self.user_doc_matcher.saved_user_doc_action_tuple[1]
+        action = self.user_doc_matcher.saved_user_doc_action_tuple[2]
 
-        self.assertEquals('mark_id', user.user_id)
-        self.assertEquals('title3', doc.title)
-        self.assertEquals(struct.UserActionTypeOnDoc.down_vote, action)
+        self.assertEquals(u'mark_id', user_id)
+        self.assertEquals(u'url_hash', doc_url_hash)
+        self.assertEquals(ActionTypeOnDoc.down_vote, action)
         self._assert_is_home(response)
 
     def _login(self):
         with self.app.session_transaction() as session:
-            session['user_id'] = 'mark_id'
-            session['email'] = 'mark'
+            session['user_id'] = u'mark_id'
+            session['email'] = u'mark'
 
     def _assert_is_register(self, response):
         self.assertEquals(200, response.status_code)

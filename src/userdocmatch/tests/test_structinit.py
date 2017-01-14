@@ -3,9 +3,9 @@
 
 import unittest
 from common.datehelper import utcnow
-from server.structinit import UserCreator, _ProfileInitializer, _get_user_docs
-from server.dal import Dal
-from server.frontendstructs import FeatureSet, TopicModelDescription, Document, FeatureVector
+from userdocmatch.structinit import UserCreator, _ProfileInitializer, _get_user_docs
+from userdocmatch.dal import Dal
+from userdocmatch.frontendstructs import FeatureSet, TopicModelDescription, Document, FeatureVector
 
 
 def make_doc(vector, feature_set_id, url_hash):

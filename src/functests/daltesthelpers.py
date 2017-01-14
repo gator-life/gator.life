@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import server.frontendstructs as struct
-from server.dal import Dal
+import userdocmatch.frontendstructs as struct
+from userdocmatch.dal import Dal
 from server.dalaccount import DalAccount, Account
 
 
 def create_user_dummy(email, password_hash, interests):
-    dalaccount = DalAccount()
+    dal_account = DalAccount()
     account = Account(email, password_hash)
-    dalaccount.create(account)
+    dal_account.create(account)
     user_id = account.account_id
     dal = Dal()
     ref_feature_set_id = dal.feature_set.get_ref_feature_set_id()
