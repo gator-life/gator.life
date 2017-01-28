@@ -2,7 +2,7 @@
 
 from math import e
 import numpy as np
-from server.frontendstructs import UserActionTypeOnDoc, UserProfileModelData
+from userdocmatch.frontendstructs import UserActionTypeOnDoc, UserProfileModelData
 
 
 class ActionOnDoc(object):

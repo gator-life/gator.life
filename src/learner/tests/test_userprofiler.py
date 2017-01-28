@@ -6,7 +6,7 @@ import unittest
 import math
 import numpy as np
 from learner.userprofiler import UserProfiler, ActionOnDoc, _ElementProfile
-from server.frontendstructs import UserActionTypeOnDoc, UserProfileModelData
+from userdocmatch.frontendstructs import UserActionTypeOnDoc, UserProfileModelData
 
 
 class UserProfilerTests(unittest.TestCase):

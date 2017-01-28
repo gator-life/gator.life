@@ -9,3 +9,4 @@ numpy
 scipy
 nltk
 pytz
+flask-restful

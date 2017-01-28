@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from server.dal import Dal
-from server.frontendstructs import FeatureSet, UserProfileModelData, UserComputedProfile, FeatureVector, Document,\
+from userdocmatch.dal import Dal
+from userdocmatch.frontendstructs import FeatureSet, UserProfileModelData, UserComputedProfile, FeatureVector, Document,\
     TopicModelDescription
 from learner.topicmodelapprox import TopicModelConverter
 from learner.userprofiler import UserProfiler

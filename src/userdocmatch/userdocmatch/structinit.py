@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 import datetime
 import logging
-import common.crypto as crypto
 from common.datehelper import utcnow
 from learner.topicmodelapprox import TopicModelApproxClassifier
 from learner.userprofiler import UserProfiler
-from learner.userdocmatch import UserDocumentsAccumulator, UserData
+from learner.userdocaccumulator import UserDocumentsAccumulator, UserData
 import nltk
 from . import frontendstructs as struct
 
@@ -20,14 +19,14 @@ class UserCreator(object):
         self._doc_duration = datetime.timedelta(hours=12)
         self._nb_user_docs = 30
 
-    def create_user_in_db(self, email, interests, password, dal):
+    def create_user_in_db(self, user_id, interests, dal):
         if self._profile_initializer is None:
             self._profile_initializer = _get_profile_initializer(dal)
 
-        user = struct.User.make_from_scratch(email, interests)
+        user = struct.User.make_from_scratch(user_id, interests)
         profile = self._profile_initializer.get_new_profile(interests)
         user_docs = _get_user_docs(dal, profile.feature_vector, utcnow() - self._doc_duration, self._nb_user_docs)
-        dal.user.save_user(user, crypto.hash_password(password))
+        dal.user.save_user(user)
         dal.user_computed_profile.save_user_computed_profiles([(user, profile)])
         dal.user_doc.save_user_docs(user, user_docs)
         return user

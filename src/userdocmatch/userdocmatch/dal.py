@@ -9,7 +9,7 @@ import logging
 import httplib2
 import google.cloud.datastore as datastore  # pylint: disable=import-error
 from google.auth.credentials import Credentials
-from .environment import GCLOUD_PROJECT, IS_TEST_ENV
+from common.environment import GCLOUD_PROJECT, IS_TEST_ENV
 from . import frontendstructs as struct
 
 
@@ -53,15 +53,10 @@ def _to_user_profile_model_data(db_user_profile_model_data):
 
 def _to_user(db_user):
     return struct.User.make_from_db(
-        db_key=db_user.key,
-        email=db_user['email'],
+        user_id=db_user.key.name,
         interests=db_user.get('interests', []),
         user_doc_set_db_key=db_user['user_doc_set_key'],
         user_computed_profile_db_key=db_user['user_computed_profile_key'])
-
-
-def _to_user_password(db_user):
-    return db_user['password']
 
 
 def _to_user_doc(doc, db_user_doc):
@@ -106,10 +101,10 @@ def _datastore_test_client():
         """
         @staticmethod
         def create_scoped_required():
-            return False
+            return False  # pragma: no cover
 
         def refresh(self, request):
-            pass
+            pass  # pragma: no cover
 
     credentials = _EmulatorCreds()
     http = httplib2.Http()  # Un-authorized.
@@ -138,6 +133,7 @@ def _get_multi(datastore_client, keys):
     return [key_to_entity[key] for key in keys]
 
 
+# Dal userDocMatching
 class Dal(object):  # pylint: disable= too-many-instance-attributes
 
     # re-use same connection for tests to improve perfs. In prod, client should have a short life
@@ -290,26 +286,26 @@ class DalUserActionOnDoc(object):
         self._ds_client = datastore_client
         self._dal_doc = dal_doc
 
-    def save_user_action_on_doc(self, user, document, action_on_doc):
+    def save_user_action_on_doc(self, user_id, doc_url_hash, action_on_doc):
         """
-        :param user: frontendstructs.User
+        :param user_id
         :param document: frontendstructs.Document
         :param action_on_doc: frontendstructs.UserActionTypeOnDoc
         """
-        db_action = self._to_db_user_action_on_doc(user, document, action_on_doc)
+        db_action = self._to_db_user_action_on_doc(user_id, doc_url_hash, action_on_doc)
         self._ds_client.put(db_action)
 
-    def _to_db_user_action_on_doc(self, user, document, action_on_doc):
+    def _to_db_user_action_on_doc(self, user_id, doc_url_hash, action_on_doc):
         db_action = _make_entity(self._ds_client, 'UserActionOnDoc', not_indexed=())
-        db_action['user_key'] = user._db_key  # pylint: disable=protected-access
-        db_action['document_url_hash'] = document.url_hash
+        db_action['user_id'] = user_id
+        db_action['document_url_hash'] = doc_url_hash
         db_action['action_type'] = _to_db_action_type_on_doc(action_on_doc)
         db_action['datetime'] = datetime.datetime.utcnow()
         return db_action
 
-    def get_user_actions_on_docs(self, users, from_datetime):
+    def get_user_actions_on_docs(self, user_ids, from_datetime):
         """
-        :param users: list of frontendstructs.User
+        :param user_ids: list of frontendstructs.User.user_id
         :param from_datetime:
         :return: return a list matching users input list, each element is the list of frontendstructs.UserActionOnDoc
          for this user inserted after 'from_datetime'
@@ -332,13 +328,13 @@ class DalUserActionOnDoc(object):
         doc_hash_to_doc = dict(zip(doc_url_hashes, docs))
 
         # 3) build result, from two above database results
-        actions_by_user = [[] for _ in users]
-        user_key_to_index = dict(
-            zip((user._db_key for user in users), range(len(users))))  # pylint: disable=protected-access
+        actions_by_user = [[] for _ in user_ids]
+        user_id_to_index = dict(
+            zip(user_ids, range(len(user_ids))))  # pylint: disable=protected-access
         for db_action in db_actions:
             doc = doc_hash_to_doc[db_action['document_url_hash']]
             action = _to_user_action_on_doc(doc, db_action)
-            user_index = user_key_to_index.get(db_action['user_key'])
+            user_index = user_id_to_index.get(db_action['user_id'])
             if user_index is not None:  # because we did not filter query on users
                 actions_by_user[user_index].append(action)
         return actions_by_user
@@ -507,38 +503,22 @@ class DalUser(object):
         self._dal_user_computed_profile = dal_user_computed_profile
         self._new_user_feature_set_id = u"new_user_feature_set_id"
 
-    def get_user(self, email):
+    def get_user(self, user_id):
         """
-        :param email:
-        :return: Struct.User if user found, else None
+        :return: A Struct.User
         """
-        (user, _) = self.get_user_and_hash_password(email)
-        return user
+        user_key = self._ds_client.key('User', user_id)
+        db_user = self._ds_client.get(user_key)
+        return _to_user(db_user)
 
-    def get_user_and_hash_password(self, email):
-        """
-        :param email:
-        :return: A tuple (Struct.User, encoded password) if user found, else (None, None)
-        """
-        email_key = self._ds_client.key('UserKeyByEmail', email)
-        db_user_key_by_email = self._ds_client.get(email_key)
-        if db_user_key_by_email is None:
-            return None, None
-        db_user_key = db_user_key_by_email['user_key']
-        db_user = self._ds_client.get(db_user_key)
-        return _to_user(db_user), _to_user_password(db_user)
-
-    # this function should be replaced by a get_all_users_anonym()
     def get_all_users(self):
         """
         :return: A list of struct.User of all users in database
         """
-        all_alive_users_query = self._ds_client.query(kind='UserKeyByEmail').fetch()
-        all_alive_user_keys = set(user_key_by_email['user_key'] for user_key_by_email in all_alive_users_query)
         all_users_query = self._ds_client.query(kind='User').fetch()
-        return [_to_user(db_user) for db_user in all_users_query if db_user.key in all_alive_user_keys]
+        return [_to_user(db_user) for db_user in all_users_query]
 
-    def save_user(self, user, password):
+    def save_user(self, user):
         """
         save a user into the database, if it's newly created, db_keys will be initialized
         """
@@ -558,19 +538,12 @@ class DalUser(object):
             self._ds_client.put(db_user_computed_profile)
             user._user_computed_profile_db_key = db_user_computed_profile.key  # pylint: disable=protected-access
 
-        db_user = self._to_db_user(user, password)
+        db_user = self._to_db_user(user)
         self._ds_client.put(db_user)
-        user._db_key = db_user.key  # pylint: disable=protected-access
 
-        db_user_key_by_email = _make_named_entity(self._ds_client, 'UserKeyByEmail', user.email, [])
-        db_user_key_by_email['user_key'] = user._db_key  # pylint: disable=protected-access
-        self._ds_client.put(db_user_key_by_email)
-
-    def _to_db_user(self, user, password):
-        not_indexed = ('password', 'interests', 'user_doc_set_key', 'user_computed_profile_key')
-        db_user = _make_entity(self._ds_client, 'User', not_indexed)
-        db_user['email'] = user.email
-        db_user['password'] = password
+    def _to_db_user(self, user):
+        not_indexed = ('interests', 'user_doc_set_key', 'user_computed_profile_key')
+        db_user = _make_named_entity(self._ds_client, 'User', user.user_id, not_indexed)
         db_user['interests'] = user.interests
         db_user['user_doc_set_key'] = user._user_doc_set_db_key  # pylint: disable=protected-access
         db_user['user_computed_profile_key'] = user._user_computed_profile_db_key  # pylint: disable=protected-access

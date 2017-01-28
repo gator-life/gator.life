@@ -3,8 +3,8 @@
 
 import unittest
 from orchestrator.updatemodel import ModelUpdater
-import server.frontendstructs as struct
-from server.dal import Dal
+import userdocmatch.frontendstructs as struct
+from userdocmatch.dal import Dal
 
 
 class MockTopicModel(object):
@@ -62,7 +62,7 @@ class ModelUpdaterTests(unittest.TestCase):
         doc = self._get_saved_doc(feature_set_id, url_hash, vec_doc)
 
         user = struct.User.make_from_scratch('email_test_update_model_in_db', '')
-        self.dal.user.save_user(user, 'password')
+        self.dal.user.save_user(user)
 
         vec_profile = [-1]
         explicit = [2.0]

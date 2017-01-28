@@ -3,7 +3,7 @@
 
 from math import sqrt
 import unittest
-from learner.userdocmatch import UserDocumentsAccumulator, UserData, UserDoc, _similarity_by_row, _FixedSizeHeap
+from learner.userdocaccumulator import UserDocumentsAccumulator, UserData, UserDoc, _similarity_by_row, _FixedSizeHeap
 
 
 def norm(vec):

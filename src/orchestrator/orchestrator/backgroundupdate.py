@@ -4,9 +4,9 @@ import datetime
 import logging
 from vcr import use_cassette
 from common.datehelper import utcnow
+from common.environment import IS_TEST_ENV
 from topicmodeller.topicmodeller import TopicModeller
-from server.dal import Dal
-from server.environment import IS_TEST_ENV
+from userdocmatch.dal import Dal
 from .userprofileupdater import update_profiles_in_database
 from .updatemodel import ModelUpdater
 from .scrap_and_learn import scrap_learn
@@ -29,10 +29,10 @@ def update_model_profiles_userdocs():
     if test_mode:
         vcr_cassette_file = sys.argv[2]
         users_prefix = sys.argv[3]
-        keep_user_func = lambda u: u.email.startswith(users_prefix)
+        keep_user_func = lambda u: u.user_id.startswith(users_prefix)
         nb_docs_before_users_reload = int(sys.argv[4])
         start_cache_date = utcnow()
-    else:
+    else:  # pragma: no cover
         vcr_cassette_file = None
         keep_user_func = lambda u: True
         nb_docs_before_users_reload = 100
@@ -72,13 +72,13 @@ def update_model_profiles_userdocs():
 class NoContext(object):
 
     def __init__(self):
-        pass
+        pass  # pragma: no cover
 
     def __enter__(self):
-        return None
+        return None  # pragma: no cover
 
     def __exit__(self, exc_type, exc_value, traceback):
-        return False
+        return False  # pragma: no cover
 
 
 def _get_users(dal, keep_user_func):

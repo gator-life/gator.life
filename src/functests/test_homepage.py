@@ -6,8 +6,8 @@ import unittest
 from _socket import timeout
 from selenium.common.exceptions import TimeoutException
 from selenium import webdriver
-from server import frontendstructs as structs
-from server.dal import Dal
+from userdocmatch import frontendstructs as structs
+from userdocmatch.dal import Dal
 from common.datehelper import utcnow
 import common.crypto as crypto
 import daltesthelpers
@@ -94,11 +94,6 @@ class NewVisitorTests(unittest.TestCase):
         interests_str = 'finance\npython\ncomputer science'
         self._register(email, 'password', interests_str)
 
-        user = self.dal.user.get_user(email)
-        self.assertIsNotNone(user)
-        self.assertItemsEqual(user.interests, interests_str.splitlines())
-        self.assertItemsEqual(user.interests, interests_str.splitlines())
-
         # If the user as been successfully registered, it should be redirected to home page
         self.assertEqual('http://localhost:8080/', self.browser.current_url)
 
@@ -165,7 +160,7 @@ class NewVisitorTests(unittest.TestCase):
         self._click(google_link)
         self.assertEqual("Google", self.browser.title)
 
-        actions_by_user = self.dal.user_action.get_user_actions_on_docs([user], now)
+        actions_by_user = self.dal.user_action.get_user_actions_on_docs([user.user_id], now)
 
         actions = actions_by_user[0]
         self.assertEqual(3, len(actions))

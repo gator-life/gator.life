@@ -3,8 +3,8 @@
 
 import unittest
 import itertools
-import server.dal as sdal
-import server.frontendstructs as struct
+import userdocmatch.dal as sdal
+import userdocmatch.frontendstructs as struct
 from common.datehelper import utcnow
 
 
@@ -41,68 +41,56 @@ class DalUserTests(unittest.TestCase):
     def setUp(self):
         self.dal = sdal.Dal()
 
-    def test_get_user_with_unknown_user_should_return_none(self):
-        self.assertIsNone(self.dal.user.get_user(u'missing_user'))
-
     def test_save_then_get_user_should_be_equals(self):
         # ------ init database -----------
-        password = u'password'
-        expected_user = struct.User.make_from_scratch(email=u'email', interests=[u'interests'])
+        user_id = u'test_save_then_get_user_should_be_equals_user_id'
+        expected_user = struct.User.make_from_scratch(user_id=user_id, interests=[u'interests'])
 
         # ------------- check save_user --------------
         self.assertIsNone(expected_user._user_computed_profile_db_key)
         self.assertIsNone(expected_user._user_doc_set_db_key)
-        self.assertIsNone(expected_user._db_key)
-        self.dal.user.save_user(expected_user, password)
+        self.dal.user.save_user(expected_user)
         # save should init db keys
         self.assertIsNotNone(expected_user._user_doc_set_db_key)
         self.assertIsNotNone(expected_user._user_computed_profile_db_key)
-        self.assertIsNotNone(expected_user._db_key)
 
         # ------------- check get_user --------------
-        result_user = self.dal.user.get_user(u'email')
+        result_user = self.dal.user.get_user(user_id)
         self.assert_users_equals(expected_user, result_user)
-
-        # ------- check get_user_and_hash_password -------
-        (result_user, result_password) = self.dal.user.get_user_and_hash_password(u'email')
-        self.assert_users_equals(expected_user, result_user)
-        self.assertEquals(password, result_password)
 
     def test_save_user_with_existing_user_same_email_override(self):
-        email = 'test_save_user_with_existing_user_same_email_override'
-        password = 'password'
-        user = struct.User.make_from_scratch(email=email, interests=['interests'])
-        self.dal.user.save_user(user, password)
-        user2 = struct.User.make_from_scratch(email=email, interests=['interests2'])
-        self.dal.user.save_user(user2, password)
-        result = self.dal.user.get_user(email)
+        user_id = 'test_save_user_with_existing_user_same_email_override'
+        user = struct.User.make_from_scratch(user_id=user_id, interests=['interests'])
+        self.dal.user.save_user(user)
+        user2 = struct.User.make_from_scratch(user_id=user_id, interests=['interests2'])
+        self.dal.user.save_user(user2)
+        result = self.dal.user.get_user(user_id)
         self.assert_users_equals(user2, result)
 
     def test_get_user_no_interest(self):
         expected_user = struct.User.make_from_scratch(u"test_get_user_no_interest", [])
-        self.dal.user.save_user(expected_user, u"password")
+        self.dal.user.save_user(expected_user)
         result_user = self.dal.user.get_user(u"test_get_user_no_interest")
         self.assert_users_equals(expected_user, result_user)
 
     def assert_users_equals(self, expected_user, result_user):
-        self.assertEquals(expected_user.email, result_user.email)
+        self.assertEquals(expected_user.user_id, result_user.user_id)
         self.assertEquals(expected_user.interests, result_user.interests)
         self.assertEquals(expected_user._user_doc_set_db_key, result_user._user_doc_set_db_key)
         self.assertEquals(expected_user._user_computed_profile_db_key, result_user._user_computed_profile_db_key)
-        self.assertEquals(expected_user._db_key, result_user._db_key)
 
     def test_get_all_users(self):
         users_data = [(u'test_get_all_users_user1', [u'interests1']),
                       (u'test_get_all_users_user2', [u'interests2']),
                       (u'test_get_all_users_user3', [u'interests3'])]
 
-        all_users_expected = [struct.User.make_from_scratch(email, interests) for (email, interests) in users_data]
+        all_users_expected = [struct.User.make_from_scratch(user_id, interests) for (user_id, interests) in users_data]
         for user in all_users_expected:
-            self.dal.user.save_user(user, u'password')
-        all_user_keys = [user._db_key for user in all_users_expected]
+            self.dal.user.save_user(user)
+        all_user_ids = [user.user_id for user in all_users_expected]
 
         all_users = self.dal.user.get_all_users()
-        all_users_this_test = [user for user in all_users if user._db_key in all_user_keys]
+        all_users_this_test = [user for user in all_users if user.user_id in all_user_ids]
         self.assertEquals(3, len(all_users_this_test))
 
 
@@ -123,7 +111,7 @@ class DalUserDocTests(unittest.TestCase):
 
         # create user and save it to init user_doc_set_key field
         user = struct.User.make_from_scratch(u"test_save_then_get_user_docs_should_be_equals", [u"interests1"])
-        self.dal.user.save_user(user, u"password1")
+        self.dal.user.save_user(user)
 
         self.dal.user_doc.save_user_docs(user, expected_user_docs)
         result_user_docs = self.dal.user_doc.get_user_docs(user)
@@ -142,8 +130,8 @@ class DalUserDocTests(unittest.TestCase):
         # create user and save it to init user_doc_set_key field
         user1 = struct.User.make_from_scratch(u"test_get_users_docs1", [u"interests1"])
         user2 = struct.User.make_from_scratch(u"test_get_users_docs2", [u"interests2"])
-        self.dal.user.save_user(user1, u"password1")
-        self.dal.user.save_user(user2, u"password2")
+        self.dal.user.save_user(user1)
+        self.dal.user.save_user(user2)
 
         expected_user1_docs = [
             struct.UserDocument(doc1, 0.1),
@@ -167,7 +155,7 @@ class DalUserDocTests(unittest.TestCase):
 
     def test_get_users_docs_zero_docs(self):
         user = struct.User.make_from_scratch(u"test_get_users_docs_zero_docs_user", [u"interests1"])
-        self.dal.user.save_user(user, u"password")
+        self.dal.user.save_user(user)
         docs = self.dal.user_doc.get_users_docs([user])[0]
         self.assertEquals([], docs)
 
@@ -291,8 +279,8 @@ class DalUserComputedProfileTests(unittest.TestCase):
 
     def test_get_empty_user_computed_profile(self):
         user = struct.User.make_from_scratch(
-            email=u'test_get_empty_user_computed_profiles', interests=[])
-        self.dal.user.save_user(user, u'test_get_empty_user_computed_profiles_password')
+            user_id=u'test_get_empty_user_computed_profiles', interests=[])
+        self.dal.user.save_user(user)
         result_profile = self.dal.user_computed_profile.get_user_computed_profiles([user])[0]
         expected_profile = struct.UserComputedProfile(
             feature_vector=struct.FeatureVector(
@@ -334,8 +322,8 @@ class DalUserComputedProfileTests(unittest.TestCase):
 
     def _build_profile(self, index):
         feature_set_id = build_dummy_db_feature_set(self.dal)
-        user = struct.User.make_from_scratch(email=u'user' + str(index), interests=[u'interests' + str(index)])
-        self.dal.user.save_user(user, u'password' + str(index))
+        user = struct.User.make_from_scratch(user_id=u'user' + str(index), interests=[u'interests' + str(index)])
+        self.dal.user.save_user(user)
         feature_vector = struct.FeatureVector(
             vector=[0.5 + index, 0.6 + index], feature_set_id=feature_set_id)
         model_data = struct.UserProfileModelData(
@@ -371,20 +359,20 @@ class DalUserActionOnDocTests(unittest.TestCase):
         user1 = struct.User.make_from_scratch(u"test_save_then_get_user_actions_on_doc1", [u"interests1"])
         user2 = struct.User.make_from_scratch(u"test_save_then_get_user_actions_on_doc2", [u"interests2"])
         user3 = struct.User.make_from_scratch(u"test_save_then_get_user_actions_on_doc3", [u"interests3"])
-        self.dal.user.save_user(user1, u"password1")
-        self.dal.user.save_user(user2, u"password2")
-        self.dal.user.save_user(user3, u"password3")
+        self.dal.user.save_user(user1)
+        self.dal.user.save_user(user2)
+        self.dal.user.save_user(user3)
         self.dal.user_action.save_user_action_on_doc(
-            user1, doc2, struct.UserActionTypeOnDoc.up_vote)  # before min_datetime, filtered
+            user1.user_id, doc2.url_hash, struct.UserActionTypeOnDoc.up_vote)  # before min_datetime, filtered
 
         min_datetime = utcnow()
-        self.dal.user_action.save_user_action_on_doc(user1, doc1, struct.UserActionTypeOnDoc.up_vote)
-        self.dal.user_action.save_user_action_on_doc(user2, doc1, struct.UserActionTypeOnDoc.down_vote)
-        self.dal.user_action.save_user_action_on_doc(user1, doc2, struct.UserActionTypeOnDoc.click_link)
+        self.dal.user_action.save_user_action_on_doc(user1.user_id, doc1.url_hash, struct.UserActionTypeOnDoc.up_vote)
+        self.dal.user_action.save_user_action_on_doc(user2.user_id, doc1.url_hash, struct.UserActionTypeOnDoc.down_vote)
+        self.dal.user_action.save_user_action_on_doc(user1.user_id, doc2.url_hash, struct.UserActionTypeOnDoc.click_link)
         self.dal.user_action.save_user_action_on_doc(
-            user3, doc2, struct.UserActionTypeOnDoc.click_link)  # not in user list, filtered
+            user3.user_id, doc2.url_hash, struct.UserActionTypeOnDoc.click_link)  # not in user list, filtered
 
-        result = self.dal.user_action.get_user_actions_on_docs([user2, user1], min_datetime)
+        result = self.dal.user_action.get_user_actions_on_docs([user2.user_id, user1.user_id], min_datetime)
 
         self.assertEquals(2, len(result))
         user2_actions = result[0]
