@@ -131,16 +131,19 @@ def link(action_type_on_doc, url_hash):
 @handlers.errorhandler(404)
 def page_not_found(exception):
     LOGGER.exception('Error 404')
+    unset_connected_user()
     return str(exception)
 
 
 @handlers.errorhandler(500)
 def internal_server_error(exception):
     LOGGER.exception('Error 500')
+    unset_connected_user()
     return str(exception)
 
 
 @handlers.errorhandler(Exception)
 def unhandled_exception(exception):
     LOGGER.exception('Error exception')
+    unset_connected_user()
     return str(exception)
