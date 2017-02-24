@@ -12,3 +12,22 @@ class UserAPI(Resource):
     @staticmethod
     def get(user_email):
         return {'email': 'test_API ' + user_email}
+
+
+@api.resource('/api/documents')
+class Documents(Resource):
+
+    @staticmethod
+    def get():
+        return [
+            {
+                'url': 'url1',
+                'title': 'title1',
+                'summary': 'summary1'
+            },
+            {
+                'url': 'url2',
+                'title': 'title2',
+                'summary': 'summary2'
+            }
+        ]

@@ -1,24 +1,246 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto+Mono|Cinzel|Yellowtail|Lobster|Indie+Flower|Open+Sans');
+
+body{
+  background-color: #eaeaea; /*grey background*/
+}
+
 .App {
-  text-align: center;
+  /*center page on screen*/
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
+
+.Topbar
+{
+  /*position: fixed;*/
+  overflow: visible;
+  width: 100%;
+  height: 50px;
+  background-color: #eaeaea;
+  padding: 0px 0px 5px 10px;
+  margin: 0px 0px 0px 0px;
 }
 
-.App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
-  color: white;
+/*.Topbar-logo*/
+/*{*/
+/*background-image: url(./logo.svg);*/
+/*}*/
+
+.Topbar-links
+{
+  text-align: right;
+  height: 100%;
+  margin-right: 20px;
 }
 
-.App-intro {
+.Topbar-links li{
+  display: inline-block;
+  margin: 7px;
+  padding: 0px 0px 0px 0px;
+}
+
+.Topbar-links a{
+  color: #222222;;
+  height: 100%;
+  text-decoration: none;
+}
+
+.Topbar-logo
+{
+  display: flex;
+  height: 100%;
+  margin-left: 30px;
+  float: left;
+  align-items: center;
+  font-size: x-large;
+  border: 0px solid;
+}
+
+.logo-green
+{
+  color: #3a6186;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.logo-black
+{
+  color: black;
+}
+
+.logo-red
+{
+  color: red;
+  font-family: 'Indie Flower', cursive;
+}
+
+.Register a
+{
+ font-size: large;
+  background-color: #3a6186;
+  color: #eaeaea;
+  padding: 5px;
+  font-weight: bold;
+  border-radius: 10px;
+}
+
+.SignIn a
+{
   font-size: large;
+  font-weight: bold;
+  color: #3a6186;
 }
 
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.Contact a
+{
+  font-size: small;
+  color: #3a6186;
 }
+
+.OurMission a
+{
+  font-size: small;
+  color: #3a6186;
+}
+
+.Docs {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1000px;
+}
+
+.Doc
+{
+  border: 0px solid;
+  border-radius: 0px; /*rounded borders*/
+  border-color: #dadada; /* darker grey than background*/
+  box-shadow: 0px 0px 2px 2px #dadada;
+  /*border-color: #9fed95;*/
+  padding: 0px; /*space around doc*/
+  background-color: #ffffff; /*white*/
+  margin: 3px 10px 3px 10px; /*space between docs*/
+  /*to center image in doc div*/
+  display:flex;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.Doc:hover {
+  box-shadow: 0px 0px 2px 2px #ffffff;
+    background-color: #fafafa;
+}
+
+.Doc-topic-wrapper
+{
+  min-width: 90px;
+  margin: 0px;
+  padding: 0px;
+}
+
+.Doc-topic
+{
+
+  font-size: small;
+  font-style: italic;
+  display: inline;
+  padding: 0px 4px 0px 1px;
+  margin: 0px 0px 0px 2px;
+  /*background-color: #c9fdc9;*/
+  border-radius: 5px; /*rounded borders*/
+
+  background-color: #3a6186;
+  color: white;
+  font-weight: bold;
+}
+
+.Doc-topic-more
+{
+  background-color: white;
+  border-radius: 100%;
+  color: green;
+  border-width: 0px;
+  margin: 0px 2px 0px 5px;
+}
+
+.Doc-topic-less
+{
+  background-color: white;
+  border-radius: 100%;
+  color: #d34836;
+  border-width: 0px;
+  margin: 0px 5px 0px 2px;
+}
+
+.Doc-button-group {
+
+  width: 18px;
+  padding: 0px 0px 0px 0px;
+  margin: 0px 7px 0px 2px;
+}
+
+.vote-up
+{
+background-image: url('./chevron-small-up.svg');
+  background-color: transparent;
+  background-repeat: no-repeat;
+  box-shadow: 0px 0px 1px 1px #dadada;
+  border-width: 0px;
+  border-radius: 30%;
+  width: 18px;
+  height: 18px;
+  margin: 0px;
+  padding: 0px;
+}
+
+.vote-down
+{
+background-image: url('./chevron-small-down.svg');
+  background-color: transparent;
+  background-repeat: no-repeat;
+  box-shadow: 0px 0px 1px 1px #dadada;
+  border-width: 0px;
+  border-radius: 30%;
+  width: 18px;
+  height: 18px;
+    margin: 0px;
+  padding: 0px;
+}
+
+
+
+.Doc-title
+{
+  text-align: left;
+  color: #222222;
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+.Doc-title:hover
+{
+  text-decoration: underline;
+}
+
+.Doc-domain {
+  padding: 0px 5px 0px 5px;
+  color: #999;
+  font-weight: normal;
+  font-size: x-small;
+  vertical-align: middle;
+}
+
+.Doc-link {
+  margin: 6px 0px 6px 0px;
+}
+
+
+
+
+
+/* hit the floor effect: http://www.hongkiat.com/blog/css-text-effects/*/
+.shadow {
+color: #fff;
+text-shadow: 0 1px 0 #ccc, 0 2px 0 #c9c9c9, 0 3px 0 #bbb, 0 4px 0 #b9b9b9, 0 5px 0 #aaa, 0 6px 1px rgba(0,0,0,.1), 0 0 5px rgba(0,0,0,.1), 0 1px 3px rgba(0,0,0,.3), 0 3px 5px rgba(0,0,0,.2), 0 5px 10px rgba(0,0,0,.25), 0 10px 10px rgba(0,0,0,.2), 0 20px 20px rgba(0,0,0,.15);
+}
+
+
+
+
